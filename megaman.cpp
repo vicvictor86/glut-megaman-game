@@ -21,8 +21,12 @@
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
-
 #include <stdlib.h>
+
+//Imports proprios
+#include <vector>
+#include "fire.h"
+using namespace std; 
 
 static int slices = 16;
 static int stacks = 16;
@@ -31,25 +35,8 @@ int width = 640;
 int height = 480;
 
 bool keyBuffer[256];
-
-struct Speed {
-    double x, y, z;
-};
-
-struct Object
-{
-    double x, y, z;
-    float r, g, b;
-    Speed speed;
-    float radius;
-};
-
-struct Camera{
-    float x, y, z;
-};
-
-Object qobj;
-Camera camera;
+vector<Fire> fireObjects;
+Object player;
 
 /* GLUT callback Handlers */
 
@@ -68,50 +55,58 @@ static void resize(int width, int height)
 
 static void display(void)
 {
-    const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-    const double a = t * 90.0;
+    // const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3d(1, 0, 0);
-
+    
     glPushMatrix();
-        glTranslated(0, 0, qobj.z);
+        glTranslated(0, 0, player.z);
         glRotated(90, 1, 0, 0);
-        // glRotated(a, 0, 0, 1);
         glutSolidCone(1, 1, slices, stacks);
     glPopMatrix();
 
     glPushMatrix();
-        glTranslated(2-qobj.x, -2-qobj.y, -6.5);
+        glTranslated(2-player.x, -2-player.y, -6.5);
         glRotated(90, 1, 0, 0);
-        // glRotated(a, 0, 0, 1);
         glutSolidCube(2);
         
     glPopMatrix();
 
     glPushMatrix();
-        glTranslated(0-qobj.x, -2-qobj.y, -6.5);
+        glTranslated(0-player.x, -2-player.y, -6.5);
         glRotated(90, 1, 0, 0);
-        // glRotated(a, 0, 0, 1);
         glutSolidCube(2);
     glPopMatrix();
 
-    if (qobj.speed.x != 0 && keyBuffer['d']) {
-        qobj.x += qobj.speed.x;
+
+    if (player.speed.x != 0 && keyBuffer['d']) {
+        player.x += player.speed.x;
     }
 
-    if (qobj.speed.x != 0 && keyBuffer['a']) {
-        qobj.x -= qobj.speed.x;
+    if (player.speed.x != 0 && keyBuffer['a']) {
+        player.x -= player.speed.x;
     }
 
-    if (qobj.speed.y != 0){
-        qobj.y += qobj.speed.y;
-        qobj.speed.y -= 0.001f;
+    if (player.speed.y != 0){
+        player.y += player.speed.y;
+        player.speed.y -= 0.001f;
     }
 
-    if (qobj.y < 0.0f) {
-        qobj.speed.y = 0;
-        qobj.y = 0.0f;
+    if (player.y < 0.0f) {
+        player.speed.y = 0;
+        player.y = 0.0f;
+    }
+
+    if (fireObjects.size() > 0) {
+        for (int i = 0; i < fireObjects.size(); i++) { 
+            glPushMatrix();
+                glTranslated(fireObjects[i].x, fireObjects[i].y, fireObjects[i].z);
+                glRotated(90, 1, 0, 0);
+                glutSolidSphere(fireObjects[i].radius, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
+            glPopMatrix();
+            fireObjects[i].x += fireObjects[i].speed.x;
+        }
     }
 
     glutSwapBuffers();
@@ -126,16 +121,36 @@ static void key(unsigned char key, int x, int y)
     }
 
     if (keyBuffer['d']) {
-        qobj.speed.x = 0.1;   
+        player.speed.x = 0.1;   
     }
 
     if (keyBuffer['a']){
-        qobj.speed.x = 0.1;
+        player.speed.x = 0.1;
     }
 
-    if (keyBuffer[32] && qobj.speed.y == 0){
-        qobj.speed.y = 0.05f;
+    if (keyBuffer[32] && player.speed.y == 0){
+        player.speed.y = 0.05f;
     }
+
+    if (keyBuffer['f']){
+        Fire fire;
+        double distanceOfPlayer = 2;
+        double heightOfPlayer = 0;
+        float shootSpeed = 0.1;
+        float radiusOfFire = 0.5;
+        fire.x = distanceOfPlayer;
+        fire.y = heightOfPlayer;
+        fire.z = player.z;
+        fire.speed.x = shootSpeed;
+        fire.radius = radiusOfFire;
+        fire.slicesAndStacks = 16;
+        fireObjects.push_back(fire);
+    }
+
+    if (keyBuffer['g']){
+        fireObjects.pop_back();
+    }
+
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -162,10 +177,9 @@ const GLfloat high_shininess[] = {100.0f};
 
 int main(int argc, char *argv[])
 {
-    qobj.x = 0;
-    qobj.y = 0;
-    qobj.z = -6;
-    camera.x = 0;
+    player.x = 0;
+    player.y = 0;
+    player.z = -6;
     glutInit(&argc, argv);
     glutInitWindowSize(width, height);
     glutInitWindowPosition(10, 10);
