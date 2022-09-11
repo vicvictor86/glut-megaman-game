@@ -69,8 +69,14 @@ static void display(void)
     glPushMatrix();
         glTranslated(2-player.x, -2-player.y, -6.5);
         glRotated(90, 1, 0, 0);
-        glutSolidCube(2);
-        
+        glutWireCube(2);
+    glPopMatrix();
+
+    //Collision Sphere
+    glPushMatrix();
+        glTranslated(2-player.x, -2-player.y, -6.5);
+        glRotated(90, 1, 0, 0);
+        glutWireSphere(1.1, 16, 16);
     glPopMatrix();
 
     glPushMatrix();
@@ -79,6 +85,18 @@ static void display(void)
         glutSolidCube(2);
     glPopMatrix();
 
+    //Collision Sphere
+    glPushMatrix();
+        glTranslated(0, 0, player.z);
+        glRotated(90, 1, 0, 0);
+        glutWireSphere(1, 16, 16);
+    glPopMatrix();
+
+    double distance = sqrt(pow(0 - (2-player.x), 2) + pow(0 - (-2-player.y), 2) + pow(player.z - (-6.5), 2));
+    double radiusSum = 1 + 1.1;
+    if (distance < radiusSum) {
+        printf("Collision detected! Distance: %f)\n", distance);
+    }
 
     if (player.speed.x != 0 && keyBuffer['d']) {
         player.x += player.speed.x;
