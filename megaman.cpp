@@ -27,6 +27,8 @@
 #include <vector>
 #include "classes/fire.h"
 #include "classes/player.h"
+#include "classes/Collision.h"
+
 using namespace std; 
 
 static int slices = 16;
@@ -37,7 +39,7 @@ int height = 480;
 
 bool keyBuffer[256];
 vector<Fire> fireObjects;
-Player player;
+Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 0, Collision(0, 0, -6, 1, 0, 0, 1));
 
 /* GLUT callback Handlers */
 
@@ -73,9 +75,21 @@ static void display(void)
         glutWireCube(2);
     glPopMatrix();
 
+    glPushMatrix();
+        glTranslated(-4-player.x, player.y, -6.5);
+        glRotated(90, 1, 0, 0);
+        glutWireCube(2);
+    glPopMatrix();
+
     //Collision Sphere
     glPushMatrix();
         glTranslated(2-player.x, -2-player.y, -6.5);
+        glRotated(90, 1, 0, 0);
+        glutWireSphere(1.1, 16, 16);
+    glPopMatrix();
+
+    glPushMatrix();
+        glTranslated(-4-player.x, player.y, -6.5);
         glRotated(90, 1, 0, 0);
         glutWireSphere(1.1, 16, 16);
     glPopMatrix();
@@ -93,10 +107,25 @@ static void display(void)
         glutWireSphere(1, 16, 16);
     glPopMatrix();
 
-    double distance = sqrt(pow(0 - (2-player.x), 2) + pow(0 - (-2-player.y), 2) + pow(player.z - (-6.5), 2));
+    double playerCollisionX = player.collision.x;
+    double playerCollisionY = player.collision.y;
+    double playerCollisionZ = player.collision.z;
+    double distance1 = sqrt(pow(player.x - (2-player.x), 2) + pow(0 - (-2-player.y), 2) + pow(player.z - (-6.5), 2));
+    double distance2 = sqrt(pow(player.x - (-4-player.x), 2) + pow(0 - (player.y), 2) + pow(player.z - (-6.5), 2));
     double radiusSum = 1 + 1.1;
-    if (distance < radiusSum) {
-        printf("Collision detected! Distance: %f)\n", distance);
+    
+    if (distance1 < radiusSum) {
+        printf("Collision detected! Distance: %f)\n", distance1);
+    }
+
+    if (distance2 < radiusSum) {
+        if (player.direction == LEFT) {
+            player.x += player.speed.x;
+        } else if (player.direction == RIGHT) {
+            player.x -= player.speed.x;
+        }
+
+        printf("Collision detected! Distance: %f)\n", distance2);
     }
 
     player.move(keyBuffer);
@@ -107,6 +136,12 @@ static void display(void)
                 glTranslated(fireObjects[i].x, fireObjects[i].y, fireObjects[i].z);
                 glRotated(90, 1, 0, 0);
                 glutSolidSphere(fireObjects[i].radius, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
+            glPopMatrix();
+
+            glPushMatrix();
+                glTranslated(fireObjects[i].collision.x + fireObjects[i].x, fireObjects[i].collision.y, fireObjects[i].collision.z);
+                glRotated(90, 1, 0, 0);
+                glutWireSphere(fireObjects[i].collision.radius, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
             glPopMatrix();
             fireObjects[i].x += fireObjects[i].speed.x;
         }
@@ -119,16 +154,18 @@ static void key(unsigned char key, int x, int y)
 {
     keyBuffer[key] = true;
 
-    if(key == 'q'){
+    if(key == 'q' || key == 'Q') {
         exit(0);
     }
 
-    if (keyBuffer['d']) {
+    if (keyBuffer['d'] || keyBuffer['D']) {
         player.speed.x = 0.1;   
+        player.direction = RIGHT;
     }
 
-    if (keyBuffer['a']){
+    if (keyBuffer['a'] || keyBuffer['A']) {
         player.speed.x = 0.1;
+        player.direction = LEFT;
     }
 
     if (keyBuffer[' '] && player.speed.y == 0){
@@ -146,17 +183,21 @@ static void keyboardUp(unsigned char key, int x, int y)
     keyBuffer[key] = false;
 
     if (key == 'f'){
-        Fire fire;
         double distanceOfPlayer = 2;
         double heightOfPlayer = 0;
         float shootSpeed = 0.1;
         float radiusOfFire = 0.5;
+        Fire fire;
         fire.x = distanceOfPlayer;
         fire.y = heightOfPlayer;
         fire.z = player.z;
         fire.speed.x = shootSpeed;
         fire.radius = radiusOfFire;
         fire.slicesAndStacks = 16;
+        fire.collision.x = 0;
+        fire.collision.y = 0;
+        fire.collision.z = fire.z;
+        fire.collision.radius = 0.55;
         fireObjects.push_back(fire);
     }
 }
@@ -177,12 +218,8 @@ const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
 /* Program entry point */
-
 int main(int argc, char *argv[])
 {
-    player.x = 0;
-    player.y = 0;
-    player.z = -6;
     glutInit(&argc, argv);
     glutInitWindowSize(width, height);
     glutInitWindowPosition(10, 10);
