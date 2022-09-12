@@ -25,7 +25,8 @@
 
 //Imports proprios
 #include <vector>
-#include "fire.h"
+#include "classes/fire.h"
+#include "classes/player.h"
 using namespace std; 
 
 static int slices = 16;
@@ -36,7 +37,7 @@ int height = 480;
 
 bool keyBuffer[256];
 vector<Fire> fireObjects;
-Object player;
+Player player;
 
 /* GLUT callback Handlers */
 
@@ -98,23 +99,7 @@ static void display(void)
         printf("Collision detected! Distance: %f)\n", distance);
     }
 
-    if (player.speed.x != 0 && keyBuffer['d']) {
-        player.x += player.speed.x;
-    }
-
-    if (player.speed.x != 0 && keyBuffer['a']) {
-        player.x -= player.speed.x;
-    }
-
-    if (player.speed.y != 0){
-        player.y += player.speed.y;
-        player.speed.y -= 0.001f;
-    }
-
-    if (player.y < 0.0f) {
-        player.speed.y = 0;
-        player.y = 0.0f;
-    }
+    player.move(keyBuffer);
 
     if (fireObjects.size() > 0) {
         for (int i = 0; i < fireObjects.size(); i++) { 
@@ -146,11 +131,21 @@ static void key(unsigned char key, int x, int y)
         player.speed.x = 0.1;
     }
 
-    if (keyBuffer[32] && player.speed.y == 0){
+    if (keyBuffer[' '] && player.speed.y == 0){
         player.speed.y = 0.05f;
     }
 
-    if (keyBuffer['f']){
+    if (keyBuffer['g']){
+        fireObjects.pop_back();
+    }
+
+}
+
+static void keyboardUp(unsigned char key, int x, int y)
+{
+    keyBuffer[key] = false;
+
+    if (key == 'f'){
         Fire fire;
         double distanceOfPlayer = 2;
         double heightOfPlayer = 0;
@@ -164,16 +159,6 @@ static void key(unsigned char key, int x, int y)
         fire.slicesAndStacks = 16;
         fireObjects.push_back(fire);
     }
-
-    if (keyBuffer['g']){
-        fireObjects.pop_back();
-    }
-
-}
-
-static void keyboardUp(unsigned char key, int x, int y)
-{
-    keyBuffer[key] = false;
 }
 
 static void idle(void)

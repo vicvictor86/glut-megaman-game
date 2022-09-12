@@ -1,4 +1,6 @@
 #include "speed.h"
+#ifndef OBJECT_H
+#define OBJECT_H
 
 class Object {
     public: double x, y, z;
@@ -6,3 +8,5 @@ class Object {
     public: Speed speed;
     public: float radius;
 };
+
+#endif
