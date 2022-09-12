@@ -6,7 +6,14 @@ class Player : public Object
     public: float damage;
     public: int chargeShot;    
     public: void move(bool keyBuffer[256]);
-    // public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float radius, int slicesAndStacks);
+    public: Player(){};
+    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float radius, int life, float damage, int chargeShot);
+};
+
+Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float radius, int life, float damage, int chargeShot) : Object(x, y, z, r, g, b, speed, radius){
+    this->life = life;
+    this->damage = damage;
+    this->chargeShot = chargeShot;
 };
 
 void Player:: move(bool keyBuffer[256]){
