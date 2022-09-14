@@ -76,7 +76,7 @@ static void display(void)
     glPopMatrix();
 
     glPushMatrix();
-        glTranslated(-4-player.x, player.y, -6.5);
+        glTranslated(-4-player.x, 0-player.y, -6.5);
         glRotated(90, 1, 0, 0);
         glutWireCube(2);
     glPopMatrix();
@@ -89,7 +89,7 @@ static void display(void)
     glPopMatrix();
 
     glPushMatrix();
-        glTranslated(-4-player.x, player.y, -6.5);
+        glTranslated(-4-player.x, 0-player.y, -6.5);
         glRotated(90, 1, 0, 0);
         glutWireSphere(1.1, 16, 16);
     glPopMatrix();
@@ -100,33 +100,64 @@ static void display(void)
         glutSolidCube(2);
     glPopMatrix();
 
+    glPushMatrix();
+        glTranslated(2-player.x, -1-player.y, -6.5);
+        glRotated(90, 1, 0, 0);
+        glutWireCube(2);
+    glPopMatrix();
+
     //Collision Sphere
     glPushMatrix();
-        glTranslated(0, 0, player.z);
+        glTranslated(0, -0.5, player.z);
         glRotated(90, 1, 0, 0);
-        glutWireSphere(1, 16, 16);
+        glutWireCube(1); 
     glPopMatrix();
 
     double playerCollisionX = player.collision.x;
     double playerCollisionY = player.collision.y;
     double playerCollisionZ = player.collision.z;
-    double distance1 = sqrt(pow(player.x - (2-player.x), 2) + pow(0 - (-2-player.y), 2) + pow(player.z - (-6.5), 2));
-    double distance2 = sqrt(pow(player.x - (-4-player.x), 2) + pow(0 - (player.y), 2) + pow(player.z - (-6.5), 2));
+
+    double distanceTestLeft = (-0.5 + player.x) - -3;
+    double distanceTesRight = (0.5 + player.x) - 5;
+    double testHigh = 0.5;
+    double distanceTesDownX = 0.5 - (player.x - 1);
+    double distanceTesDownY = (-0.5 + player.y) - testHigh;
     double radiusSum = 1 + 1.1;
-    
-    if (distance1 < radiusSum) {
-        printf("Collision detected! Distance: %f)\n", distance1);
+
+    double collisionnormalX = -0.5 + player.x - 0;
+    double collisionnormalY = -0.5 + player.y - -0.5;
+
+    if (distanceTestLeft <= 0){
+        player.collision.isColliding = true;
+        player.x += player.speed.x;
+        printf("COLISAO %f\n", distanceTestLeft);
     }
 
-    if (distance2 < radiusSum) {
-        if (player.direction == LEFT) {
-            player.x += player.speed.x;
-        } else if (player.direction == RIGHT) {
-            player.x -= player.speed.x;
+    else if (distanceTesRight >= 0){
+        player.collision.isColliding = true;
+        player.x -= player.speed.x;
+        printf("COLISAO %f\n", distanceTesRight);
+    }
+
+    else if (distanceTesDownY < 0 && distanceTesDownX < 0){
+        player.collision.isColliding = true;
+        if (player.speed.y < 0){
+            player.speed.y = 0;
         }
-
-        printf("Collision detected! Distance: %f)\n", distance2);
+        printf("COLISAO %f\n", distanceTesDownY);
     }
+
+    else if (collisionnormalY < 0 && collisionnormalX < 0){
+        player.collision.isColliding = true;
+        if (player.speed.y < 0){
+            player.speed.y = 0;
+        }
+        printf("COLISAOa %f\n", collisionnormalY);
+    }
+    else{
+        player.collision.isColliding = false;
+    }
+    // printf("%f", player.speed.y);
 
     player.move(keyBuffer);
 
