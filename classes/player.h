@@ -1,5 +1,5 @@
 #include "Object.h"
-#include "Collision.h"
+
 #ifndef PLAYER_H
 #define PLAYER_H
 
@@ -10,18 +10,16 @@ class Player : public Object
     public: int life;
     public: float damage;
     public: int chargeShot;    
-    public: Collision collision;
     public: Directions direction = LEFT;
     public: void move(bool keyBuffer[256]);
     public: Player(){};
-    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float radius, int life, float damage, int chargeShot, Collision collision);
+    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision);
 };
 
-Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float radius, int life, float damage, int chargeShot, Collision collision) : Object(x, y, z, r, g, b, speed, radius){
+Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
     this->life = life;
     this->damage = damage;
     this->chargeShot = chargeShot;
-    this->collision = Collision(collision.x, collision.y, collision.z, collision.r, collision.g, collision.b, collision.radius);
 };
 
 void Player:: move(bool keyBuffer[256]){

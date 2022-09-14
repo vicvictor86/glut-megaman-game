@@ -4,20 +4,20 @@
 class Collision {
     public: double x, y, z;
     public: float r, g, b;
-    public: float radius;
+    public: float size;
     public: bool isColliding = false;
     public: Collision(){};
-    public: Collision(double x, double y, double z, float r, float g, float b, float radius);
+    public: Collision(double x, double y, double z, float r, float g, float b, float size);
 };
 
-Collision :: Collision(double x, double y, double z, float r, float g, float b, float radius){
+Collision :: Collision(double x, double y, double z, float r, float g, float b, float size){
     this->x = x;
     this->y = y;
     this->z = z;
     this->r = r;
     this->g = g;
     this->b = b;
-    this->radius = radius;
+    this->size = size;
 };
 
 #endif

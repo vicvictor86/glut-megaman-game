@@ -63,41 +63,43 @@ static void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3d(1, 0, 0);
     
+    //Player
     glPushMatrix();
         glTranslated(0, 0, player.z);
         glRotated(90, 1, 0, 0);
-        glutSolidCone(1, 1, slices, stacks);
+        glutSolidCube(0.5);
     glPopMatrix();
 
+    //Collision Cube
     glPushMatrix();
-        glTranslated(2-player.x, -2-player.y, -6.5);
+        glTranslated(0, 0, player.z);
         glRotated(90, 1, 0, 0);
-        glutWireCube(2);
+        glutWireCube(1); 
     glPopMatrix();
 
-    glPushMatrix();
-        glTranslated(-4-player.x, 0-player.y, -6.5);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(2);
-    glPopMatrix();
-
-    //Collision Sphere
-    glPushMatrix();
-        glTranslated(2-player.x, -2-player.y, -6.5);
-        glRotated(90, 1, 0, 0);
-        glutWireSphere(1.1, 16, 16);
-    glPopMatrix();
+    // glPushMatrix();
+    //     glTranslated(2-player.x, -2-player.y, -6.5);
+    //     glRotated(90, 1, 0, 0);
+    //     glutWireCube(2);
+    // glPopMatrix();
 
     glPushMatrix();
         glTranslated(-4-player.x, 0-player.y, -6.5);
         glRotated(90, 1, 0, 0);
-        glutWireSphere(1.1, 16, 16);
+        glutWireCube(2);
     glPopMatrix();
+
+    // map<char, double> mapColliders = Object:: createRetangleCollider(-4, 0, -6.5, 2);
+    
+    // printf("%f", mapColliders['L']);
+    // printf("%f", mapColliders['R']);
+    // printf("%f", mapColliders['T']);
+    // printf("%f", mapColliders['B']);
 
     glPushMatrix();
         glTranslated(0-player.x, -2-player.y, -6.5);
         glRotated(90, 1, 0, 0);
-        glutSolidCube(2);
+        glutWireCube(2);
     glPopMatrix();
 
     glPushMatrix();
@@ -106,37 +108,34 @@ static void display(void)
         glutWireCube(2);
     glPopMatrix();
 
-    //Collision Sphere
-    glPushMatrix();
-        glTranslated(0, -0.5, player.z);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(1); 
-    glPopMatrix();
+    map<char, double> mapCollidersWall = Object:: createRetangleCollider(2, -1, player.z, 2);
+    map<char, double> mapCollidersPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
 
-    double playerCollisionX = player.collision.x;
-    double playerCollisionY = player.collision.y;
-    double playerCollisionZ = player.collision.z;
-
+    bool result = mapCollidersPlayer['L'] + player.x <= mapCollidersWall['R']  &&  mapCollidersPlayer['R'] + player.x >= mapCollidersWall['L']  &&
+    mapCollidersPlayer['B'] + player.y <= mapCollidersWall['T']  &&
+    mapCollidersPlayer['T'] + player.y >= mapCollidersWall['B'];
+    printf("%d\n", result);
+    
     double distanceTestLeft = (-0.5 + player.x) - -3;
     double distanceTesRight = (0.5 + player.x) - 5;
-    double testHigh = 0.5;
-    double distanceTesDownX = 0.5 - (player.x - 1);
-    double distanceTesDownY = (-0.5 + player.y) - testHigh;
+
+    double distanceTesDownX = 0.5 + player.x - 1;
+    double distanceTesDownY = -0.5 + player.y - 0;
     double radiusSum = 1 + 1.1;
 
     double collisionnormalX = -0.5 + player.x - 0;
-    double collisionnormalY = -0.5 + player.y - -0.5;
+    double collisionnormalY = -0.5 + player.y - -1;
 
     if (distanceTestLeft <= 0){
         player.collision.isColliding = true;
         player.x += player.speed.x;
-        printf("COLISAO %f\n", distanceTestLeft);
+        // printf("COLISAO %f\n", distanceTestLeft);
     }
 
     else if (distanceTesRight >= 0){
         player.collision.isColliding = true;
         player.x -= player.speed.x;
-        printf("COLISAO %f\n", distanceTesRight);
+        // printf("COLISAO %f\n", distanceTesRight);
     }
 
     else if (distanceTesDownY < 0 && distanceTesDownX < 0){
@@ -144,19 +143,20 @@ static void display(void)
         if (player.speed.y < 0){
             player.speed.y = 0;
         }
-        printf("COLISAO %f\n", distanceTesDownY);
+        // printf("COLISAO %f\n", distanceTesDownY);
     }
 
     else if (collisionnormalY < 0 && collisionnormalX < 0){
         player.collision.isColliding = true;
         if (player.speed.y < 0){
+            player.y += player.speed.y;
             player.speed.y = 0;
         }
-        printf("COLISAOa %f\n", collisionnormalY);
+        // printf("COLISAOa %f\n", collisionnormalY);
     }
-    else{
-        player.collision.isColliding = false;
-    }
+    // else{
+    //     player.collision.isColliding = false;
+    // }
     // printf("%f", player.speed.y);
 
     player.move(keyBuffer);
@@ -166,13 +166,13 @@ static void display(void)
             glPushMatrix();
                 glTranslated(fireObjects[i].x, fireObjects[i].y, fireObjects[i].z);
                 glRotated(90, 1, 0, 0);
-                glutSolidSphere(fireObjects[i].radius, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
+                glutSolidSphere(fireObjects[i].size, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
             glPopMatrix();
 
             glPushMatrix();
                 glTranslated(fireObjects[i].collision.x + fireObjects[i].x, fireObjects[i].collision.y, fireObjects[i].collision.z);
                 glRotated(90, 1, 0, 0);
-                glutWireSphere(fireObjects[i].collision.radius, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
+                glutWireSphere(fireObjects[i].collision.size, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
             glPopMatrix();
             fireObjects[i].x += fireObjects[i].speed.x;
         }
@@ -223,12 +223,12 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.y = heightOfPlayer;
         fire.z = player.z;
         fire.speed.x = shootSpeed;
-        fire.radius = radiusOfFire;
+        fire.size = radiusOfFire;
         fire.slicesAndStacks = 16;
         fire.collision.x = 0;
         fire.collision.y = 0;
         fire.collision.z = fire.z;
-        fire.collision.radius = 0.55;
+        fire.collision.size = 0.55;
         fireObjects.push_back(fire);
     }
 }
