@@ -33,11 +33,12 @@ void Player:: move(bool keyBuffer[256]){
 
     if (this->speed.y != 0){
         this->y += this->speed.y;
-    }
-
-    if (this->collision.isColliding == false){
         this->speed.y -= 0.001f;
     }
+
+    // if (this->collision.isColliding == false){
+    //     this->speed.y -= 0.001f;
+    // }
 
     // if (this->y < 0.0f) {
     //     this->speed.y = 0;

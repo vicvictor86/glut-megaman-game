@@ -116,48 +116,23 @@ static void display(void)
     mapCollidersPlayer['T'] + player.y >= mapCollidersWall['B'];
     printf("%d\n", result);
     
-    double distanceTestLeft = (-0.5 + player.x) - -3;
-    double distanceTesRight = (0.5 + player.x) - 5;
+    double distanceTestLeft = mapCollidersPlayer['R'] + player.x - mapCollidersWall['L'];
+    printf("%f %f\n", mapCollidersPlayer['B'], mapCollidersWall['T']);
+    double distanceTestUp = mapCollidersPlayer['B'] + player.y - mapCollidersWall['T'];
 
-    double distanceTesDownX = 0.5 + player.x - 1;
-    double distanceTesDownY = -0.5 + player.y - 0;
-    double radiusSum = 1 + 1.1;
-
-    double collisionnormalX = -0.5 + player.x - 0;
-    double collisionnormalY = -0.5 + player.y - -1;
-
-    if (distanceTestLeft <= 0){
-        player.collision.isColliding = true;
-        player.x += player.speed.x;
-        // printf("COLISAO %f\n", distanceTestLeft);
-    }
-
-    else if (distanceTesRight >= 0){
-        player.collision.isColliding = true;
+    
+    if (distanceTestLeft + player.speed.x >= 0 && distanceTestUp < 0){
         player.x -= player.speed.x;
-        // printf("COLISAO %f\n", distanceTesRight);
     }
 
-    else if (distanceTesDownY < 0 && distanceTesDownX < 0){
-        player.collision.isColliding = true;
-        if (player.speed.y < 0){
-            player.speed.y = 0;
-        }
-        // printf("COLISAO %f\n", distanceTesDownY);
+    if (distanceTestUp - player.speed.y >= 0 && distanceTestLeft > 0){
+        player.y -= player.speed.y;
     }
 
-    else if (collisionnormalY < 0 && collisionnormalX < 0){
-        player.collision.isColliding = true;
-        if (player.speed.y < 0){
-            player.y += player.speed.y;
-            player.speed.y = 0;
-        }
-        // printf("COLISAOa %f\n", collisionnormalY);
+    if(player.y < 0){
+        player.y = 1;
+        player.speed.y = 0;
     }
-    // else{
-    //     player.collision.isColliding = false;
-    // }
-    // printf("%f", player.speed.y);
 
     player.move(keyBuffer);
 
