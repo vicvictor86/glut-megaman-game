@@ -1,3 +1,0 @@
-D:/Programming/GraphicComputation/game-project/cmake-build-debug/CMakeFiles/game_project.dir
-D:/Programming/GraphicComputation/game-project/cmake-build-debug/CMakeFiles/edit_cache.dir
-D:/Programming/GraphicComputation/game-project/cmake-build-debug/CMakeFiles/rebuild_cache.dir
