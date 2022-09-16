@@ -119,6 +119,7 @@ static void display(void)
             quantityOverLapping++;
             if(player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['L'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
                 printf("Colidiu na direita do player\n");
+
                 player.x = walls[i].mapColliderWall['L'] - 0.51;
             }
             else if(player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
@@ -129,10 +130,8 @@ static void display(void)
             if(player.mapColliderPlayer['T'] + player.y > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y < walls[i].mapColliderWall['T']){
                 printf("Colidiu em cima do player\n");
 
-//                printf("%f %f\n", player.mapColliderPlayer['T'] + player.y, walls[i].mapColliderWall['B']);
                 player.y = walls[i].mapColliderWall['B'] - 0.51;
                 player.speed.y = 0;
-//            printf("%f %f\n", player.mapColliderPlayer['T'] + player.y, walls[i].mapColliderWall['B']);
             }
             else if(player.mapColliderPlayer['B'] + player.y < walls[i].mapColliderWall['T'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['B'] + player.y > walls[i].mapColliderWall['B']){
                 printf("Colidiu em baixo do player\n");
@@ -141,7 +140,6 @@ static void display(void)
                 player.y = walls[i].mapColliderWall['T'] + 0.5;
                 player.speed.y = 0;
             }
-//        printf("%f %f\n", mapCollidersPlayer['B'] + player.y, mapCollidersWall2['T']);
         }
 
         bool lastIteration = i + 1 >= walls.size();
@@ -203,9 +201,7 @@ static void key(unsigned char key, int x, int y)
 
 static void keyboardUp(unsigned char key, int x, int y)
 {
-    keyBuffer[key] = false;
-
-    if (key == 'f'){
+    if (keyBuffer['f']){
         double distanceOfPlayer = 2;
         double heightOfPlayer = 0;
         float shootSpeed = 0.1;
@@ -223,6 +219,13 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.collision.size = 0.55;
         fireObjects.push_back(fire);
     }
+
+    if (keyBuffer['o']){
+        player.x = 0;
+        player.y = 0;
+    }
+
+    keyBuffer[key] = false;
 }
 
 static void idle(void)
@@ -243,25 +246,44 @@ const GLfloat high_shininess[] = {100.0f};
 void init(){
     player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
 
-    WallWithCollider wallWithCollider1;
+    vector<Object> tempWalls;
+
     Object wall1;
     wall1.x = 0;
     wall1.y = -2;
     wall1.z = player.z;
     wall1.size = 2;
-    wallWithCollider1.wall = wall1;
-    wallWithCollider1.mapColliderWall = Object ::createRetangleCollider(wall1.x, wall1.y, wall1.z, wall1.size);
-    walls.push_back(wallWithCollider1);
+    tempWalls.push_back(wall1);
 
-    WallWithCollider wallWithCollider2;
     Object wall2;
     wall2.x = 2;
     wall2.y = -1;
     wall2.z = player.z;
     wall2.size = 2;
-    wallWithCollider2.wall = wall2;
-    wallWithCollider2.mapColliderWall = Object ::createRetangleCollider(wall2.x, wall2.y, wall2.z, wall2.size);
-    walls.push_back(wallWithCollider2);
+    tempWalls.push_back(wall2);
+
+    Object wall3;
+    wall3.x = -4;
+    wall3.y = 0;
+    wall3.z = player.z;
+    wall3.size = 2;
+    tempWalls.push_back(wall3);
+
+    Object wall4;
+    wall4.x = 0;
+    wall4.y = 2;
+    wall4.z = player.z;
+    wall4.size = 2;
+    tempWalls.push_back(wall4);
+
+    for (int i = 0; i < tempWalls.size(); i++){
+        Object wall;
+        WallWithCollider wallWithCollider;
+        wall = tempWalls[i];
+        wallWithCollider.wall = wall;
+        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
+        walls.push_back(wallWithCollider);
+    }
 }
 
 /* Program entry point */
