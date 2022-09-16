@@ -37,8 +37,15 @@ static int stacks = 16;
 int width = 640;
 int height = 480;
 
+struct WallWithCollider {
+    Object wall;
+    map<char, double> mapColliderWall;
+};
+
 bool keyBuffer[256];
 vector<Fire> fireObjects;
+vector<WallWithCollider> walls;
+
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 0, Collision(0, 0, -6, 1, 0, 0, 1));
 
 /* GLUT callback Handlers */
@@ -77,24 +84,11 @@ static void display(void)
         glutWireCube(1); 
     glPopMatrix();
 
-    // glPushMatrix();
-    //     glTranslated(2-player.x, -2-player.y, -6.5);
-    //     glRotated(90, 1, 0, 0);
-    //     glutWireCube(2);
-    // glPopMatrix();
-
     glPushMatrix();
         glTranslated(-4-player.x, 0-player.y, -6.5);
         glRotated(90, 1, 0, 0);
         glutWireCube(2);
     glPopMatrix();
-
-    // map<char, double> mapColliders = Object:: createRetangleCollider(-4, 0, -6.5, 2);
-    
-    // printf("%f", mapColliders['L']);
-    // printf("%f", mapColliders['R']);
-    // printf("%f", mapColliders['T']);
-    // printf("%f", mapColliders['B']);
 
     glPushMatrix();
         glTranslated(0-player.x, -2-player.y, -6.5);
@@ -115,79 +109,46 @@ static void display(void)
     glPopMatrix();
 
     // Juntar desenho com collider
-    // Armazenar um array de struct
-    map<char, double> mapCollidersWall = Object:: createRetangleCollider(0, 2, player.z, 2);
-    map<char, double> mapCollidersWall2 = Object:: createRetangleCollider(0, -2, player.z, 2);
 
-    map<char, double> mapCollidersPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
+    int quantityOverLapping = 0;
+    for(int i = 0; i < walls.size(); i++){
+        bool isOver = player.mapColliderPlayer['L'] + player.x <= walls[i].mapColliderWall['R']  &&  player.mapColliderPlayer['R'] + player.x >= walls[i].mapColliderWall['L']  &&
+                      player.mapColliderPlayer['B'] + player.y <= walls[i].mapColliderWall['T']  &&
+                      player.mapColliderPlayer['T'] + player.y >= walls[i].mapColliderWall['B'];
+        if(isOver){
+            quantityOverLapping++;
+            if(player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['L'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
+                printf("Colidiu na direita do player\n");
+                player.x = walls[i].mapColliderWall['L'] - 0.51;
+            }
+            else if(player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
+                printf("Colidiu na esquerda do player\n");
 
-    bool result = mapCollidersPlayer['L'] + player.x <= mapCollidersWall['R']  &&  mapCollidersPlayer['R'] + player.x >= mapCollidersWall['L']  &&
-    mapCollidersPlayer['B'] + player.y <= mapCollidersWall['T']  &&
-    mapCollidersPlayer['T'] + player.y >= mapCollidersWall['B'];
+                player.x = walls[i].mapColliderWall['R'] + 0.51;
+            }
+            if(player.mapColliderPlayer['T'] + player.y > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y < walls[i].mapColliderWall['T']){
+                printf("Colidiu em cima do player\n");
 
-    bool result2 = mapCollidersPlayer['L'] + player.x <= mapCollidersWall2['R']  &&  mapCollidersPlayer['R'] + player.x >= mapCollidersWall2['L']  &&
-                  mapCollidersPlayer['B'] + player.y <= mapCollidersWall2['T']  &&
-                  mapCollidersPlayer['T'] + player.y >= mapCollidersWall2['B'];
+//                printf("%f %f\n", player.mapColliderPlayer['T'] + player.y, walls[i].mapColliderWall['B']);
+                player.y = walls[i].mapColliderWall['B'] - 0.51;
+                player.speed.y = 0;
+//            printf("%f %f\n", player.mapColliderPlayer['T'] + player.y, walls[i].mapColliderWall['B']);
+            }
+            else if(player.mapColliderPlayer['B'] + player.y < walls[i].mapColliderWall['T'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['B'] + player.y > walls[i].mapColliderWall['B']){
+                printf("Colidiu em baixo do player\n");
 
-    if(result){
-        if(mapCollidersPlayer['R'] + player.x > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x < mapCollidersWall['L'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall['T']){
-            printf("Colidiu na direita 1\n");
-            player.x = mapCollidersWall['L'] - 0.51;
+                player.collision.isOnPlataform = true;
+                player.y = walls[i].mapColliderWall['T'] + 0.5;
+                player.speed.y = 0;
+            }
+//        printf("%f %f\n", mapCollidersPlayer['B'] + player.y, mapCollidersWall2['T']);
         }
-        else if(mapCollidersPlayer['L'] + player.x < mapCollidersWall['R'] && mapCollidersPlayer['R'] + player.x > mapCollidersWall['R'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall['T']){
-            printf("Colidiu na esquerda 1\n");
 
-            player.x = mapCollidersWall['R'] + 0.51;
+        bool lastIteration = i + 1 >= walls.size();
+        bool notOverlapping = quantityOverLapping == 0;
+        if (notOverlapping && lastIteration){
+            player.collision.isOnPlataform = false;
         }
-        if(mapCollidersPlayer['T'] + player.y > mapCollidersWall['B'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall['R'] && mapCollidersPlayer['T'] + player.y < mapCollidersWall['T']){
-            printf("Colidiu em cima 1\n");
-
-            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall['B']);
-            player.y = mapCollidersWall['B'] - 0.51;
-            player.speed.y = 0;
-            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall['B']);
-        }
-        else if(mapCollidersPlayer['B'] + player.y < mapCollidersWall['T'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall['R'] && mapCollidersPlayer['B'] + player.y > mapCollidersWall['B']){
-            printf("Colidiu em baixo 1\n");
-
-            player.collision.isOnPlataform = true;
-            player.y = mapCollidersWall['T'] + 0.5;
-            player.speed.y = 0;
-        }
-    }
-
-    if(result2){
-        player.count = 0;
-
-        if(mapCollidersPlayer['R'] + player.x > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x < mapCollidersWall2['L'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall2['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall2['T']){
-            printf("Colidiu na direita 2\n");
-            player.x = mapCollidersWall2['L'] - 0.51;
-        }
-        else if(mapCollidersPlayer['L'] + player.x < mapCollidersWall2['R'] && mapCollidersPlayer['R'] + player.x > mapCollidersWall2['R'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall2['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall2['T']){
-            printf("Colidiu na esquerda 2\n");
-
-            player.x = mapCollidersWall2['R'] + 0.51;
-        }
-        if(mapCollidersPlayer['T'] + player.y > mapCollidersWall2['B'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall2['R'] && mapCollidersPlayer['T'] + player.y < mapCollidersWall2['T']){
-            printf("Colidiu em cima 2\n");
-
-            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall2['B']);
-            player.y = mapCollidersWall2['B'] - 0.51;
-            player.speed.y = 0;
-            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall2['B']);
-        }
-        else if(mapCollidersPlayer['B'] + player.y < mapCollidersWall2['T'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall2['R'] && mapCollidersPlayer['B'] + player.y > mapCollidersWall2['B']){
-            printf("Colidiu em baixo 2\n");
-
-            player.collision.isOnPlataform = true;
-            player.y = mapCollidersWall2['T'] + 0.5;
-            player.speed.y = 0;
-        }
-        printf("%f %f\n", mapCollidersPlayer['B'] + player.y, mapCollidersWall2['T']);
-    }
-
-    if (!result2 && !result){
-        player.collision.isOnPlataform = false;
     }
 
     player.move(keyBuffer);
@@ -279,6 +240,30 @@ const GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
 const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
+void init(){
+    player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
+
+    WallWithCollider wallWithCollider1;
+    Object wall1;
+    wall1.x = 0;
+    wall1.y = -2;
+    wall1.z = player.z;
+    wall1.size = 2;
+    wallWithCollider1.wall = wall1;
+    wallWithCollider1.mapColliderWall = Object ::createRetangleCollider(wall1.x, wall1.y, wall1.z, wall1.size);
+    walls.push_back(wallWithCollider1);
+
+    WallWithCollider wallWithCollider2;
+    Object wall2;
+    wall2.x = 2;
+    wall2.y = -1;
+    wall2.z = player.z;
+    wall2.size = 2;
+    wallWithCollider2.wall = wall2;
+    wallWithCollider2.mapColliderWall = Object ::createRetangleCollider(wall2.x, wall2.y, wall2.z, wall2.size);
+    walls.push_back(wallWithCollider2);
+}
+
 /* Program entry point */
 int main(int argc, char *argv[])
 {
@@ -286,8 +271,9 @@ int main(int argc, char *argv[])
     glutInitWindowSize(width, height);
     glutInitWindowPosition(10, 10);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    init();
 
-    glutCreateWindow("FreeGLUT Shapes");
+    glutCreateWindow("Mega Man");
 
     glutReshapeFunc(resize);
     glutDisplayFunc(display);

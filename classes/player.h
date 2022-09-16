@@ -10,8 +10,8 @@ class Player : public Object
     public: int life;
     public: float damage;
     public: int chargeShot;
-    public: int count;
     public: Directions direction = LEFT;
+    public: map<char, double> mapColliderPlayer;
     public: void move(bool keyBuffer[256]);
     public: Player(){};
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision);
@@ -38,8 +38,6 @@ void Player:: move(bool keyBuffer[256]){
     }
 
      if (this->collision.isOnPlataform == false){
-         printf("%d\n", count);
-         count++;
          this->speed.y -= 0.001f;
      }
 
