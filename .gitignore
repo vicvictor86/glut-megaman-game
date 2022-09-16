@@ -33,3 +33,5 @@
 
 # Other files
 .idea
+# CMake
+cmake-build-*/
