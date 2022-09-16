@@ -1,0 +1,7 @@
+"D:\Programming\CLion 2022.2.2\bin\cmake\win\bin\cmake.exe" -DCMAKE_BUILD_TYPE=Debug "-DCMAKE_MAKE_PROGRAM=D:/Programming/CLion 2022.2.2/bin/ninja/win/ninja.exe" -DCMAKE_CXX_COMPILER=C:/MinGW/bin/g++.exe -G Ninja -S D:\Programming\GraphicComputation\game-project -B D:\Programming\GraphicComputation\game-project\cmake-build-debug
+-- Found OpenGL: opengl32   
+-- Could NOT find PkgConfig (missing: PKG_CONFIG_EXECUTABLE) 
+-- Found GLUT: C:/MinGW/lib/libglut.a  
+-- Configuring done
+-- Generating done
+-- Build files have been written to: D:/Programming/GraphicComputation/game-project/cmake-build-debug

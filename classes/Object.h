@@ -31,14 +31,10 @@ Object :: Object(double x, double y, double z, float r, float g, float b, Speed 
 
 map<char, double> Object:: createRetangleCollider(double x, double y, double z, double size){
     map<char, double> mapColliders;
-    mapColliders.insert(pair<char, double>('L', x - size / 2));
-    mapColliders.insert(pair<char, double>('R', x + size / 2));
-    mapColliders.insert(pair<char, double>('T', y + size / 2));
-    mapColliders.insert(pair<char, double>('B', y - size / 2));
-    // double leftCollider = x - size / 2;
-    double rightCollider = x + size / 2;
-    double topCollider = y + size / 2;
-    double bottomCollider = y - size / 2;
+    mapColliders.insert(pair<char, double>('L', x - (size / 2)));
+    mapColliders.insert(pair<char, double>('R', x + (size / 2)));
+    mapColliders.insert(pair<char, double>('T', y + (size / 2)));
+    mapColliders.insert(pair<char, double>('B', y - (size / 2)));
 
     return mapColliders;
 }

@@ -9,7 +9,8 @@ class Player : public Object
 {
     public: int life;
     public: float damage;
-    public: int chargeShot;    
+    public: int chargeShot;
+    public: int count;
     public: Directions direction = LEFT;
     public: void move(bool keyBuffer[256]);
     public: Player(){};
@@ -33,12 +34,14 @@ void Player:: move(bool keyBuffer[256]){
 
     if (this->speed.y != 0){
         this->y += this->speed.y;
-        this->speed.y -= 0.001f;
+//        this->speed.y -= 0.001f;
     }
 
-    // if (this->collision.isColliding == false){
-    //     this->speed.y -= 0.001f;
-    // }
+     if (this->collision.isOnPlataform == false){
+         printf("%d\n", count);
+         count++;
+         this->speed.y -= 0.001f;
+     }
 
     // if (this->y < 0.0f) {
     //     this->speed.y = 0;

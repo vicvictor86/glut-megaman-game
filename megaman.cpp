@@ -108,30 +108,86 @@ static void display(void)
         glutWireCube(2);
     glPopMatrix();
 
-    map<char, double> mapCollidersWall = Object:: createRetangleCollider(2, -1, player.z, 2);
+    glPushMatrix();
+    glTranslated(0-player.x, 2-player.y, -6.5);
+    glRotated(90, 1, 0, 0);
+    glutWireCube(2);
+    glPopMatrix();
+
+    // Juntar desenho com collider
+    // Armazenar um array de struct
+    map<char, double> mapCollidersWall = Object:: createRetangleCollider(0, 2, player.z, 2);
+    map<char, double> mapCollidersWall2 = Object:: createRetangleCollider(0, -2, player.z, 2);
+
     map<char, double> mapCollidersPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
 
     bool result = mapCollidersPlayer['L'] + player.x <= mapCollidersWall['R']  &&  mapCollidersPlayer['R'] + player.x >= mapCollidersWall['L']  &&
     mapCollidersPlayer['B'] + player.y <= mapCollidersWall['T']  &&
     mapCollidersPlayer['T'] + player.y >= mapCollidersWall['B'];
-    printf("%d\n", result);
-    
-    double distanceTestLeft = mapCollidersPlayer['R'] + player.x - mapCollidersWall['L'];
-    printf("%f %f\n", mapCollidersPlayer['B'], mapCollidersWall['T']);
-    double distanceTestUp = mapCollidersPlayer['B'] + player.y - mapCollidersWall['T'];
 
-    
-    if (distanceTestLeft + player.speed.x >= 0 && distanceTestUp < 0){
-        player.x -= player.speed.x;
+    bool result2 = mapCollidersPlayer['L'] + player.x <= mapCollidersWall2['R']  &&  mapCollidersPlayer['R'] + player.x >= mapCollidersWall2['L']  &&
+                  mapCollidersPlayer['B'] + player.y <= mapCollidersWall2['T']  &&
+                  mapCollidersPlayer['T'] + player.y >= mapCollidersWall2['B'];
+
+    if(result){
+        if(mapCollidersPlayer['R'] + player.x > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x < mapCollidersWall['L'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall['T']){
+            printf("Colidiu na direita 1\n");
+            player.x = mapCollidersWall['L'] - 0.51;
+        }
+        else if(mapCollidersPlayer['L'] + player.x < mapCollidersWall['R'] && mapCollidersPlayer['R'] + player.x > mapCollidersWall['R'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall['T']){
+            printf("Colidiu na esquerda 1\n");
+
+            player.x = mapCollidersWall['R'] + 0.51;
+        }
+        if(mapCollidersPlayer['T'] + player.y > mapCollidersWall['B'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall['R'] && mapCollidersPlayer['T'] + player.y < mapCollidersWall['T']){
+            printf("Colidiu em cima 1\n");
+
+            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall['B']);
+            player.y = mapCollidersWall['B'] - 0.51;
+            player.speed.y = 0;
+            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall['B']);
+        }
+        else if(mapCollidersPlayer['B'] + player.y < mapCollidersWall['T'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall['R'] && mapCollidersPlayer['B'] + player.y > mapCollidersWall['B']){
+            printf("Colidiu em baixo 1\n");
+
+            player.collision.isOnPlataform = true;
+            player.y = mapCollidersWall['T'] + 0.5;
+            player.speed.y = 0;
+        }
     }
 
-    if (distanceTestUp - player.speed.y >= 0 && distanceTestLeft > 0){
-        player.y -= player.speed.y;
+    if(result2){
+        player.count = 0;
+
+        if(mapCollidersPlayer['R'] + player.x > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x < mapCollidersWall2['L'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall2['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall2['T']){
+            printf("Colidiu na direita 2\n");
+            player.x = mapCollidersWall2['L'] - 0.51;
+        }
+        else if(mapCollidersPlayer['L'] + player.x < mapCollidersWall2['R'] && mapCollidersPlayer['R'] + player.x > mapCollidersWall2['R'] && mapCollidersPlayer['T'] + player.y - 0.1 > mapCollidersWall2['B'] && mapCollidersPlayer['B'] + player.y + 0.1 < mapCollidersWall2['T']){
+            printf("Colidiu na esquerda 2\n");
+
+            player.x = mapCollidersWall2['R'] + 0.51;
+        }
+        if(mapCollidersPlayer['T'] + player.y > mapCollidersWall2['B'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall2['R'] && mapCollidersPlayer['T'] + player.y < mapCollidersWall2['T']){
+            printf("Colidiu em cima 2\n");
+
+            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall2['B']);
+            player.y = mapCollidersWall2['B'] - 0.51;
+            player.speed.y = 0;
+            printf("%f %f\n", mapCollidersPlayer['T'] + player.y, mapCollidersWall2['B']);
+        }
+        else if(mapCollidersPlayer['B'] + player.y < mapCollidersWall2['T'] && mapCollidersPlayer['R'] + player.x - 0.1 > mapCollidersWall2['L'] && mapCollidersPlayer['L'] + player.x + 0.1 < mapCollidersWall2['R'] && mapCollidersPlayer['B'] + player.y > mapCollidersWall2['B']){
+            printf("Colidiu em baixo 2\n");
+
+            player.collision.isOnPlataform = true;
+            player.y = mapCollidersWall2['T'] + 0.5;
+            player.speed.y = 0;
+        }
+        printf("%f %f\n", mapCollidersPlayer['B'] + player.y, mapCollidersWall2['T']);
     }
 
-    if(player.y < 0){
-        player.y = 1;
-        player.speed.y = 0;
+    if (!result2 && !result){
+        player.collision.isOnPlataform = false;
     }
 
     player.move(keyBuffer);
