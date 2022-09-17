@@ -84,34 +84,12 @@ static void display(void)
         glutWireCube(1); 
     glPopMatrix();
 
-    glPushMatrix();
-        glTranslated(-4-player.x, 0-player.y, -6.5);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(2);
-    glPopMatrix();
-
-    glPushMatrix();
-        glTranslated(0-player.x, -2-player.y, -6.5);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(2);
-    glPopMatrix();
-
-    glPushMatrix();
-        glTranslated(2-player.x, -1-player.y, -6.5);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(2);
-    glPopMatrix();
-
-    glPushMatrix();
-    glTranslated(0-player.x, 2-player.y, -6.5);
-    glRotated(90, 1, 0, 0);
-    glutWireCube(2);
-    glPopMatrix();
-
     // Juntar desenho com collider
 
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
+        Object ::drawnWall(walls[i].wall.x - player.x, walls[i].wall.y - player.y, walls[i].wall.z, walls[i].wall.size);
+
         bool isOver = player.mapColliderPlayer['L'] + player.x <= walls[i].mapColliderWall['R']  &&  player.mapColliderPlayer['R'] + player.x >= walls[i].mapColliderWall['L']  &&
                       player.mapColliderPlayer['B'] + player.y <= walls[i].mapColliderWall['T']  &&
                       player.mapColliderPlayer['T'] + player.y >= walls[i].mapColliderWall['B'];
