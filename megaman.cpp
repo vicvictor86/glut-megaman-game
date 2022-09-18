@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 //Imports proprios
+#include <time.h>
 #include <vector>
 #include "classes/fire.h"
 #include "classes/player.h"
@@ -20,6 +21,7 @@ using namespace std;
 
 static int slices = 16;
 static int stacks = 16;
+int initialTime = -1;
 
 int width = 640;
 int height = 480;
@@ -34,7 +36,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 0, Collision(0, 0, -6, 1, 0, 0, 1));
+Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
 
 /* GLUT callback Handlers */
 
@@ -102,7 +104,17 @@ static void display(void)
 
     if (fireObjects.size() > 0) {
         for (int i = 0; i < fireObjects.size(); i++) {
+            fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
             fireObjects[i].drawFire(player.x, player.y, true);
+
+            for(int j = 0; j < enemies.size(); j++){
+                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j].mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
+                if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION){
+                    enemies.erase(enemies.begin() + j);
+                    fireObjects.erase(fireObjects.begin() + i);
+                    break;
+                }
+            }
         }
     }
 
@@ -135,6 +147,11 @@ static void key(unsigned char key, int x, int y)
         fireObjects.pop_back();
     }
 
+    if (keyBuffer['f']){
+        if(initialTime == -1){
+            initialTime = time(NULL);
+        }
+    }
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -142,21 +159,40 @@ static void keyboardUp(unsigned char key, int x, int y)
     keyBuffer[key] = false;
 
     if (!keyBuffer['f'] && key == 'f'){
+        Fire fire;
+
+        int finalTime = time(NULL);
+        if(finalTime - initialTime >= 2) {
+            printf("Tiro carregado\n");
+            fire.chargedFire = true;
+        }
+        initialTime = -1;
+
         double spawnPoint = player.x + 1;
         double heightOfPlayer = player.y + 0;
         float shootSpeed = 0.06f;
         float radiusOfFire = 0.5;
-        Fire fire;
+
         fire.x = spawnPoint;
         fire.y = heightOfPlayer;
         fire.z = player.z;
-        fire.speed.x = shootSpeed;
-        fire.size = radiusOfFire;
+
+        if(fire.chargedFire){
+            fire.speed.x = shootSpeed * 2;
+            fire.size = radiusOfFire * 2;
+            fire.collision.size = 0.55 * 2;
+        }
+        else{
+            fire.speed.x = shootSpeed;
+            fire.size = radiusOfFire;
+            fire.collision.size = 0.55;
+        }
+
         fire.slicesAndStacks = 16;
         fire.collision.x = 0;
         fire.collision.y = 0;
         fire.collision.z = fire.z;
-        fire.collision.size = 0.55;
+
         fireObjects.push_back(fire);
     }
 

@@ -9,19 +9,19 @@ class Player : public Object
 {
     public: int life;
     public: float damage;
-    public: int chargeShot;
+    public: int timeChargedShot;
     public: Directions direction = LEFT;
     public: map<char, double> mapColliderPlayer;
     public: void move(bool keyBuffer[256]);
     public: void drawPlayer(double playerX, double playerY, double playerZ, double playerSize, bool drawnCollider, double colliderSize);
     public: Player(){};
-    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision);
+    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision);
 };
 
-Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
+Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
     this->life = life;
     this->damage = damage;
-    this->chargeShot = chargeShot;
+    this->timeChargedShot = timeChargedShot;
 };
 
 void Player:: move(bool keyBuffer[256]){
@@ -38,7 +38,7 @@ void Player:: move(bool keyBuffer[256]){
 //        this->speed.y -= 0.001f;
     }
 
-     if (this->collision.isOnPlataform == false){
+     if (!this->collision.isOnPlataform){
          this->speed.y -= 0.001f;
      }
 
