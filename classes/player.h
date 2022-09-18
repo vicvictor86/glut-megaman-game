@@ -13,6 +13,7 @@ class Player : public Object
     public: Directions direction = LEFT;
     public: map<char, double> mapColliderPlayer;
     public: void move(bool keyBuffer[256]);
+    public: void drawPlayer(double playerX, double playerY, double playerZ, double playerSize, bool drawnCollider, double colliderSize);
     public: Player(){};
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int chargeShot, Collision collision);
 };
@@ -45,6 +46,24 @@ void Player:: move(bool keyBuffer[256]){
     //     this->speed.y = 0;
     //     this->y = 0.0f;
     // }
+}
+
+void Player:: drawPlayer(double playerX=0, double playerY=0, double playerZ=-6.5, double playerSize=0.5, bool drawnCollider=false, double colliderSize=1){
+    //Player
+    glPushMatrix();
+        glTranslated(playerX, playerY, playerZ);
+        glRotated(90, 1, 0, 0);
+        glutSolidCube(playerSize);
+    glPopMatrix();
+
+    //Collision Cube
+    if(drawnCollider){
+        glPushMatrix();
+            glTranslated(playerX, playerY, playerZ);
+            glRotated(90, 1, 0, 0);
+            glutWireCube(colliderSize);
+        glPopMatrix();
+    }
 }
 
 #endif

@@ -57,59 +57,39 @@ static void display(void)
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3d(1, 0, 0);
-    
-    //Player
-    glPushMatrix();
-        glTranslated(0, 0, player.z);
-        glRotated(90, 1, 0, 0);
-        glutSolidCube(0.5);
-    glPopMatrix();
 
-    //Collision Cube
-    glPushMatrix();
-        glTranslated(0, 0, player.z);
-        glRotated(90, 1, 0, 0);
-        glutWireCube(1); 
-    glPopMatrix();
+    player.drawPlayer(0, 0, -6.5, 0.5, true, 1);
 
-    //Desenho de pareedes e detecção de colisão
+    //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
         Object ::drawnObject(walls[i].wall.x - player.x, walls[i].wall.y - player.y, walls[i].wall.z, walls[i].wall.size);
 
-        bool isOver = player.mapColliderPlayer['L'] + player.x <= walls[i].mapColliderWall['R']  &&  player.mapColliderPlayer['R'] + player.x >= walls[i].mapColliderWall['L']  &&
-                      player.mapColliderPlayer['B'] + player.y <= walls[i].mapColliderWall['T']  &&
-                      player.mapColliderPlayer['T'] + player.y >= walls[i].mapColliderWall['B'];
-        if(isOver){
-            quantityOverLapping++;
-            if(player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['L'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
-                printf("Colidiu na direita do player\n");
+        bool lastIteration = i + 1 >= walls.size();
+        collisionDirections typeCollision = Collision::checkCollision(player.mapColliderPlayer, player.x, player.y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
 
-                player.x = walls[i].mapColliderWall['L'] - 0.51;
-            }
-            else if(player.mapColliderPlayer['L'] + player.x < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['R'] + player.x > walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y - 0.1 > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['B'] + player.y + 0.1 < walls[i].mapColliderWall['T']){
-                printf("Colidiu na esquerda do player\n");
-
-                player.x = walls[i].mapColliderWall['R'] + 0.51;
-            }
-            if(player.mapColliderPlayer['T'] + player.y > walls[i].mapColliderWall['B'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['T'] + player.y < walls[i].mapColliderWall['T']){
-                printf("Colidiu em cima do player\n");
-
-                player.y = walls[i].mapColliderWall['B'] - 0.51;
-                player.speed.y = 0;
-            }
-            else if(player.mapColliderPlayer['B'] + player.y < walls[i].mapColliderWall['T'] && player.mapColliderPlayer['R'] + player.x - 0.1 > walls[i].mapColliderWall['L'] && player.mapColliderPlayer['L'] + player.x + 0.1 < walls[i].mapColliderWall['R'] && player.mapColliderPlayer['B'] + player.y > walls[i].mapColliderWall['B']){
-                printf("Colidiu em baixo do player\n");
-
-                player.collision.isOnPlataform = true;
-                player.y = walls[i].mapColliderWall['T'] + 0.5;
-                player.speed.y = 0;
-            }
+        if(typeCollision == RIGHTCOLLISION){
+            player.x = walls[i].mapColliderWall['L'] - 0.51;
+            printf("Colidiu na direita do player\n");
+        }
+        else if(typeCollision == LEFTCOLLISION){
+            player.x = walls[i].mapColliderWall['R'] + 0.51;
+            printf("Colidiu na esquerda do player\n");
         }
 
-        bool lastIteration = i + 1 >= walls.size();
-        bool notOverlapping = quantityOverLapping == 0;
-        if (notOverlapping && lastIteration){
+        if(typeCollision == TOPCOLLISION){
+            player.y = walls[i].mapColliderWall['B'] - 0.51;
+            player.speed.y = 0;
+            printf("Colidiu em cima do player\n");
+        }
+        else if(typeCollision == BOTTOMCOLLISION){
+            player.collision.isOnPlataform = true;
+            player.y = walls[i].mapColliderWall['T'] + 0.5;
+            player.speed.y = 0;
+            printf("Colidiu em baixo do player\n");
+        }
+
+        if(typeCollision == NOCOLLISION){
             player.collision.isOnPlataform = false;
         }
     }
