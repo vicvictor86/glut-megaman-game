@@ -1,17 +1,3 @@
-/*
- * FreeGLUT Shapes Demo
- *
- * Written by Nigel Stewart November 2003
- *
- * This program is test harness for the sphere, cone
- * and torus shapes in FreeGLUT.
- *
- * Spinning wireframe and smooth shaded shapes are
- * displayed until the ESC or q key is pressed.  The
- * number of geometry stacks and slices can be adjusted
- * using the + and - keys.
- */
-
 // Bibliotecas utilizadas pelo OpenGL
 #include <GL/gl.h>
 #include <GL/glu.h>
@@ -28,6 +14,7 @@
 #include "classes/fire.h"
 #include "classes/player.h"
 #include "classes/Collision.h"
+#include "classes/Enemy.h"
 
 using namespace std; 
 
@@ -45,6 +32,7 @@ struct WallWithCollider {
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
+vector<Enemy> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 0, Collision(0, 0, -6, 1, 0, 0, 1));
 
@@ -84,11 +72,10 @@ static void display(void)
         glutWireCube(1); 
     glPopMatrix();
 
-    // Juntar desenho com collider
-
+    //Desenho de pareedes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
-        Object ::drawnWall(walls[i].wall.x - player.x, walls[i].wall.y - player.y, walls[i].wall.z, walls[i].wall.size);
+        Object ::drawnObject(walls[i].wall.x - player.x, walls[i].wall.y - player.y, walls[i].wall.z, walls[i].wall.size);
 
         bool isOver = player.mapColliderPlayer['L'] + player.x <= walls[i].mapColliderWall['R']  &&  player.mapColliderPlayer['R'] + player.x >= walls[i].mapColliderWall['L']  &&
                       player.mapColliderPlayer['B'] + player.y <= walls[i].mapColliderWall['T']  &&
@@ -127,22 +114,15 @@ static void display(void)
         }
     }
 
+    for(int i = 0; i < enemies.size(); i++){
+        Enemy ::drawnObject(enemies[i].x - player.x, enemies[i].y - player.y, enemies[i].z, enemies[i].size);
+    }
+
     player.move(keyBuffer);
 
     if (fireObjects.size() > 0) {
-        for (int i = 0; i < fireObjects.size(); i++) { 
-            glPushMatrix();
-                glTranslated(fireObjects[i].x, fireObjects[i].y, fireObjects[i].z);
-                glRotated(90, 1, 0, 0);
-                glutSolidSphere(fireObjects[i].size, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
-            glPopMatrix();
-
-            glPushMatrix();
-                glTranslated(fireObjects[i].collision.x + fireObjects[i].x, fireObjects[i].collision.y, fireObjects[i].collision.z);
-                glRotated(90, 1, 0, 0);
-                glutWireSphere(fireObjects[i].collision.size, fireObjects[i].slicesAndStacks, fireObjects[i].slicesAndStacks);
-            glPopMatrix();
-            fireObjects[i].x += fireObjects[i].speed.x;
+        for (int i = 0; i < fireObjects.size(); i++) {
+            fireObjects[i].drawFire(player.x, player.y, true);
         }
     }
 
@@ -171,7 +151,7 @@ static void key(unsigned char key, int x, int y)
         player.speed.y = 0.05f;
     }
 
-    if (keyBuffer['g']){
+    if (keyBuffer['g'] && fireObjects.size() > 0){
         fireObjects.pop_back();
     }
 
@@ -179,13 +159,15 @@ static void key(unsigned char key, int x, int y)
 
 static void keyboardUp(unsigned char key, int x, int y)
 {
-    if (keyBuffer['f']){
-        double distanceOfPlayer = 2;
-        double heightOfPlayer = 0;
-        float shootSpeed = 0.1;
+    keyBuffer[key] = false;
+
+    if (!keyBuffer['f'] && key == 'f'){
+        double spawnPoint = player.x + 1;
+        double heightOfPlayer = player.y + 0;
+        float shootSpeed = 0.06f;
         float radiusOfFire = 0.5;
         Fire fire;
-        fire.x = distanceOfPlayer;
+        fire.x = spawnPoint;
         fire.y = heightOfPlayer;
         fire.z = player.z;
         fire.speed.x = shootSpeed;
@@ -198,12 +180,10 @@ static void keyboardUp(unsigned char key, int x, int y)
         fireObjects.push_back(fire);
     }
 
-    if (keyBuffer['o']){
+    if (!keyBuffer['o'] && key == 'o'){
         player.x = 0;
         player.y = 0;
     }
-
-    keyBuffer[key] = false;
 }
 
 static void idle(void)
@@ -235,7 +215,7 @@ void init(){
 
     Object wall2;
     wall2.x = 2;
-    wall2.y = -1;
+    wall2.y = -2;
     wall2.z = player.z;
     wall2.size = 2;
     tempWalls.push_back(wall2);
@@ -248,8 +228,8 @@ void init(){
     tempWalls.push_back(wall3);
 
     Object wall4;
-    wall4.x = 0;
-    wall4.y = 2;
+    wall4.x = 4;
+    wall4.y = -2;
     wall4.z = player.z;
     wall4.size = 2;
     tempWalls.push_back(wall4);
@@ -262,6 +242,14 @@ void init(){
         wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
         walls.push_back(wallWithCollider);
     }
+
+    Enemy enemy1;
+    enemy1.x = 4;
+    enemy1.y = 0;
+    enemy1.z = player.z;
+    enemy1.size = 1;
+    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.x, enemy1.y, enemy1.z, enemy1.size);
+    enemies.push_back(enemy1);
 }
 
 /* Program entry point */
