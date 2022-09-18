@@ -60,7 +60,7 @@ static void display(void)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3d(1, 0, 0);
 
-    player.drawPlayer(0, 0, -6.5, 0.5, true, 1);
+    player.drawPlayer(0, 0, -6, 0.5, true, 1);
 
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
