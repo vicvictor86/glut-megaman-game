@@ -12,7 +12,7 @@ class Object {
     public: Speed speed;
     public: float size;
     public: Collision collision;
-    public: static void drawnWall(double x, double y, double z, double size);
+    public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
     public: Object(){};
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
@@ -40,7 +40,7 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawnWall(double x, double y, double z, double size){
+void Object:: drawnObject(double x, double y, double z, double size){
     glPushMatrix();
         glTranslated(x, y, z);
         glRotated(90, 1, 0, 0);

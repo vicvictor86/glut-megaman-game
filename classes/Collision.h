@@ -1,3 +1,6 @@
+#include <map>
+using namespace std;
+
 #ifndef COLLISION_H
 #define COLLISION_H
 
