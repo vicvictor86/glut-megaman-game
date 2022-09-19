@@ -15,6 +15,8 @@
 #include "classes/Collision.h"
 #include "classes/Enemy.h"
 
+#define FPS 70
+
 using namespace std; 
 
 static int slices = 16;
@@ -133,13 +135,13 @@ static void display()
 
     glutSwapBuffers();
 
-//    frameCount++;
-//    countFpsFinalTime = time(NULL);
-//    if(countFpsFinalTime - countFpsInitialTime > 0){
-//        printf("FPS: %d\n", frameCount);
-//        frameCount = 0;
-//        countFpsInitialTime = countFpsFinalTime;
-//    }
+    frameCount++;
+    countFpsFinalTime = time(NULL);
+    if(countFpsFinalTime - countFpsInitialTime > 0){
+        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
+        frameCount = 0;
+        countFpsInitialTime = countFpsFinalTime;
+    }
 }
 
 static void key(unsigned char key, int x, int y)
@@ -225,9 +227,10 @@ static void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
-static void idle()
+static void idle(int)
 {
     glutPostRedisplay();
+    glutTimerFunc(1000/FPS, idle, 0);
 }
 
 const GLfloat light_ambient[] = {0.0f, 0.0f, 0.0f, 1.0f};
@@ -313,7 +316,7 @@ int main(int argc, char *argv[])
     glutDisplayFunc(display);
     glutKeyboardFunc(key);
     glutKeyboardUpFunc(keyboardUp);
-    glutIdleFunc(idle);
+    glutTimerFunc(1000/FPS, idle, 0);
 
     glClearColor(1, 1, 1, 1);
     glEnable(GL_CULL_FACE);
