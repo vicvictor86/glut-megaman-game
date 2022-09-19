@@ -4,13 +4,11 @@
 #include <GL/glut.h>
 
 // Biblioteca com funcoes matematicas
-#include <cmath>
 #include <cstdio>
 #include <cstdlib>
-#include <stdlib.h>
 
 //Imports proprios
-#include <time.h>
+#include <ctime>
 #include <vector>
 #include "classes/fire.h"
 #include "classes/player.h"
@@ -22,9 +20,10 @@ using namespace std;
 static int slices = 16;
 static int stacks = 16;
 int initialTime = -1;
+int countFpsInitialTime = time(nullptr), countFpsFinalTime, frameCount, cooldDownWallJump = 1, initialWallJump = -1;
 
-int width = 640;
-int height = 480;
+int WIDTH = 640;
+int HEIGHT = 480;
 
 struct WallWithCollider {
     Object wall;
@@ -53,7 +52,7 @@ static void resize(int width, int height)
     glLoadIdentity();
 }
 
-static void display(void)
+static void display()
 {
     // const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
 
@@ -65,8 +64,6 @@ static void display(void)
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
-        Object ::drawnObject(walls[i].wall.x - player.x, walls[i].wall.y - player.y, walls[i].wall.z, walls[i].wall.size);
-
         bool lastIteration = i + 1 >= walls.size();
         collisionDirections typeCollision = Collision::checkCollision(player.mapColliderPlayer, player.x, player.y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
 
@@ -91,18 +88,34 @@ static void display(void)
             printf("Colidiu em baixo do player\n");
         }
 
-        if(typeCollision == NOCOLLISION){
+        if(typeCollision == NOCOLLISION || typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION || typeCollision == TOPCOLLISION){
             player.collision.isOnPlataform = false;
+        }
+
+        if(keyBuffer[' '] && initialWallJump == -1){
+            player.speed.y = 0.05;
+            initialWallJump = time(nullptr);
+        }
+
+        int finalWallJump = time(nullptr);
+        if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
+            printf("Wall jump\n");
+            player.speed.y = 0.05;
+            initialWallJump = -1;
         }
     }
 
-    for(int i = 0; i < enemies.size(); i++){
-        Enemy ::drawnObject(enemies[i].x - player.x, enemies[i].y - player.y, enemies[i].z, enemies[i].size);
+    for (auto & wall : walls){
+        Object ::drawnObject(wall.wall.x - player.x, wall.wall.y - player.y, wall.wall.z, wall.wall.size);
+    }
+
+    for (auto & enemie : enemies){
+        Enemy ::drawnObject(enemie.x - player.x, enemie.y - player.y, enemie.z, enemie.size);
     }
 
     player.move(keyBuffer);
 
-    if (fireObjects.size() > 0) {
+    if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
             fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
             fireObjects[i].drawFire(player.x, player.y, true);
@@ -119,6 +132,14 @@ static void display(void)
     }
 
     glutSwapBuffers();
+
+//    frameCount++;
+//    countFpsFinalTime = time(NULL);
+//    if(countFpsFinalTime - countFpsInitialTime > 0){
+//        printf("FPS: %d\n", frameCount);
+//        frameCount = 0;
+//        countFpsInitialTime = countFpsFinalTime;
+//    }
 }
 
 static void key(unsigned char key, int x, int y)
@@ -143,13 +164,15 @@ static void key(unsigned char key, int x, int y)
         player.speed.y = 0.05f;
     }
 
-    if (keyBuffer['g'] && fireObjects.size() > 0){
-        fireObjects.pop_back();
+    if (!fireObjects.empty()) {
+        if (keyBuffer['g']) {
+            fireObjects.pop_back();
+        }
     }
 
     if (keyBuffer['f']){
         if(initialTime == -1){
-            initialTime = time(NULL);
+            initialTime = time(nullptr);
         }
     }
 }
@@ -161,7 +184,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     if (!keyBuffer['f'] && key == 'f'){
         Fire fire;
 
-        int finalTime = time(NULL);
+        int finalTime = time(nullptr);
         if(finalTime - initialTime >= 2) {
             printf("Tiro carregado\n");
             fire.chargedFire = true;
@@ -202,7 +225,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
-static void idle(void)
+static void idle()
 {
     glutPostRedisplay();
 }
@@ -237,7 +260,7 @@ void init(){
     tempWalls.push_back(wall2);
 
     Object wall3;
-    wall3.x = -4;
+    wall3.x = -2;
     wall3.y = 0;
     wall3.z = player.z;
     wall3.size = 2;
@@ -250,10 +273,17 @@ void init(){
     wall4.size = 2;
     tempWalls.push_back(wall4);
 
-    for (int i = 0; i < tempWalls.size(); i++){
+    Object wall5;
+    wall5.x = -2;
+    wall5.y = 2;
+    wall5.z = player.z;
+    wall5.size = 2;
+    tempWalls.push_back(wall5);
+
+    for (auto & tempWall : tempWalls){
         Object wall;
         WallWithCollider wallWithCollider;
-        wall = tempWalls[i];
+        wall = tempWall;
         wallWithCollider.wall = wall;
         wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
         walls.push_back(wallWithCollider);
@@ -272,7 +302,7 @@ void init(){
 int main(int argc, char *argv[])
 {
     glutInit(&argc, argv);
-    glutInitWindowSize(width, height);
+    glutInitWindowSize(WIDTH, HEIGHT);
     glutInitWindowPosition(10, 10);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     init();
