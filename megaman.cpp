@@ -86,15 +86,7 @@ void updateCamera(){
     glMatrixMode (GL_MODELVIEW);
 }
 
-static void display()
-{
-    // const double t = glutGet(GLUT_ELAPSED_TIME) / 1000.0;
-
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3d(1, 0, 0);
-
-    player.drawPlayer(player.x, player.y, -6, 0.5, true, 1);
-
+int checkCollisionWithWalls(){
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
@@ -140,14 +132,10 @@ static void display()
         }
     }
 
-    for (auto & wall : walls){
-        Object ::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
-    }
+    return quantityOverLapping;
+}
 
-    for (auto & enemie : enemies){
-        Enemy ::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
-    }
-
+void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
             fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
@@ -163,6 +151,26 @@ static void display()
             }
         }
     }
+}
+
+static void display()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor3d(1, 0, 0);
+
+    player.drawPlayer(player.x, player.y, -6, 0.5, true, 1);
+
+    int quantityOverLapping = checkCollisionWithWalls();
+
+    for (auto & wall : walls){
+        Object ::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
+    }
+
+    for (auto & enemie : enemies){
+        Enemy ::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
+    }
+
+    checkCollisionsFires(quantityOverLapping);
 
     player.move(keyBuffer);
 
@@ -306,7 +314,7 @@ void init(){
     tempWalls.push_back(wall4);
 
     Object wall5;
-    wall5.x = 0;
+    wall5.x = -2;
     wall5.y = 2;
     wall5.z = player.z;
     wall5.size = 2;
