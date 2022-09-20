@@ -60,7 +60,7 @@ static void resize(int width, int height)
     HEIGHT = height;
     camera.width = width;
     camera.height = height > 0 ? height : camera.height;
-    camera.aspect = camera.width / camera.height;
+    camera.aspect = (double)camera.width / (double)camera.height;
     glMatrixMode (GL_PROJECTION);
         glLoadIdentity();
         glViewport (camera.x, camera.y, camera.width, camera.height);
