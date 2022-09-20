@@ -24,7 +24,7 @@ Collision :: Collision(double x, double y, double z, float r, float g, float b, 
     this->g = g;
     this->b = b;
     this->size = size;
-};
+}
 
 collisionDirections Collision :: checkCollision(map<char, double> mapCollider1, double x1, double y1, map<char, double> mapCollider2, bool lastIteration, int* quantityOverLapping){
     collisionDirections typeCollision = NULLCOLLISION;

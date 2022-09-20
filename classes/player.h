@@ -52,7 +52,6 @@ void Player:: drawPlayer(double playerX=0, double playerY=0, double playerZ=-6.5
     //Player
     glPushMatrix();
         glTranslated(playerX, playerY, playerZ);
-        glRotated(90, 1, 0, 0);
         glutSolidCube(playerSize);
     glPopMatrix();
 
@@ -60,7 +59,6 @@ void Player:: drawPlayer(double playerX=0, double playerY=0, double playerZ=-6.5
     if(drawnCollider){
         glPushMatrix();
             glTranslated(playerX, playerY, playerZ);
-            glRotated(90, 1, 0, 0);
             glutWireCube(colliderSize);
         glPopMatrix();
     }

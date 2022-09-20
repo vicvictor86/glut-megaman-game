@@ -14,14 +14,14 @@ class Fire : public Object
 
 void Fire::drawFire(double playerX, double playerY, bool drawnCollider){
     glPushMatrix();
-        glTranslated(this->x - playerX, this->y - playerY, this->z);
+        glTranslated(this->x, this->y, this->z);
         glRotated(90, 1, 0, 0);
         glutSolidSphere(this->size, this->slicesAndStacks, this->slicesAndStacks);
     glPopMatrix();
 
     if(drawnCollider){
         glPushMatrix();
-            glTranslated(this->collision.x + this->x - playerX, this->collision.y + this->y - playerY, this->collision.z);
+            glTranslated(this->collision.x + this->x, this->collision.y + this->y, this->collision.z);
             glRotated(90, 1, 0, 0);
             glutWireCube(this->collision.size + 0.3);
         glPopMatrix();

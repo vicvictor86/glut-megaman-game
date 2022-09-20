@@ -4,6 +4,7 @@
 #include <GL/glut.h>
 
 // Biblioteca com funcoes matematicas
+#include <math.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -14,6 +15,7 @@
 #include "classes/player.h"
 #include "classes/Collision.h"
 #include "classes/Enemy.h"
+#include "classes/Camera.h"
 
 #define FPS 70
 
@@ -38,20 +40,50 @@ vector<WallWithCollider> walls;
 vector<Enemy> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
+Camera camera(WIDTH, HEIGHT);
 
 /* GLUT callback Handlers */
 
+void countFps(){
+    frameCount++;
+    countFpsFinalTime = time(NULL);
+    if(countFpsFinalTime - countFpsInitialTime > 0){
+        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
+        frameCount = 0;
+        countFpsInitialTime = countFpsFinalTime;
+    }
+}
+
 static void resize(int width, int height)
 {
-    const float ar = (float)width / (float)height;
+    WIDTH = width;
+    HEIGHT = height;
+    camera.width = width;
+    camera.height = height > 0 ? height : camera.height;
+    camera.aspect = camera.width / camera.height;
+    glMatrixMode (GL_PROJECTION);
+        glLoadIdentity();
+        glViewport (camera.x, camera.y, camera.width, camera.height);
 
-    glViewport(0, 0, width, height);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glFrustum(-ar, ar, -1.0, 1.0, 2.0, 100.0);
+        gluPerspective(camera.fov, camera.aspect, camera.nearZ, camera.farZ);
 
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
+        gluLookAt(camera.eyeX,camera.eyeY, camera.eyeZ,camera.centerX,camera.centerY,camera.centerZ,camera.upX,camera.upY,camera.upZ);
+    glMatrixMode (GL_MODELVIEW);
+}
+
+void updateCamera(){
+    camera.eyeX = player.x;
+    camera.centerX = player.x;
+    camera.eyeY = player.y;
+    camera.centerY = player.y;
+    glMatrixMode (GL_PROJECTION);
+        glLoadIdentity();
+        glViewport (camera.x, camera.y, camera.width, camera.height);
+
+        gluPerspective(camera.fov, camera.aspect, camera.nearZ, camera.farZ);
+
+        gluLookAt(camera.eyeX,camera.eyeY, camera.eyeZ,camera.centerX,camera.centerY,camera.centerZ,camera.upX,camera.upY,camera.upZ);
+    glMatrixMode (GL_MODELVIEW);
 }
 
 static void display()
@@ -61,12 +93,13 @@ static void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glColor3d(1, 0, 0);
 
-    player.drawPlayer(0, 0, -6, 0.5, true, 1);
+    player.drawPlayer(player.x, player.y, -6, 0.5, true, 1);
 
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
         bool lastIteration = i + 1 >= walls.size();
+
         collisionDirections typeCollision = Collision::checkCollision(player.mapColliderPlayer, player.x, player.y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
@@ -108,14 +141,12 @@ static void display()
     }
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wall.x - player.x, wall.wall.y - player.y, wall.wall.z, wall.wall.size);
+        Object ::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
     }
 
     for (auto & enemie : enemies){
-        Enemy ::drawnObject(enemie.x - player.x, enemie.y - player.y, enemie.z, enemie.size);
+        Enemy ::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
     }
-
-    player.move(keyBuffer);
 
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
@@ -133,15 +164,13 @@ static void display()
         }
     }
 
+    player.move(keyBuffer);
+
+    updateCamera();
+
     glutSwapBuffers();
 
-    frameCount++;
-    countFpsFinalTime = time(NULL);
-    if(countFpsFinalTime - countFpsInitialTime > 0){
-        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
-        frameCount = 0;
-        countFpsInitialTime = countFpsFinalTime;
-    }
+    countFps();
 }
 
 static void key(unsigned char key, int x, int y)
@@ -277,7 +306,7 @@ void init(){
     tempWalls.push_back(wall4);
 
     Object wall5;
-    wall5.x = -2;
+    wall5.x = 0;
     wall5.y = 2;
     wall5.z = player.z;
     wall5.size = 2;

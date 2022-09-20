@@ -43,7 +43,6 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
 void Object:: drawnObject(double x, double y, double z, double size){
     glPushMatrix();
         glTranslated(x, y, z);
-        glRotated(90, 1, 0, 0);
         glutWireCube(size);
     glPopMatrix();
 }
