@@ -15,6 +15,7 @@
 #include "classes/player.h"
 #include "classes/Collision.h"
 #include "classes/Enemy.h"
+#include "classes/Camera.h"
 
 #define FPS 70
 
@@ -39,6 +40,7 @@ vector<WallWithCollider> walls;
 vector<Enemy> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
+Camera camera(WIDTH, HEIGHT);
 
 /* GLUT callback Handlers */
 
@@ -54,25 +56,33 @@ void countFps(){
 
 static void resize(int width, int height)
 {
+    WIDTH = width;
+    HEIGHT = height;
+    camera.width = width;
+    camera.height = height > 0 ? height : camera.height;
+    camera.aspect = camera.width / camera.height;
     glMatrixMode (GL_PROJECTION);
         glLoadIdentity();
-        glViewport (0, 0, WIDTH, HEIGHT);
+        glViewport (camera.x, camera.y, camera.width, camera.height);
 
-        gluPerspective(60, WIDTH/HEIGHT, 1.0, 20.0);
+        gluPerspective(camera.fov, camera.aspect, camera.nearZ, camera.farZ);
 
-        gluLookAt(0,0.0,5.0,0,0.0,0.0,0.0,1.0,0.0);
+        gluLookAt(camera.eyeX,camera.eyeY, camera.eyeZ,camera.centerX,camera.centerY,camera.centerZ,camera.upX,camera.upY,camera.upZ);
     glMatrixMode (GL_MODELVIEW);
 }
 
 void updateCamera(){
+    camera.eyeX = player.x;
+    camera.centerX = player.x;
+    camera.eyeY = player.y;
+    camera.centerY = player.y;
     glMatrixMode (GL_PROJECTION);
         glLoadIdentity();
+        glViewport (camera.x, camera.y, camera.width, camera.height);
 
-        glViewport (0, 0, WIDTH, HEIGHT);
+        gluPerspective(camera.fov, camera.aspect, camera.nearZ, camera.farZ);
 
-        gluPerspective(60, WIDTH/HEIGHT, 1.0, 20.0);
-
-        gluLookAt(player.x,0.0,5.0, player.x,0.0,0.0, 0.0,1.0,0.0);
+        gluLookAt(camera.eyeX,camera.eyeY, camera.eyeZ,camera.centerX,camera.centerY,camera.centerZ,camera.upX,camera.upY,camera.upZ);
     glMatrixMode (GL_MODELVIEW);
 }
 
