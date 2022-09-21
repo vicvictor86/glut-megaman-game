@@ -7,14 +7,14 @@ using namespace std;
 #define OBJECT_H
 
 class Object {
-    public: double x, y, z;
-    public: float r, g, b;
+    public: double x=0, y=0, z=0;
+    public: float r=0, g=0, b=0;
     public: Speed speed;
-    public: float size;
+    public: float size = 0;
     public: Collision collision;
     public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
-    public: Object(){};
+    public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
 };
 

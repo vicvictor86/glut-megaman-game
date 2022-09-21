@@ -7,10 +7,11 @@
 //Imports proprios
 #include <ctime>
 #include <vector>
+#include <iostream>
 #include "classes/fire.h"
 #include "classes/player.h"
 #include "classes/Collision.h"
-#include "classes/Enemy.h"
+#include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
 
 #define FPS 70
@@ -24,14 +25,14 @@ int WIDTH = 640;
 int HEIGHT = 480;
 
 struct WallWithCollider {
-    Object wall;
+    Object wallObject;
     map<char, double> mapColliderWall;
 };
 
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
-vector<Enemy> enemies;
+vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
 Camera camera(WIDTH, HEIGHT);
@@ -134,8 +135,9 @@ void checkCollisionsFires(int quantityOverLapping){
             fireObjects[i].drawFire(player.x, player.y, true);
 
             for(int j = 0; j < enemies.size(); j++){
-                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j].mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
+                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
                 if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION){
+                    delete enemies[j];
                     enemies.erase(enemies.begin() + j);
                     fireObjects.erase(fireObjects.begin() + i);
                     break;
@@ -155,11 +157,12 @@ static void display()
     int quantityOverLapping = checkCollisionWithWalls();
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
+        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
     }
 
-    for (auto & enemie : enemies){
-        Enemy ::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
+    for (auto & enemy : enemies){
+        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->size);
+        enemy->move();
     }
 
     checkCollisionsFires(quantityOverLapping);
@@ -320,18 +323,37 @@ void init(){
         Object wall;
         WallWithCollider wallWithCollider;
         wall = tempWall;
-        wallWithCollider.wall = wall;
+        wallWithCollider.wallObject = wall;
         wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
         walls.push_back(wallWithCollider);
     }
 
-    Enemy enemy1;
+    EnemyHorizontal enemy1;
     enemy1.x = 4;
     enemy1.y = 0;
     enemy1.z = player.z;
     enemy1.size = 1;
+    enemy1.speed.x = 0.01;
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.x, enemy1.y, enemy1.z, enemy1.size);
-    enemies.push_back(enemy1);
+    enemies.push_back(new EnemyHorizontal(enemy1));
+
+    EnemyVertical enemy2;
+    enemy2.x = 8;
+    enemy2.y = 0;
+    enemy2.z = player.z;
+    enemy2.size = 1;
+    enemy2.speed.y = 0.01;
+    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.x, enemy2.y, enemy2.z, enemy2.size);
+    enemies.push_back(new EnemyVertical(enemy2));
+
+    EnemyDepth enemy3;
+    enemy3.x = 2;
+    enemy3.y = 0;
+    enemy3.z = player.z;
+    enemy3.size = 1;
+    enemy3.speed.z = 0.01;
+    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.x, enemy3.y, enemy3.z, enemy3.size);
+    enemies.push_back(new EnemyDepth(enemy3));
 }
 
 /* Program entry point */
