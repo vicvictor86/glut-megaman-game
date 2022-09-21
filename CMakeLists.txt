@@ -3,11 +3,12 @@ project(game_project)
 
 set(CMAKE_CXX_STANDARD 14)
 
-include_directories(classes)
+include_directories(classes Models)
 find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
 add_executable(game_project
+        Model.h
         classes/Collision.h
         classes/fire.h
         classes/Object.h
