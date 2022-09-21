@@ -8,7 +8,7 @@ find_package(OpenGL REQUIRED)
 find_package(GLUT REQUIRED)
 
 add_executable(game_project
-        Model.h
+        classes/Model.h
         classes/Collision.h
         classes/fire.h
         classes/Object.h

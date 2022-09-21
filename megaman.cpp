@@ -1,4 +1,4 @@
-#include "Model.h"
+#include "classes/Model.h"
 
 // Biblioteca com funcoes matematicas
 #include <cstdio>

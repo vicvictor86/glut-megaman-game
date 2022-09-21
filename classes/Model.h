@@ -13,10 +13,10 @@
 #include <map>
 #include <vector>
 
-#include "Library/loadpng.h"
-#include "Library/process_image.h"
+#include "../Library/loadpng.h"
+#include "../Library/process_image.h"
 
-#include "Library/gl_texture.h"
+#include "../Library/gl_texture.h"
 
 #define INTERVAL 15
 
