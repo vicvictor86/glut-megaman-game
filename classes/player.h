@@ -12,17 +12,19 @@ class Player : public Object
     public: int timeChargedShot;
     public: Directions direction = LEFT;
     public: map<char, double> mapColliderPlayer;
+    public: Model model;
     public: void move(bool keyBuffer[256]);
-    public: void drawPlayer(double playerX, double playerY, double playerZ, double playerSize, bool drawnCollider, double colliderSize);
+    public: void drawnPlayer(bool drawnCollider);
     public: Player(){};
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision);
+    public: void setModel(string path);
 };
 
 Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
     this->life = life;
     this->damage = damage;
     this->timeChargedShot = timeChargedShot;
-};
+}
 
 void Player:: move(bool keyBuffer[256]){
     if (this->speed.x != 0 && keyBuffer['d']) {
@@ -35,33 +37,39 @@ void Player:: move(bool keyBuffer[256]){
 
     if (this->speed.y != 0){
         this->y += this->speed.y;
-//        this->speed.y -= 0.001f;
     }
 
      if (!this->collision.isOnPlataform){
          this->speed.y -= 0.001f;
      }
-
-    // if (this->y < 0.0f) {
-    //     this->speed.y = 0;
-    //     this->y = 0.0f;
-    // }
 }
 
-void Player:: drawPlayer(double playerX=0, double playerY=0, double playerZ=-6.5, double playerSize=0.5, bool drawnCollider=false, double colliderSize=1){
+void Player:: drawnPlayer(bool drawnCollider=false){
     //Player
     glPushMatrix();
-        glTranslated(playerX, playerY, playerZ);
-        glutSolidCube(playerSize);
+        glTranslated(this->x, this->y, this->z);
+        glutSolidCube(this->size);
     glPopMatrix();
 
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
-            glTranslated(playerX, playerY, playerZ);
-            glutWireCube(colliderSize);
+            glTranslated(this->x, this->y, this->z);
+            glutWireCube(this->collision.size);
         glPopMatrix();
     }
+
+    glPushMatrix();
+        glLoadIdentity();
+        glTranslatef((float)this->x, (float)this->y, (float)this->z);
+        glRotatef(90, 0, 1.0f, 0.0f);
+        glScalef(0.3, 0.3, 0.3);
+        this->model.draw();
+    glPopMatrix();
+}
+
+void Player:: setModel(string path){
+    this->model.load(path.c_str());
 }
 
 #endif

@@ -1,10 +1,6 @@
-// Bibliotecas utilizadas pelo OpenGL
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
+#include "classes/Model.h"
 
 // Biblioteca com funcoes matematicas
-#include <math.h>
 #include <cstdio>
 #include <cstdlib>
 
@@ -21,8 +17,6 @@
 
 using namespace std; 
 
-static int slices = 16;
-static int stacks = 16;
 int initialTime = -1;
 int countFpsInitialTime = time(nullptr), countFpsFinalTime, frameCount, cooldDownWallJump = 1, initialWallJump = -1;
 
@@ -39,14 +33,12 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 1, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
+Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
 Camera camera(WIDTH, HEIGHT);
-
-/* GLUT callback Handlers */
 
 void countFps(){
     frameCount++;
-    countFpsFinalTime = time(NULL);
+    countFpsFinalTime = time(nullptr);
     if(countFpsFinalTime - countFpsInitialTime > 0){
         printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
         frameCount = 0;
@@ -156,9 +148,9 @@ void checkCollisionsFires(int quantityOverLapping){
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor3d(1, 0, 0);
+    // glColor3d(1, 0, 0);
 
-    player.drawPlayer(player.x, player.y, -6, 0.5, true, 1);
+    player.drawnPlayer(true);
 
     int quantityOverLapping = checkCollisionWithWalls();
 
@@ -190,7 +182,7 @@ static void key(unsigned char key, int x, int y)
     }
 
     if (keyBuffer['d'] || keyBuffer['D']) {
-        player.speed.x = 0.1;   
+        player.speed.x = 0.1;
         player.direction = RIGHT;
     }
 
@@ -281,6 +273,10 @@ const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
 void init(){
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_DEPTH_TEST);
+    player.setModel("../Models/PlayerModel/MegamanX.obj");
+
     player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
 
     vector<Object> tempWalls;
@@ -345,7 +341,6 @@ int main(int argc, char *argv[])
     glutInitWindowSize(WIDTH, HEIGHT);
     glutInitWindowPosition(10, 10);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    init();
 
     glutCreateWindow("Mega Man");
 
@@ -376,6 +371,8 @@ int main(int argc, char *argv[])
     glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
     glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+
+    init();
 
     glutMainLoop();
 
