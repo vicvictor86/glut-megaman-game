@@ -5,5 +5,6 @@
 #include "EnemyDepth.h"
 #include "EnemyHorizontal.h"
 #include "EnemyVertical.h"
+#include "EnemyJumping.h"
 
 #endif //GAME_PROJECT_ENEMIESIMPORT_H

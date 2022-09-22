@@ -128,15 +128,64 @@ int checkCollisionWithWalls(){
     return quantityOverLapping;
 }
 
+int checkCollisionWithWallsTeste(Enemy* enemy){
+    //Desenho de paredes e detecção de colisão
+    int quantityOverLapping = 0;
+    for(int i = 0; i < walls.size(); i++){
+        bool lastIteration = i + 1 >= walls.size();
+
+        collisionDirections typeCollision = Collision::checkCollision(enemy->mapCollider, enemy->x, enemy->y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
+
+        if(typeCollision == RIGHTCOLLISION){
+            enemy->x = walls[i].mapColliderWall['L'] - 0.51;
+            printf("Colidiu na direita do enemy\n");
+        }
+        else if(typeCollision == LEFTCOLLISION){
+            enemy->x = walls[i].mapColliderWall['R'] + 0.51;
+            printf("Colidiu na esquerda do enemy\n");
+        }
+
+        if(typeCollision == TOPCOLLISION){
+            enemy->y = walls[i].mapColliderWall['B'] - 0.51;
+            enemy->speed.y = 0;
+            printf("Colidiu em cima do enemy\n");
+        }
+        else if(typeCollision == BOTTOMCOLLISION){
+            enemy->collision.isOnPlataform = true;
+            enemy->y = walls[i].mapColliderWall['T'] + 0.5;
+            enemy->speed.y = 0;
+            printf("Colidiu em baixo do enemy\n");
+        }
+
+        if(typeCollision == NOCOLLISION || typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION || typeCollision == TOPCOLLISION){
+            enemy->collision.isOnPlataform = false;
+        }
+
+        if(keyBuffer[' '] && initialWallJump == -1){
+            enemy->speed.y = 0.05;
+            initialWallJump = time(nullptr);
+        }
+
+        int finalWallJump = time(nullptr);
+        if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
+            printf("Wall jump\n");
+            enemy->speed.y = 0.05;
+            initialWallJump = -1;
+        }
+    }
+
+    return quantityOverLapping;
+}
+
 void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
             fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
-            fireObjects[i].drawFire(player.x, player.y, true);
+            fireObjects[i].drawFire(true);
 
             for(int j = 0; j < enemies.size(); j++){
                 collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
-                if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION){
+                if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION && fireObjects[i].tagShoot == "Player"){
                     delete enemies[j];
                     enemies.erase(enemies.begin() + j);
                     fireObjects.erase(fireObjects.begin() + i);
@@ -162,7 +211,9 @@ static void display()
 
     for (auto & enemy : enemies){
         Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->size);
+        checkCollisionWithWallsTeste(enemy);
         enemy->move();
+        enemy->shoot(&fireObjects);
     }
 
     checkCollisionsFires(quantityOverLapping);
@@ -249,6 +300,8 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.collision.x = 0;
         fire.collision.y = 0;
         fire.collision.z = fire.z;
+
+        fire.tagShoot = "Player";
 
         fireObjects.push_back(fire);
     }
@@ -346,14 +399,14 @@ void init(){
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.x, enemy2.y, enemy2.z, enemy2.size);
     enemies.push_back(new EnemyVertical(enemy2));
 
-    EnemyDepth enemy3;
+    EnemyJumping enemy3;
     enemy3.x = 2;
     enemy3.y = 0;
     enemy3.z = player.z;
     enemy3.size = 1;
     enemy3.speed.z = 0.01;
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.x, enemy3.y, enemy3.z, enemy3.size);
-    enemies.push_back(new EnemyDepth(enemy3));
+    enemies.push_back(new EnemyJumping(enemy3));
 }
 
 /* Program entry point */
@@ -376,7 +429,6 @@ int main(int argc, char *argv[])
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
     glEnable(GL_LIGHT0);

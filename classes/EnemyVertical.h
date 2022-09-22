@@ -24,5 +24,4 @@ void EnemyVertical :: move() {
     }
 }
 
-
 #endif //GAME_PROJECT_ENEMYVERTICAL_H
