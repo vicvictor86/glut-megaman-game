@@ -4,6 +4,7 @@ class Fire : public Object
 {
     public: int slicesAndStacks = 16;
     public: bool chargedFire = false;
+    public: int damage = 1;
     public: string tagShoot;
     public: int timeToLive = 2;
     public: int timeLiving = -1;
@@ -30,6 +31,7 @@ void Fire::drawFire(bool drawnCollider){
             glutWireCube(this->collision.size + 0.3);
         glPopMatrix();
     }
+
     this->x += this->speed.x;
 }
 

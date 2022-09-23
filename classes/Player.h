@@ -7,19 +7,20 @@ enum Directions {UP, DOWN, LEFT, RIGHT};
 
 class Player : public Object
 {
-    public: int life;
-    public: float damage;
-    public: int timeChargedShot;
+    public: int life=3;
+    public: int damage=1;
+    public: int timeChargedShot=3;
     public: Directions directionX = LEFT;
     public: Model model;
     public: void move(bool keyBuffer[256]);
     public: void drawnPlayer(bool drawnCollider);
-    public: Player(){};
-    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision);
-    public: void setModel(string path);
+    public: void getDamage(int takedDamage);
+    public: Player()= default;
+    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
+    public: void setModel(const string& path);
 };
 
-Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, float damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
+Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
     this->life = life;
     this->damage = damage;
     this->timeChargedShot = timeChargedShot;
@@ -67,8 +68,12 @@ void Player:: drawnPlayer(bool drawnCollider=false){
     glPopMatrix();
 }
 
-void Player:: setModel(string path){
+void Player:: setModel(const string& path){
     this->model.load(path.c_str());
+}
+
+void Player:: getDamage(int takedDamage){
+    this->life -= takedDamage;
 }
 
 #endif

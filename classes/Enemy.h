@@ -5,13 +5,14 @@
 
 class Enemy : public Object {
     public: int life = 3;
-    public: float damage=1;
+    public: int damage=1;
     public: int timeToShoot=-1;
     public: int shootColdDown=2;
     public: int coldDown=2;
     public: int timeToChangeDirection=-1;
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects);
+    public: void getDamage(int takedDamage);
     public: Enemy() = default;
 };
 
@@ -52,9 +53,16 @@ void Enemy::shoot(vector<Fire>* fireObjects) {
         fire.collision.y = 0;
         fire.collision.z = fire.z;
 
+        fire.tagShoot = "Enemy";
+        fire.damage = this->damage;
+
         fireObjects->push_back(fire);
         this->timeToShoot = -1;
     }
+}
+
+void Enemy::getDamage(int takedDamage) {
+    this->life -= takedDamage;
 }
 
 #endif //GAME_PROJECT_ENEMY_H

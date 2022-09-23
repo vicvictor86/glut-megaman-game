@@ -8,8 +8,8 @@
 #include <ctime>
 #include <vector>
 #include <iostream>
-#include "classes/fire.h"
-#include "classes/player.h"
+#include "classes/Fire.h"
+#include "classes/Player.h"
 #include "classes/Collision.h"
 #include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
@@ -35,7 +35,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 
 void countFps(){
@@ -132,22 +132,41 @@ int checkCollisionWithWalls(Object * object){
 void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
-            fireObjects[i].drawFire(true);
             bool isAlive = fireObjects[i].isAlive();
-
-            for(int j = 0; j < enemies.size(); j++) {
-                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, enemies[j]->x, enemies[j]->y, + 1 >= enemies.size(), &quantityOverLapping);
-                if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION && fireObjects[i].tagShoot == "Player"){
-                    delete enemies[j];
-                    enemies.erase(enemies.begin() + j);
-                    fireObjects.erase(fireObjects.begin() + i);
-                    break;
-                }
-            }
 
             if(!isAlive){
                 fireObjects.erase(fireObjects.begin() + i);
             }
+
+            fireObjects[i].drawFire(true);
+
+            collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, i + 1 >= fireObjects.size(), &quantityOverLapping);
+            if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION && fireObjects[i].tagShoot == "Enemy"){
+                player.getDamage(fireObjects[i].damage);
+                fireObjects.erase(fireObjects.begin() + i);
+                if(player.life <= 0){
+                    printf("Game over\n");
+                    exit(0);
+                }
+            }
+
+            for(int j = 0; j < enemies.size(); j++) {
+                collisionDirections fireCollideWithEnemy = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, enemies[j]->x, enemies[j]->y, j + 1 >= enemies.size(), &quantityOverLapping);
+                if(fireCollideWithEnemy != NOCOLLISION && fireCollideWithEnemy != NULLCOLLISION){
+                    if(fireObjects[i].tagShoot == "Player"){
+                        enemies[j]->getDamage(player.damage);
+
+                        if(enemies[j]->life <= 0){
+                            delete enemies[j];
+                            enemies.erase(enemies.begin() + j);
+                        }
+
+                        fireObjects.erase(fireObjects.begin() + i);
+                        break;
+                    }
+                }
+            }
+
         }
     }
 }
