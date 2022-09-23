@@ -1,18 +1,22 @@
 #ifndef GAME_PROJECT_SOUNDS_H
 #define GAME_PROJECT_SOUNDS_H
 
+char* backgroundMusic = "../Sounds/background.mp3";
+char* jumpSound = "../Sounds/jump.wav";
+char* shootSound = "../Sounds/shoot.wav";
+map<string, char*> sounds = {
+        {"background", backgroundMusic},
+        {"jump", jumpSound},
+        {"shoot", shootSound}
+};
 
 class Sounds {
     public: Sounds()= default;
-    public: static void playSound(const char* soundPath);
+    public: static void playSound(const string& soundName);
 };
 
-void Sounds::playSound(const char* soundPath) {
-    char completePath[100];
-    strcpy(completePath, "play ");
-    strcat(completePath, soundPath);
-    mciSendString(completePath, nullptr, SND_ASYNC, nullptr);
+void Sounds::playSound(const string& soundName) {
+    sndPlaySound(sounds[soundName], SND_FILENAME | SND_ASYNC);
 }
-
 
 #endif //GAME_PROJECT_SOUNDS_H

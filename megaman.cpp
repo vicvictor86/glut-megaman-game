@@ -123,6 +123,7 @@ int checkCollisionWithWalls(Object * object){
 
         int finalWallJump = time(nullptr);
         if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
+            Sounds::playSound("jump");
             printf("Wall jump\n");
             object->speed.y = 0.05;
             initialWallJump = -1;
@@ -224,6 +225,7 @@ static void key(unsigned char key, int x, int y)
     }
 
     if (keyBuffer[' '] && player.speed.y == 0){
+        Sounds::playSound("jump");
         player.speed.y = 0.05f;
     }
 
@@ -245,7 +247,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     keyBuffer[key] = false;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
-        Sounds::playSound("../Sounds/shoot.mp3");
+        Sounds::playSound("shoot");
         Fire fire;
 
         int finalTime = time(nullptr);
@@ -438,7 +440,7 @@ int main(int argc, char *argv[])
 
     init();
 
-//    Sounds::playSound("../Sounds/background.mp3");
+//    Sounds::playSound("background");
 
     glutMainLoop();
 
