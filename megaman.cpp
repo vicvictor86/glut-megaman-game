@@ -36,7 +36,7 @@ vector<Enemy> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
 Camera camera(WIDTH, HEIGHT);
-Scene scene;
+Scene menu;
 
 bool gameStarted = false;
 
@@ -149,10 +149,21 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
+static void showMenu(){
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    menu.openMenu();
+
+    glutSwapBuffers();
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glColor3d(1, 0, 0);
+    glColor4f(1, 0, 0, 1);
+    glLoadIdentity();
+
     player.drawnPlayer(true);
 
     int quantityOverLapping = checkCollisionWithWalls();
@@ -183,10 +194,17 @@ static void key(unsigned char key, int x, int y)
 
     if(!gameStarted) {
         if(key == 13) {
-            gameStarted = true;
-            cout << "Jogo Iniciado\n";
-            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-            glutDisplayFunc(display);
+            switch(menu.getOption()) {
+                case 0:
+                    gameStarted = true;
+                    cout << "Jogo Iniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    exit(0);
+            }
+
         }
     }
 
@@ -272,6 +290,21 @@ static void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
+static void specialKey(int key, int x, int y)
+{
+    if(!gameStarted) {
+        switch (key) {
+            case GLUT_KEY_UP:
+                menu.switchOption(-1);
+                break;
+            case GLUT_KEY_DOWN:
+                menu.switchOption(1);
+                break;
+        }
+        glutPostRedisplay();
+    }
+}
+
 static void idle(int)
 {
     glutPostRedisplay();
@@ -293,6 +326,10 @@ void init(){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     glEnable(GL_TEXTURE_2D);
+
+    vector<string> options = {"Iniciar Jornada", "Sair do Jogo"};
+
+    menu.setOptions(options);
 
     player.setModel("../Models/PlayerModel/MegamanX.obj");
 
@@ -363,12 +400,11 @@ int main(int argc, char *argv[])
 
     glutCreateWindow("Mega Man");
 
-    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-
     glutReshapeFunc(resize);
-    glutDisplayFunc(scene.menu);
+    glutDisplayFunc(showMenu);
     glutKeyboardFunc(key);
     glutKeyboardUpFunc(keyboardUp);
+    glutSpecialFunc(specialKey);
     glutTimerFunc(1000/FPS, idle, 0);
 
     glEnable(GL_CULL_FACE);

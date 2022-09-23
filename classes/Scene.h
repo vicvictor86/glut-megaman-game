@@ -3,6 +3,7 @@
 #include <GL/glu.h>
 #include <GL/glut.h>
 #include <iostream>
+#include <vector>
 
 using namespace std;
 
@@ -10,9 +11,14 @@ using namespace std;
 #define GAME_PROJECT_SCENES_H
 
 class Scene {
-public: Scene(){};
-public: static void menu(void);
-
+private: vector<string> options;
+private: int option;
+public: Scene(){option = 0;};
+public: void openMenu();
+public: vector<string> getOptions();
+public: void setOptions(vector<string> options);
+public: int getOption();
+public: void switchOption(int op);
 };
 
 static void writeOnScreen(double x, double y, string text)
@@ -23,17 +29,42 @@ static void writeOnScreen(double x, double y, string text)
     }
 }
 
-void Scene::menu(void) {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glLoadIdentity();
-
-
-    glColor3f(0.0f,0.0f,1.0f);
-    writeOnScreen(-0.8, 0.5, "Iniciar Jornada");
-    writeOnScreen(-0.8, -0.2, "Sair do Jogo");
-
-    glutSwapBuffers();
-
+vector<string> Scene::getOptions() {
+    return this->options;
 }
+
+void Scene::setOptions(vector<string> options) {
+    this->options = options;
+}
+
+void Scene::openMenu(void) {
+    float x = -0.75;
+    float y = 0.5;
+    for(int i = 0; i < this->getOptions().size(); i++) {
+        if(option == i)
+            glColor3f(0.0f,0.0f,1.0f);
+        else
+            glColor3f(1.0f,1.0f,1.0f);
+
+        writeOnScreen(x, y, options[i]);
+        y -= 0.7;
+    }
+}
+
+int Scene::getOption(){
+    return this->option;
+}
+
+void Scene::switchOption(int op) {
+    if(this->option == 0 && op == -1) {
+        this->option = getOptions().size() - 1;
+    } else if (this->option == getOptions().size() - 1 && op == 1){
+        this->option = 0;
+    } else {
+        this->option += op;
+    }
+}
+
+
 
 #endif //GAME_PROJECT_SCENES_H
