@@ -10,7 +10,6 @@ class Enemy : public Object {
     public: int shootColdDown=2;
     public: int coldDown=2;
     public: int timeToChangeDirection=-1;
-    public: map<char, double> mapCollider;
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects);
     public: Enemy() = default;

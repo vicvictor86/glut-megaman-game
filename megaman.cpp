@@ -34,7 +34,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
+Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 
 void countFps(){
@@ -79,97 +79,48 @@ void updateCamera(){
     glMatrixMode (GL_MODELVIEW);
 }
 
-int checkCollisionWithWalls(){
+int checkCollisionWithWalls(Object * object){
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
         bool lastIteration = i + 1 >= walls.size();
 
-        collisionDirections typeCollision = Collision::checkCollision(player.mapColliderPlayer, player.x, player.y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
+        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            player.x = walls[i].mapColliderWall['L'] - 0.51;
-            printf("Colidiu na direita do player\n");
+            object->x = walls[i].mapColliderWall['L'] - 0.51;
+            printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            player.x = walls[i].mapColliderWall['R'] + 0.51;
-            printf("Colidiu na esquerda do player\n");
+            object->x = walls[i].mapColliderWall['R'] + 0.51;
+            printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            player.y = walls[i].mapColliderWall['B'] - 0.51;
-            player.speed.y = 0;
-            printf("Colidiu em cima do player\n");
+            object->y = walls[i].mapColliderWall['B'] - 0.51;
+            object->speed.y = 0;
+            printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
-            player.collision.isOnPlataform = true;
-            player.y = walls[i].mapColliderWall['T'] + 0.5;
-            player.speed.y = 0;
-            printf("Colidiu em baixo do player\n");
+            object->collision.isOnPlataform = true;
+            object->y = walls[i].mapColliderWall['T'] + 0.5;
+            object->speed.y = 0;
+            printf("Colidiu em baixo do object\n");
         }
 
         if(typeCollision == NOCOLLISION || typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION || typeCollision == TOPCOLLISION){
-            player.collision.isOnPlataform = false;
+            object->collision.isOnPlataform = false;
         }
 
         if(keyBuffer[' '] && initialWallJump == -1){
-            player.speed.y = 0.05;
+            object->speed.y = 0.05;
             initialWallJump = time(nullptr);
         }
 
         int finalWallJump = time(nullptr);
         if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
             printf("Wall jump\n");
-            player.speed.y = 0.05;
-            initialWallJump = -1;
-        }
-    }
-
-    return quantityOverLapping;
-}
-
-int checkCollisionWithWallsTeste(Enemy* enemy){
-    //Desenho de paredes e detecção de colisão
-    int quantityOverLapping = 0;
-    for(int i = 0; i < walls.size(); i++){
-        bool lastIteration = i + 1 >= walls.size();
-
-        collisionDirections typeCollision = Collision::checkCollision(enemy->mapCollider, enemy->x, enemy->y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
-
-        if(typeCollision == RIGHTCOLLISION){
-            enemy->x = walls[i].mapColliderWall['L'] - 0.51;
-            printf("Colidiu na direita do enemy\n");
-        }
-        else if(typeCollision == LEFTCOLLISION){
-            enemy->x = walls[i].mapColliderWall['R'] + 0.51;
-            printf("Colidiu na esquerda do enemy\n");
-        }
-
-        if(typeCollision == TOPCOLLISION){
-            enemy->y = walls[i].mapColliderWall['B'] - 0.51;
-            enemy->speed.y = 0;
-            printf("Colidiu em cima do enemy\n");
-        }
-        else if(typeCollision == BOTTOMCOLLISION){
-            enemy->collision.isOnPlataform = true;
-            enemy->y = walls[i].mapColliderWall['T'] + 0.5;
-            enemy->speed.y = 0;
-            printf("Colidiu em baixo do enemy\n");
-        }
-
-        if(typeCollision == NOCOLLISION || typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION || typeCollision == TOPCOLLISION){
-            enemy->collision.isOnPlataform = false;
-        }
-
-        if(keyBuffer[' '] && initialWallJump == -1){
-            enemy->speed.y = 0.05;
-            initialWallJump = time(nullptr);
-        }
-
-        int finalWallJump = time(nullptr);
-        if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
-            printf("Wall jump\n");
-            enemy->speed.y = 0.05;
+            object->speed.y = 0.05;
             initialWallJump = -1;
         }
     }
@@ -180,11 +131,10 @@ int checkCollisionWithWallsTeste(Enemy* enemy){
 void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
-            fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
             fireObjects[i].drawFire(true);
 
-            for(int j = 0; j < enemies.size(); j++){
-                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
+            for(int j = 0; j < enemies.size(); j++) {
+                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, enemies[j]->x, enemies[j]->y, + 1 >= enemies.size(), &quantityOverLapping);
                 if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION && fireObjects[i].tagShoot == "Player"){
                     delete enemies[j];
                     enemies.erase(enemies.begin() + j);
@@ -203,7 +153,7 @@ static void display()
 
     player.drawnPlayer(true);
 
-    int quantityOverLapping = checkCollisionWithWalls();
+    int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
@@ -211,7 +161,7 @@ static void display()
 
     for (auto & enemy : enemies){
         Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->size);
-        checkCollisionWithWallsTeste(enemy);
+        checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->shoot(&fireObjects);
     }
@@ -330,10 +280,10 @@ const GLfloat high_shininess[] = {100.0f};
 
 void init(){
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_DEPTH_TEST);
     player.setModel("../Models/PlayerModel/MegamanX.obj");
 
-    player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
+    player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 
     vector<Object> tempWalls;
 
@@ -382,30 +332,33 @@ void init(){
     }
 
     EnemyHorizontal enemy1;
-    enemy1.x = 4;
-    enemy1.y = 0;
-    enemy1.z = player.z;
-    enemy1.size = 1;
+    enemy1.setX(4);
+    enemy1.setY(0);
+    enemy1.setZ(player.z);
+    enemy1.setSize(1);
     enemy1.speed.x = 0.01;
-    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.x, enemy1.y, enemy1.z, enemy1.size);
+    enemy1.collision.size = enemy1.size + 0.2;
+    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.size);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
     EnemyVertical enemy2;
-    enemy2.x = 8;
-    enemy2.y = 0;
-    enemy2.z = player.z;
-    enemy2.size = 1;
+    enemy2.setX(8);
+    enemy2.setY(0);
+    enemy2.setZ(player.z);
+    enemy2.setSize(1);
     enemy2.speed.y = 0.01;
-    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.x, enemy2.y, enemy2.z, enemy2.size);
+    enemy2.collision.size = enemy2.size + 0.2;
+    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.size);
     enemies.push_back(new EnemyVertical(enemy2));
 
     EnemyJumping enemy3;
-    enemy3.x = 2;
-    enemy3.y = 0;
-    enemy3.z = player.z;
-    enemy3.size = 1;
+    enemy3.setX(2);
+    enemy3.setY(0);
+    enemy3.setZ(player.z);
+    enemy3.setSize(1);
     enemy3.speed.z = 0.01;
-    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.x, enemy3.y, enemy3.z, enemy3.size);
+    enemy3.collision.size = enemy3.size;
+    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
     enemies.push_back(new EnemyJumping(enemy3));
 }
 
