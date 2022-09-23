@@ -6,12 +6,13 @@
 
 //Imports proprios
 #include <ctime>
-#include <vector>
+#include <iostream>
 #include "classes/fire.h"
 #include "classes/player.h"
 #include "classes/Collision.h"
 #include "classes/Enemy.h"
 #include "classes/Camera.h"
+#include "classes/Scene.h"
 
 #define FPS 70
 
@@ -35,6 +36,9 @@ vector<Enemy> enemies;
 
 Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
 Camera camera(WIDTH, HEIGHT);
+Scene scene;
+
+bool gameStarted = false;
 
 void countFps(){
     frameCount++;
@@ -149,17 +153,16 @@ static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // glColor3d(1, 0, 0);
-
     player.drawnPlayer(true);
 
     int quantityOverLapping = checkCollisionWithWalls();
 
-    for (auto & wall : walls){
-        Object ::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
+    for (auto &wall: walls) {
+        Object::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
     }
 
-    for (auto & enemie : enemies){
-        Enemy ::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
+    for (auto &enemie: enemies) {
+        Enemy::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
     }
 
     checkCollisionsFires(quantityOverLapping);
@@ -168,14 +171,24 @@ static void display()
 
     updateCamera();
 
+    countFps();
+
     glutSwapBuffers();
 
-    countFps();
 }
 
 static void key(unsigned char key, int x, int y)
 {
     keyBuffer[key] = true;
+
+    if(!gameStarted) {
+        if(key == 13) {
+            gameStarted = true;
+            cout << "Jogo Iniciado\n";
+            glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+            glutDisplayFunc(display);
+        }
+    }
 
     if(key == 'q' || key == 'Q') {
         exit(0);
@@ -206,6 +219,9 @@ static void key(unsigned char key, int x, int y)
             initialTime = time(nullptr);
         }
     }
+
+    glutPostRedisplay();
+
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -273,8 +289,11 @@ const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
 void init(){
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
+
     player.setModel("../Models/PlayerModel/MegamanX.obj");
 
     player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
@@ -344,17 +363,18 @@ int main(int argc, char *argv[])
 
     glutCreateWindow("Mega Man");
 
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     glutReshapeFunc(resize);
-    glutDisplayFunc(display);
+    glutDisplayFunc(scene.menu);
     glutKeyboardFunc(key);
     glutKeyboardUpFunc(keyboardUp);
     glutTimerFunc(1000/FPS, idle, 0);
 
-    glClearColor(1, 1, 1, 1);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-    glEnable(GL_DEPTH_TEST);
+//    glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
     glEnable(GL_LIGHT0);
