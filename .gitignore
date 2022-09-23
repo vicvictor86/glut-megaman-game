@@ -34,3 +34,6 @@
 .idea
 # CMake
 cmake-build-*/
+
+# music files
+*.mp3

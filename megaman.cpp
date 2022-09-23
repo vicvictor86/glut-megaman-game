@@ -7,12 +7,15 @@
 //Imports proprios
 #include <ctime>
 #include <vector>
+#include <Windows.h>
 #include <iostream>
 #include "classes/Fire.h"
 #include "classes/Player.h"
 #include "classes/Collision.h"
 #include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
+#include "classes/Sounds.h"
+#pragma comment(lib, "Winmm.lib")
 
 #define FPS 70
 #define SHOOTKEY 'j'
@@ -242,6 +245,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     keyBuffer[key] = false;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
+        Sounds::playSound("../Sounds/shoot.mp3");
         Fire fire;
 
         int finalTime = time(nullptr);
@@ -433,6 +437,8 @@ int main(int argc, char *argv[])
     glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     init();
+
+//    Sounds::playSound("../Sounds/background.mp3");
 
     glutMainLoop();
 
