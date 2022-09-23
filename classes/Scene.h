@@ -39,7 +39,7 @@ void Scene::setOptions(vector<string> options) {
 
 void Scene::openMenu(void) {
     float x = -0.75;
-    float y = 0.5;
+    float y = 0.6;
     for(int i = 0; i < this->getOptions().size(); i++) {
         if(option == i)
             glColor3f(0.0f,0.0f,1.0f);

@@ -202,7 +202,10 @@ static void key(unsigned char key, int x, int y)
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    break;
+                case 2:
                     exit(0);
+                    break;
             }
 
         }
@@ -210,6 +213,14 @@ static void key(unsigned char key, int x, int y)
 
     if(key == 'q' || key == 'Q') {
         exit(0);
+    }
+
+    if(!gameStarted) {
+            if(key == 'w' || key =='W') {
+                menu.switchOption(-1);
+            } else if(key == 's' || key == 'S') {
+                menu.switchOption(1);
+            }
     }
 
     if (keyBuffer['d'] || keyBuffer['D']) {
@@ -327,7 +338,7 @@ void init(){
 
     glEnable(GL_TEXTURE_2D);
 
-    vector<string> options = {"Iniciar Jornada", "Sair do Jogo"};
+    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
 
     menu.setOptions(options);
 
