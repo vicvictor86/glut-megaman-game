@@ -11,7 +11,7 @@ class Collision {
     public: float r=0, g=0, b=0;
     public: double size=1;
     public: bool isOnPlataform = false;
-    public: Collision(){};
+    public: Collision()= default;
     public: Collision(double x, double y, double z, float size);
     public: static collisionDirections checkCollision(map<char, double> mapCollider1, double x1, double y1, map<char, double> mapCollider2, double x2, double y2, bool lastIteration, int* quantityOverLapping);
 };
@@ -51,6 +51,6 @@ collisionDirections Collision :: checkCollision(map<char, double> mapCollider1 =
     }
 
     return typeCollision;
-};
+}
 
 #endif

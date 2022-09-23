@@ -92,22 +92,22 @@ int checkCollisionWithWalls(Object * object){
         collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            object->x = walls[i].mapColliderWall['L'] - 0.51;
+            object->x = walls[i].mapColliderWall['L'] - object->collision.size / 2;
             printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            object->x = walls[i].mapColliderWall['R'] + 0.51;
+            object->x = walls[i].mapColliderWall['R'] + object->collision.size / 2;
             printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            object->y = walls[i].mapColliderWall['B'] - 0.51;
+            object->y = walls[i].mapColliderWall['B'] - object->collision.size / 2;
             object->speed.y = 0;
             printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
             object->collision.isOnPlataform = true;
-            object->y = walls[i].mapColliderWall['T'] + 0.5;
+            object->y = walls[i].mapColliderWall['T'] + object->collision.size / 2;
             object->speed.y = 0;
             printf("Colidiu em baixo do object\n");
         }
@@ -396,7 +396,7 @@ void init(){
     enemy3.setZ(player.z);
     enemy3.setSize(1);
     enemy3.speed.z = 0.01;
-    enemy3.collision.size = enemy3.size;
+    enemy3.collision.size = enemy3.size + 0.2;
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
     enemies.push_back(new EnemyJumping(enemy3));
 }
@@ -427,16 +427,16 @@ int main(int argc, char *argv[])
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+//
+//    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+//    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
     glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+//    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+//    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+//    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
     glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+//    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     init();
 
