@@ -15,6 +15,7 @@
 #include "classes/Camera.h"
 
 #define FPS 70
+#define SHOOTKEY 'j'
 
 using namespace std; 
 
@@ -132,6 +133,7 @@ void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
             fireObjects[i].drawFire(true);
+            bool isAlive = fireObjects[i].isAlive();
 
             for(int j = 0; j < enemies.size(); j++) {
                 collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, enemies[j]->x, enemies[j]->y, + 1 >= enemies.size(), &quantityOverLapping);
@@ -141,6 +143,10 @@ void checkCollisionsFires(int quantityOverLapping){
                     fireObjects.erase(fireObjects.begin() + i);
                     break;
                 }
+            }
+
+            if(!isAlive){
+                fireObjects.erase(fireObjects.begin() + i);
             }
         }
     }
@@ -187,12 +193,12 @@ static void key(unsigned char key, int x, int y)
 
     if (keyBuffer['d'] || keyBuffer['D']) {
         player.speed.x = 0.1;
-        player.direction = RIGHT;
+        player.directionX = RIGHT;
     }
 
     if (keyBuffer['a'] || keyBuffer['A']) {
         player.speed.x = 0.1;
-        player.direction = LEFT;
+        player.directionX = LEFT;
     }
 
     if (keyBuffer[' '] && player.speed.y == 0){
@@ -205,7 +211,7 @@ static void key(unsigned char key, int x, int y)
         }
     }
 
-    if (keyBuffer['f']){
+    if (keyBuffer[SHOOTKEY]){
         if(initialTime == -1){
             initialTime = time(nullptr);
         }
@@ -216,19 +222,27 @@ static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
 
-    if (!keyBuffer['f'] && key == 'f'){
+    if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
         Fire fire;
 
         int finalTime = time(nullptr);
-        if(finalTime - initialTime >= 2) {
+        if(finalTime - initialTime >= player.timeChargedShot) {
             printf("Tiro carregado\n");
             fire.chargedFire = true;
         }
         initialTime = -1;
 
-        double spawnPoint = player.x + 1;
+        double spawnPoint;
+        float shootSpeed;
+        if(player.directionX == RIGHT){
+            spawnPoint = player.x + 0.5;
+            shootSpeed = 0.06f;
+        } else if(player.directionX == LEFT){
+            spawnPoint = player.x - 0.5;
+            shootSpeed = -0.06f;
+        }
+
         double heightOfPlayer = player.y + 0;
-        float shootSpeed = 0.06f;
         float radiusOfFire = 0.5;
 
         fire.x = spawnPoint;

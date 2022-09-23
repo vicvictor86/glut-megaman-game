@@ -10,7 +10,7 @@ class Player : public Object
     public: int life;
     public: float damage;
     public: int timeChargedShot;
-    public: Directions direction = LEFT;
+    public: Directions directionX = LEFT;
     public: Model model;
     public: void move(bool keyBuffer[256]);
     public: void drawnPlayer(bool drawnCollider);
