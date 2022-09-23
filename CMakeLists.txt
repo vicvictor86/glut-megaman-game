@@ -16,6 +16,6 @@ add_executable(game_project
         classes/Speed.h
         classes/Enemy.h
         classes/Camera.h
-        megaman.cpp)
+        megaman.cpp classes/EnemyHorizontal.h classes/EnemyVertical.h classes/EnemyDepth.h classes/EnemiesImport.h classes/EnemyJumping.h)
 
 target_link_libraries(${PROJECT_NAME} -Wall -Wextra -lglut32 -lglu32 -lopengl32 -lwinmm)

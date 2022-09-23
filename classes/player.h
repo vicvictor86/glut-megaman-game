@@ -11,7 +11,6 @@ class Player : public Object
     public: float damage;
     public: int timeChargedShot;
     public: Directions direction = LEFT;
-    public: map<char, double> mapColliderPlayer;
     public: Model model;
     public: void move(bool keyBuffer[256]);
     public: void drawnPlayer(bool drawnCollider);
