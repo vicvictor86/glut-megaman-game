@@ -15,6 +15,7 @@
 #include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
 #include "classes/Sounds.h"
+#include <chrono>
 #pragma comment(lib, "Winmm.lib")
 
 #define FPS 70
@@ -24,6 +25,7 @@ using namespace std;
 
 int initialTime = -1;
 int countFpsInitialTime = time(nullptr), countFpsFinalTime, frameCount, cooldDownWallJump = 1, initialWallJump = -1;
+uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();;
 
 int WIDTH = 640;
 int HEIGHT = 480;
@@ -40,6 +42,8 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
+
+int frameAnimation = 0;
 
 void countFps(){
     frameCount++;
@@ -194,8 +198,25 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
+void shootAnimation(bool start){
+    if(start){
+        countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= 20 && frameAnimation < 11){
+            string name = "../Models/PlayerModel/AnimationObjects/MegamanTes" + to_string(frameAnimation) + ".obj";
+            player.setModel(name);
+            frameAnimation++;
+            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+        }
+
+        if(frameAnimation >= 11){
+            frameAnimation = 0;
+            player.setModel("../Models/PlayerModel/AnimationObjects/MegamanTes0.obj");
+            player.isShooting = false;
+        }
+    }
+}
+
 void chargingShott(){
-    cout << "Key: " << keyBuffer[SHOOTKEY] << endl;
     if (keyBuffer[SHOOTKEY]){
         if(initialTime == -1){
             initialTime = time(nullptr);
@@ -232,6 +253,7 @@ static void display()
 
     checkCollisionsFires(quantityOverLapping);
 
+    shootAnimation(player.isShooting);
     player.move(keyBuffer);
     chargingShott();
 
@@ -277,6 +299,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     keyBuffer[key] = false;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
+        player.isShooting = true;
         Sounds::playSound("shoot");
         Fire fire;
 
@@ -352,8 +375,8 @@ const GLfloat high_shininess[] = {100.0f};
 
 void init(){
     glEnable(GL_TEXTURE_2D);
-//    glEnable(GL_DEPTH_TEST);
-    player.setModel("../Models/PlayerModel/MegamanX.obj");
+    glEnable(GL_DEPTH_TEST);
+    player.setModel("../Models/PlayerModel/AnimationObjects/MegamanTes0.obj");
 
     player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 

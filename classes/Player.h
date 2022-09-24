@@ -12,6 +12,7 @@ class Player : public Object
     public: int maxLife=3;
     public: int damage=1;
     public: int timeChargedShot=3;
+    public: bool isShooting=false;
     public: Directions directionX = RIGHT;
     public: Model model;
     public: void move(bool keyBuffer[256]);
