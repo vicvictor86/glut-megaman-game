@@ -15,7 +15,7 @@ class Player : public Object
     public: Directions directionX = RIGHT;
     public: Model model;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(bool drawnCollider);
+    public: void drawnPlayer(bool drawnCollider, double r, double g, double b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
@@ -47,7 +47,11 @@ void Player:: move(bool keyBuffer[256]){
      }
 }
 
-void Player:: drawnPlayer(bool drawnCollider=false){
+void Player:: drawnPlayer(bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
+    r = (r == -1) ? this->r : r;
+    g = (g == -1) ? this->g : g;
+    b = (b == -1) ? this->b : b;
+    glColor3d(r, g, b);
     //Player
     glPushMatrix();
         glTranslated(this->x, this->y, this->z);

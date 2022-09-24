@@ -38,7 +38,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 
 void countFps(){
@@ -194,6 +194,20 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
+void chargingShott(){
+    cout << "Key: " << keyBuffer[SHOOTKEY] << endl;
+    if (keyBuffer[SHOOTKEY]){
+        if(initialTime == -1){
+            initialTime = time(nullptr);
+        }
+
+        if(player.g >= 0.01 && player.b >= 0.01){
+            player.g -= 0.01;
+            player.b -= 0.01;
+        }
+    }
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -219,6 +233,7 @@ static void display()
     checkCollisionsFires(quantityOverLapping);
 
     player.move(keyBuffer);
+    chargingShott();
 
     updateCamera();
 
@@ -255,12 +270,6 @@ static void key(unsigned char key, int x, int y)
             fireObjects.pop_back();
         }
     }
-
-    if (keyBuffer[SHOOTKEY]){
-        if(initialTime == -1){
-            initialTime = time(nullptr);
-        }
-    }
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -276,6 +285,9 @@ static void keyboardUp(unsigned char key, int x, int y)
             printf("Tiro carregado\n");
             fire.chargedFire = true;
         }
+        player.r = 1;
+        player.g = 1;
+        player.b = 1;
         initialTime = -1;
 
         double spawnPoint;
