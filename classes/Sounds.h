@@ -4,10 +4,12 @@
 char* backgroundMusic = "../Sounds/background.mp3";
 char* jumpSound = "../Sounds/jump.wav";
 char* shootSound = "../Sounds/shoot.wav";
+char* playerDamage = "../Sounds/playerDamage.wav";
 map<string, char*> sounds = {
         {"background", backgroundMusic},
         {"jump", jumpSound},
-        {"shoot", shootSound}
+        {"shoot", shootSound},
+        {"playerDamage", playerDamage}
 };
 
 class Sounds {

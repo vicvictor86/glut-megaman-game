@@ -175,11 +175,32 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
+void drawnLifeHud(){
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+            glColor3d(1.0, 0.0, 0.0);
+            double percentLifeReduction = (double)player.life / player.maxLife;
+            double xQuadLeft = -8;
+            double xQuadRight = xQuadLeft + 5.0 * percentLifeReduction;
+            double yQuadTop = 5.5;
+            double yQuadBottom = yQuadTop - 1;
+            glVertex3d(xQuadLeft + player.x, yQuadBottom + player.y, -6);
+            glVertex3d(xQuadRight + player.x, yQuadBottom + player.y, -6);
+            glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
+            glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
+        glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    // glColor3d(1, 0, 0);
 
+    drawnLifeHud();
+
+    glColor3d(1, 1, 1);
     player.drawnPlayer(true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
@@ -430,12 +451,12 @@ int main(int argc, char *argv[])
 //
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+//    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
 //    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
 //    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
 //    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+//    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
 //    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     init();
