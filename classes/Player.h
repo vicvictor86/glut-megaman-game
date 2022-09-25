@@ -13,13 +13,11 @@ class Player : public Object
     public: int damage=1;
     public: int timeChargedShot=3;
     public: Directions directionX = RIGHT;
-    public: Model model;
     public: void move(bool keyBuffer[256]);
     public: void drawnPlayer(bool drawnCollider, double r, double g, double b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
-    public: void setModel(const string& path);
 };
 
 Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
@@ -77,10 +75,6 @@ void Player:: drawnPlayer(bool drawnCollider=false, double r=-1, double g=-1, do
         glScalef(0.3, 0.3, 0.3);
         this->model.draw();
     glPopMatrix();
-}
-
-void Player:: setModel(const string& path){
-    this->model.load(path.c_str());
 }
 
 void Player:: getDamage(int takedDamage){

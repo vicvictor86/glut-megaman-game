@@ -14,14 +14,18 @@ class Object {
     public: map<char, double> mapCollider;
     public: Collision collision;
     public: string tag;
+    public: Model model;
+    public: void drawnModel();
     public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
+    public: virtual void setModel(const string& path);
     public: void setX(double updateX);
     public: void setY(double updateY);
     public: void setZ(double updateZ);
     public: void setSize(float size);
     public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
+
 };
 
 Object :: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision){
@@ -54,6 +58,10 @@ void Object:: setSize(float updateSize){
     this->collision.size = updateSize;
 }
 
+void Object:: setModel(const string& path){
+    this->model.load(path.c_str());
+}
+
 map<char, double> Object:: createRetangleCollider(double x, double y, double z, double size){
     map<char, double> mapColliders;
     mapColliders.insert(pair<char, double>('L', x - (size / 2)));
@@ -68,6 +76,15 @@ void Object:: drawnObject(double x, double y, double z, double size){
     glPushMatrix();
         glTranslated(x, y, z);
         glutWireCube(size);
+    glPopMatrix();
+}
+
+void Object:: drawnModel(){
+    glPushMatrix();
+        glLoadIdentity();
+        glTranslatef((float)this->x, (float)this->y, (float)this->z);
+        glScalef(0.3, 0.3, 0.3);
+        this->model.draw();
     glPopMatrix();
 }
 

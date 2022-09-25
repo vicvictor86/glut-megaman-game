@@ -241,6 +241,7 @@ static void display()
 
     for (auto & wall : walls){
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
+        wall.wallObject.drawnModel();
     }
 
     for (auto & enemy : enemies){
@@ -449,6 +450,7 @@ void init(){
     wall1.y = -2;
     wall1.z = player.z;
     wall1.size = 2;
+    wall1.setModel("../Models/PlayerModel/MegamanX.obj");
     tempWalls.push_back(wall1);
 
     Object wall2;
