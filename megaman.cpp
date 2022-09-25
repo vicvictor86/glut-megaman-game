@@ -14,8 +14,10 @@
 #include "classes/Collision.h"
 #include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
+#include "classes/Scene.h"
 #include "classes/Sounds.h"
 #pragma comment(lib, "Winmm.lib")
+
 
 #define FPS 70
 #define SHOOTKEY 'j'
@@ -40,6 +42,9 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
+Scene menu;
+
+bool gameStarted = false;
 
 void countFps(){
     frameCount++;
@@ -208,9 +213,20 @@ void chargingShott(){
     }
 }
 
+static void showMenu(){
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    menu.openMenu();
+
+    glutSwapBuffers();
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor4f(1, 0, 0, 1);
+    glLoadIdentity();
 
     drawnLifeHud();
 
@@ -237,17 +253,45 @@ static void display()
 
     updateCamera();
 
+    countFps();
+
     glutSwapBuffers();
 
-    countFps();
 }
 
 static void key(unsigned char key, int x, int y)
 {
     keyBuffer[key] = true;
 
+    if(!gameStarted) {
+        if(key == 13) {
+            switch(menu.getOption()) {
+                case 0:
+                    gameStarted = true;
+                    cout << "Jogo Iniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    exit(0);
+                    break;
+            }
+
+        }
+    }
+
     if(key == 'q' || key == 'Q') {
         exit(0);
+    }
+
+    if(!gameStarted) {
+            if(key == 'w' || key =='W') {
+                menu.switchOption(-1);
+            } else if(key == 's' || key == 'S') {
+                menu.switchOption(1);
+            }
     }
 
     if (keyBuffer['d'] || keyBuffer['D']) {
@@ -270,6 +314,15 @@ static void key(unsigned char key, int x, int y)
             fireObjects.pop_back();
         }
     }
+
+    if (keyBuffer['f']){
+        if(initialTime == -1){
+            initialTime = time(nullptr);
+        }
+    }
+
+    glutPostRedisplay();
+
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -334,6 +387,21 @@ static void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
+static void specialKey(int key, int x, int y)
+{
+    if(!gameStarted) {
+        switch (key) {
+            case GLUT_KEY_UP:
+                menu.switchOption(-1);
+                break;
+            case GLUT_KEY_DOWN:
+                menu.switchOption(1);
+                break;
+        }
+        glutPostRedisplay();
+    }
+}
+
 static void idle(int)
 {
     glutPostRedisplay();
@@ -351,8 +419,15 @@ const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
 void init(){
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     glEnable(GL_TEXTURE_2D);
-//    glEnable(GL_DEPTH_TEST);
+
+    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+
+    menu.setOptions(options);
+
     player.setModel("../Models/PlayerModel/MegamanX.obj");
 
     player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
@@ -445,14 +520,16 @@ int main(int argc, char *argv[])
     glutCreateWindow("Mega Man");
 
     glutReshapeFunc(resize);
-    glutDisplayFunc(display);
+    glutDisplayFunc(showMenu);
     glutKeyboardFunc(key);
     glutKeyboardUpFunc(keyboardUp);
+    glutSpecialFunc(specialKey);
     glutTimerFunc(1000/FPS, idle, 0);
 
-    glClearColor(1, 1, 1, 1);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+//    glEnable(GL_DEPTH_TEST);
 
     glDepthFunc(GL_LESS);
 
