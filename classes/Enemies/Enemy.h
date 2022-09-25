@@ -10,9 +10,12 @@ class Enemy : public Object {
     public: int shootColdDown=2;
     public: int coldDown=2;
     public: int timeToChangeDirection=-1;
+    public: bool canTakeDamage=true;
+    public: Collision viewOfEnemy;
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects);
     public: void getDamage(int takedDamage);
+    public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision);
     public: Enemy() = default;
 };
 
@@ -62,7 +65,13 @@ void Enemy::shoot(vector<Fire>* fireObjects) {
 }
 
 void Enemy::getDamage(int takedDamage) {
-    this->life -= takedDamage;
+    if(this->canTakeDamage){
+        this->life -= takedDamage;
+    }
+}
+
+void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
+//    cout << "Enemy noticed" << endl;
 }
 
 #endif //GAME_PROJECT_ENEMY_H

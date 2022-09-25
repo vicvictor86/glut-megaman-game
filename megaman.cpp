@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 //Imports proprios
+#include <typeinfo>
 #include <ctime>
 #include <vector>
 #include <Windows.h>
@@ -12,7 +13,7 @@
 #include "classes/Fire.h"
 #include "classes/Player.h"
 #include "classes/Collision.h"
-#include "classes/EnemiesImport.h"
+#include "Enemies/EnemiesImport.h"
 #include "classes/Camera.h"
 #include "classes/Scene.h"
 #include "classes/Sounds.h"
@@ -209,7 +210,7 @@ void chargingShott(){
         int pastTime = actualTime - initialTime;
         float percent = (float)(pastTime + 1) / (float)player.timeChargedShot;
 
-        if(player.g >= 0.01 && player.b >= 0.01){
+        if(player.g >= 0.01 && player.b >= 0.01 && pastTime > 0){
             player.g = 1 - player.g * percent;
             player.b = 1 - player.b * percent;
         }
@@ -247,6 +248,7 @@ static void display()
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->shoot(&fireObjects);
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
     }
 
     checkCollisionsFires(quantityOverLapping);
@@ -506,7 +508,7 @@ void init(){
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.size);
     enemies.push_back(new EnemyVertical(enemy2));
 
-    EnemyJumping enemy3;
+    EnemyMet enemy3;
     enemy3.setX(2);
     enemy3.setY(0);
     enemy3.setZ(player.z);
@@ -514,7 +516,7 @@ void init(){
     enemy3.speed.z = 0.01;
     enemy3.collision.size = enemy3.size + 0.2;
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
-    enemies.push_back(new EnemyJumping(enemy3));
+    enemies.push_back(new EnemyMet(enemy3));
 }
 
 /* Program entry point */

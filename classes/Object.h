@@ -13,6 +13,7 @@ class Object {
     public: float size = 1;
     public: map<char, double> mapCollider;
     public: Collision collision;
+    public: string tag;
     public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
     public: void setX(double updateX);

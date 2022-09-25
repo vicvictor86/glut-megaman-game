@@ -1,7 +1,7 @@
 #ifndef GAME_PROJECT_ENEMYDEPTH_H
 #define GAME_PROJECT_ENEMYDEPTH_H
 
-#include "Enemy.h"
+#include "Enemies/Enemy.h"
 
 class EnemyDepth : public Enemy {
     public: void move() override;
