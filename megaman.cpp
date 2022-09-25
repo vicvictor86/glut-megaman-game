@@ -40,7 +40,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 4, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
@@ -205,9 +205,13 @@ void chargingShott(){
             initialTime = time(nullptr);
         }
 
+        int actualTime = time(nullptr);
+        int pastTime = actualTime - initialTime;
+        float percent = (float)(pastTime + 1) / (float)player.timeChargedShot;
+
         if(player.g >= 0.01 && player.b >= 0.01){
-            player.g -= 0.01;
-            player.b -= 0.01;
+            player.g = 1 - player.g * percent;
+            player.b = 1 - player.b * percent;
         }
     }
 }
