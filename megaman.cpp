@@ -200,7 +200,6 @@ void drawnLifeHud(){
 }
 
 void chargingShott(){
-    cout << "Key: " << keyBuffer[SHOOTKEY] << endl;
     if (keyBuffer[SHOOTKEY]){
         if(initialTime == -1){
             initialTime = time(nullptr);
@@ -282,16 +281,17 @@ static void key(unsigned char key, int x, int y)
         }
     }
 
-    if(key == 'q' || key == 'Q') {
-        exit(0);
+    if(!gameStarted) {
+        if(key == 'w' || key =='W') {
+            menu.switchOption(-1);
+        } else if(key == 's' || key == 'S') {
+            menu.switchOption(1);
+        }
+        return;
     }
 
-    if(!gameStarted) {
-            if(key == 'w' || key =='W') {
-                menu.switchOption(-1);
-            } else if(key == 's' || key == 'S') {
-                menu.switchOption(1);
-            }
+    if(key == 'q' || key == 'Q') {
+        exit(0);
     }
 
     if (keyBuffer['d'] || keyBuffer['D']) {
@@ -328,6 +328,8 @@ static void key(unsigned char key, int x, int y)
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
+
+    if(!gameStarted) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
         Sounds::playSound("shoot");
@@ -396,6 +398,8 @@ static void specialKey(int key, int x, int y)
                 break;
             case GLUT_KEY_DOWN:
                 menu.switchOption(1);
+                break;
+            default:
                 break;
         }
         glutPostRedisplay();
@@ -529,14 +533,14 @@ int main(int argc, char *argv[])
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
 
-//    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_DEPTH_TEST);
 
     glDepthFunc(GL_LESS);
 
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_LIGHTING);
+//    glEnable(GL_LIGHTING);
 //
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
