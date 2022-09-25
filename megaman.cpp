@@ -6,15 +6,21 @@
 
 //Imports proprios
 #include <ctime>
+#include <vector>
+#include <Windows.h>
 #include <iostream>
-#include "classes/fire.h"
-#include "classes/player.h"
+#include "classes/Fire.h"
+#include "classes/Player.h"
 #include "classes/Collision.h"
-#include "classes/Enemy.h"
+#include "classes/EnemiesImport.h"
 #include "classes/Camera.h"
 #include "classes/Scene.h"
+#include "classes/Sounds.h"
+#pragma comment(lib, "Winmm.lib")
+
 
 #define FPS 70
+#define SHOOTKEY 'j'
 
 using namespace std; 
 
@@ -25,16 +31,16 @@ int WIDTH = 640;
 int HEIGHT = 480;
 
 struct WallWithCollider {
-    Object wall;
+    Object wallObject;
     map<char, double> mapColliderWall;
 };
 
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
-vector<Enemy> enemies;
+vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 0, 0, Speed(0, 0, 0), 0.5, 16, 1, 3, Collision(0, 0, -6, 1, 0, 0, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
@@ -82,48 +88,49 @@ void updateCamera(){
     glMatrixMode (GL_MODELVIEW);
 }
 
-int checkCollisionWithWalls(){
+int checkCollisionWithWalls(Object * object){
     //Desenho de paredes e detecção de colisão
     int quantityOverLapping = 0;
     for(int i = 0; i < walls.size(); i++){
         bool lastIteration = i + 1 >= walls.size();
 
-        collisionDirections typeCollision = Collision::checkCollision(player.mapColliderPlayer, player.x, player.y, walls[i].mapColliderWall, lastIteration, &quantityOverLapping);
+        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            player.x = walls[i].mapColliderWall['L'] - 0.51;
-            printf("Colidiu na direita do player\n");
+            object->x = walls[i].mapColliderWall['L'] - object->collision.size / 2;
+            printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            player.x = walls[i].mapColliderWall['R'] + 0.51;
-            printf("Colidiu na esquerda do player\n");
+            object->x = walls[i].mapColliderWall['R'] + object->collision.size / 2;
+            printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            player.y = walls[i].mapColliderWall['B'] - 0.51;
-            player.speed.y = 0;
-            printf("Colidiu em cima do player\n");
+            object->y = walls[i].mapColliderWall['B'] - object->collision.size / 2;
+            object->speed.y = 0;
+            printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
-            player.collision.isOnPlataform = true;
-            player.y = walls[i].mapColliderWall['T'] + 0.5;
-            player.speed.y = 0;
-            printf("Colidiu em baixo do player\n");
+            object->collision.isOnPlataform = true;
+            object->y = walls[i].mapColliderWall['T'] + object->collision.size / 2;
+            object->speed.y = 0;
+            printf("Colidiu em baixo do object\n");
         }
 
         if(typeCollision == NOCOLLISION || typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION || typeCollision == TOPCOLLISION){
-            player.collision.isOnPlataform = false;
+            object->collision.isOnPlataform = false;
         }
 
         if(keyBuffer[' '] && initialWallJump == -1){
-            player.speed.y = 0.05;
+            object->speed.y = 0.05;
             initialWallJump = time(nullptr);
         }
 
         int finalWallJump = time(nullptr);
         if((typeCollision == RIGHTCOLLISION || typeCollision == LEFTCOLLISION) && finalWallJump - initialWallJump >= cooldDownWallJump && keyBuffer[' ']){
+            Sounds::playSound("jump");
             printf("Wall jump\n");
-            player.speed.y = 0.05;
+            object->speed.y = 0.05;
             initialWallJump = -1;
         }
     }
@@ -134,17 +141,74 @@ int checkCollisionWithWalls(){
 void checkCollisionsFires(int quantityOverLapping){
     if (!fireObjects.empty()) {
         for (int i = 0; i < fireObjects.size(); i++) {
-            fireObjects[i].mapCollider = Object::createRetangleCollider(fireObjects[i].collision.x, fireObjects[i].collision.y, fireObjects[i].collision.z, fireObjects[i].collision.size);
-            fireObjects[i].drawFire(player.x, player.y, true);
+            bool isAlive = fireObjects[i].isAlive();
 
-            for(int j = 0; j < enemies.size(); j++){
-                collisionDirections typeCollision = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j].mapCollider, j + 1 >= enemies.size(), &quantityOverLapping);
-                if(typeCollision != NOCOLLISION && typeCollision != NULLCOLLISION){
-                    enemies.erase(enemies.begin() + j);
-                    fireObjects.erase(fireObjects.begin() + i);
-                    break;
+            if(!isAlive){
+                fireObjects.erase(fireObjects.begin() + i);
+            }
+
+            fireObjects[i].drawFire(true);
+
+            collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, i + 1 >= fireObjects.size(), &quantityOverLapping);
+            if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION && fireObjects[i].tagShoot == "Enemy"){
+                player.getDamage(fireObjects[i].damage);
+                fireObjects.erase(fireObjects.begin() + i);
+                if(player.life <= 0){
+                    printf("Game over\n");
+                    exit(0);
                 }
             }
+
+            for(int j = 0; j < enemies.size(); j++) {
+                collisionDirections fireCollideWithEnemy = Collision::checkCollision(fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, enemies[j]->mapCollider, enemies[j]->x, enemies[j]->y, j + 1 >= enemies.size(), &quantityOverLapping);
+                if(fireCollideWithEnemy != NOCOLLISION && fireCollideWithEnemy != NULLCOLLISION){
+                    if(fireObjects[i].tagShoot == "Player"){
+                        enemies[j]->getDamage(player.damage);
+
+                        if(enemies[j]->life <= 0){
+                            delete enemies[j];
+                            enemies.erase(enemies.begin() + j);
+                        }
+
+                        fireObjects.erase(fireObjects.begin() + i);
+                        break;
+                    }
+                }
+            }
+
+        }
+    }
+}
+
+void drawnLifeHud(){
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+        glBegin(GL_QUADS);
+            glColor3d(1.0, 0.0, 0.0);
+            double percentLifeReduction = (double)player.life / player.maxLife;
+            double xQuadLeft = -8;
+            double xQuadRight = xQuadLeft + 5.0 * percentLifeReduction;
+            double yQuadTop = 5.5;
+            double yQuadBottom = yQuadTop - 1;
+            glVertex3d(xQuadLeft + player.x, yQuadBottom + player.y, -6);
+            glVertex3d(xQuadRight + player.x, yQuadBottom + player.y, -6);
+            glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
+            glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
+        glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+}
+
+void chargingShott(){
+    cout << "Key: " << keyBuffer[SHOOTKEY] << endl;
+    if (keyBuffer[SHOOTKEY]){
+        if(initialTime == -1){
+            initialTime = time(nullptr);
+        }
+
+        if(player.g >= 0.01 && player.b >= 0.01){
+            player.g -= 0.01;
+            player.b -= 0.01;
         }
     }
 }
@@ -164,21 +228,28 @@ static void display()
     glColor4f(1, 0, 0, 1);
     glLoadIdentity();
 
+    drawnLifeHud();
+
+    glColor3d(1, 1, 1);
     player.drawnPlayer(true);
 
-    int quantityOverLapping = checkCollisionWithWalls();
+    int quantityOverLapping = checkCollisionWithWalls(&player);
 
-    for (auto &wall: walls) {
-        Object::drawnObject(wall.wall.x, wall.wall.y, wall.wall.z, wall.wall.size);
+    for (auto & wall : walls){
+        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
     }
 
-    for (auto &enemie: enemies) {
-        Enemy::drawnObject(enemie.x, enemie.y, enemie.z, enemie.size);
+    for (auto & enemy : enemies){
+        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->size);
+        checkCollisionWithWalls(enemy);
+        enemy->move();
+        enemy->shoot(&fireObjects);
     }
 
     checkCollisionsFires(quantityOverLapping);
 
     player.move(keyBuffer);
+    chargingShott();
 
     updateCamera();
 
@@ -225,15 +296,16 @@ static void key(unsigned char key, int x, int y)
 
     if (keyBuffer['d'] || keyBuffer['D']) {
         player.speed.x = 0.1;
-        player.direction = RIGHT;
+        player.directionX = RIGHT;
     }
 
     if (keyBuffer['a'] || keyBuffer['A']) {
         player.speed.x = 0.1;
-        player.direction = LEFT;
+        player.directionX = LEFT;
     }
 
     if (keyBuffer[' '] && player.speed.y == 0){
+        Sounds::playSound("jump");
         player.speed.y = 0.05f;
     }
 
@@ -257,19 +329,31 @@ static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
 
-    if (!keyBuffer['f'] && key == 'f'){
+    if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
+        Sounds::playSound("shoot");
         Fire fire;
 
         int finalTime = time(nullptr);
-        if(finalTime - initialTime >= 2) {
+        if(finalTime - initialTime >= player.timeChargedShot) {
             printf("Tiro carregado\n");
             fire.chargedFire = true;
         }
+        player.r = 1;
+        player.g = 1;
+        player.b = 1;
         initialTime = -1;
 
-        double spawnPoint = player.x + 1;
+        double spawnPoint;
+        float shootSpeed;
+        if(player.directionX == RIGHT){
+            spawnPoint = player.x + 0.5;
+            shootSpeed = 0.06f;
+        } else if(player.directionX == LEFT){
+            spawnPoint = player.x - 0.5;
+            shootSpeed = -0.06f;
+        }
+
         double heightOfPlayer = player.y + 0;
-        float shootSpeed = 0.06f;
         float radiusOfFire = 0.5;
 
         fire.x = spawnPoint;
@@ -291,6 +375,8 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.collision.x = 0;
         fire.collision.y = 0;
         fire.collision.z = fire.z;
+
+        fire.tagShoot = "Player";
 
         fireObjects.push_back(fire);
     }
@@ -344,7 +430,7 @@ void init(){
 
     player.setModel("../Models/PlayerModel/MegamanX.obj");
 
-    player.mapColliderPlayer = Object:: createRetangleCollider(0, 0, player.z, 1);
+    player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 
     vector<Object> tempWalls;
 
@@ -387,18 +473,40 @@ void init(){
         Object wall;
         WallWithCollider wallWithCollider;
         wall = tempWall;
-        wallWithCollider.wall = wall;
+        wallWithCollider.wallObject = wall;
         wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
         walls.push_back(wallWithCollider);
     }
 
-    Enemy enemy1;
-    enemy1.x = 4;
-    enemy1.y = 0;
-    enemy1.z = player.z;
-    enemy1.size = 1;
-    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.x, enemy1.y, enemy1.z, enemy1.size);
-    enemies.push_back(enemy1);
+    EnemyHorizontal enemy1;
+    enemy1.setX(4);
+    enemy1.setY(0);
+    enemy1.setZ(player.z);
+    enemy1.setSize(1);
+    enemy1.speed.x = 0.01;
+    enemy1.collision.size = enemy1.size + 0.2;
+    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.size);
+    enemies.push_back(new EnemyHorizontal(enemy1));
+
+    EnemyVertical enemy2;
+    enemy2.setX(8);
+    enemy2.setY(0);
+    enemy2.setZ(player.z);
+    enemy2.setSize(1);
+    enemy2.speed.y = 0.01;
+    enemy2.collision.size = enemy2.size + 0.2;
+    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.size);
+    enemies.push_back(new EnemyVertical(enemy2));
+
+    EnemyJumping enemy3;
+    enemy3.setX(2);
+    enemy3.setY(0);
+    enemy3.setZ(player.z);
+    enemy3.setSize(1);
+    enemy3.speed.z = 0.01;
+    enemy3.collision.size = enemy3.size + 0.2;
+    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
+    enemies.push_back(new EnemyJumping(enemy3));
 }
 
 /* Program entry point */
@@ -422,24 +530,27 @@ int main(int argc, char *argv[])
     glCullFace(GL_BACK);
 
 //    glEnable(GL_DEPTH_TEST);
+
     glDepthFunc(GL_LESS);
 
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
     glEnable(GL_LIGHTING);
+//
+//    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+//    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+//    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+//    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+//    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+//    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+//    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+//    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     init();
+
+//    Sounds::playSound("background");
 
     glutMainLoop();
 

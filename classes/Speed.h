@@ -2,8 +2,8 @@
 #define SPEED_H
 
 class Speed {
-    public: double x, y, z;
-    public: Speed(){};
+    public: double x=0, y=0, z=0;
+    public: Speed() = default;
     public: Speed(double x, double y, double z);
 };
 
