@@ -14,7 +14,7 @@ class Player : public Object
     public: int timeChargedShot=3;
     public: Directions directionX = RIGHT;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(bool drawnCollider, double r, double g, double b);
+    public: void drawnPlayer(double scaleSize, bool drawnCollider, double r, double g, double b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
@@ -45,7 +45,7 @@ void Player:: move(bool keyBuffer[256]){
      }
 }
 
-void Player:: drawnPlayer(bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
+void Player:: drawnPlayer(double scaleSize=1, bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
     r = (r == -1) ? this->r : r;
     g = (g == -1) ? this->g : g;
     b = (b == -1) ? this->b : b;
@@ -72,7 +72,7 @@ void Player:: drawnPlayer(bool drawnCollider=false, double r=-1, double g=-1, do
         }else{
             glRotatef(-90, 0, 1, 0);
         }
-        glScalef(0.3, 0.3, 0.3);
+        glScalef(scaleSize, scaleSize, scaleSize);
         this->model.draw();
     glPopMatrix();
 }

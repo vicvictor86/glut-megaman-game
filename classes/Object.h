@@ -15,7 +15,7 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
-    public: void drawnModel();
+    public: void drawnModel(float scaleSize);
     public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
     public: virtual void setModel(const string& path);
@@ -79,11 +79,11 @@ void Object:: drawnObject(double x, double y, double z, double size){
     glPopMatrix();
 }
 
-void Object:: drawnModel(){
+void Object:: drawnModel(float scaleSize){
     glPushMatrix();
         glLoadIdentity();
-        glTranslatef((float)this->x, (float)this->y, (float)this->z);
-        glScalef(0.3, 0.3, 0.3);
+        glTranslated(this->x, this->y, this->z);
+        glScalef(scaleSize, scaleSize, scaleSize);
         this->model.draw();
     glPopMatrix();
 }

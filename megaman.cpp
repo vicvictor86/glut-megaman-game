@@ -235,13 +235,13 @@ static void display()
     drawnLifeHud();
 
     glColor3d(1, 1, 1);
-    player.drawnPlayer(true);
+    player.drawnPlayer(1.5);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
-        wall.wallObject.drawnModel();
+        wall.wallObject.drawnModel(1);
     }
 
     for (auto & enemy : enemies){
@@ -439,7 +439,7 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setModel("../Models/PlayerModel/MegamanX.obj");
+    player.setModel("../Models/PlayerModel/megmanEXE.obj");
 
     player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 
@@ -450,7 +450,7 @@ void init(){
     wall1.y = -2;
     wall1.z = player.z;
     wall1.size = 2;
-    wall1.setModel("../Models/PlayerModel/MegamanX.obj");
+    wall1.setModel("../Models/megmanEXE.obj");
     tempWalls.push_back(wall1);
 
     Object wall2;
