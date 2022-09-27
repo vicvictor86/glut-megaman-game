@@ -44,6 +44,10 @@ void Player:: move(bool keyBuffer[256]){
      if (!this->collision.isOnPlataform){
          this->speed.y -= 0.001f;
      }
+
+    if (!keyBuffer['a'] && !keyBuffer['A'] && !keyBuffer['d'] && !keyBuffer['D']) {
+        this->speed.x = 0;
+    }
 }
 
 void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, double r=-1, double g=-1, double b=-1){

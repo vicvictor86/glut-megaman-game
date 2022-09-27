@@ -48,6 +48,7 @@ Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
 string actualAnimation = "idle";
+string shootType = "shoot";
 
 bool gameStarted = false;
 
@@ -206,8 +207,8 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
-void executeAnimation(bool *animationCondition, string animationName, Object animationObject){
-    if(*animationCondition){
+void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false){
+    if(*animationCondition && !isLoop){
         countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
             actualAnimation = animationName;
@@ -219,6 +220,19 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             frameAnimation = 0;
             *animationCondition = false;
             actualAnimation = "idle";
+        }
+    }
+
+    if(*animationCondition && isLoop){
+        countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
+            actualAnimation = animationName;
+            frameAnimation++;
+            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+        }
+
+        if(frameAnimation >= animationObject.animations[actualAnimation].size()){
+            frameAnimation = 0;
         }
     }
 }
@@ -276,7 +290,21 @@ static void display()
 
     checkCollisionsFires(quantityOverLapping);
 
-    executeAnimation(&player.isShooting, "shoot", player);
+    executeAnimation(&player.isShooting, shootType, player);
+    bool playerIsMoving = player.speed.isMoving();
+    executeAnimation(&playerIsMoving, "running", player, true);
+
+    vector<bool> animationCondition = {player.isShooting, playerIsMoving};
+    for(int i = 0; i < animationCondition.size(); i++){
+        if(animationCondition[i]){
+            break;
+        }
+
+        if(i == animationCondition.size() - 1){
+            bool idleAnimation = true;
+            executeAnimation(&idleAnimation, "idle", player, true);
+        }
+    }
 
     player.move(keyBuffer);
     chargingShott();
@@ -359,27 +387,32 @@ static void key(unsigned char key, int x, int y)
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
+    cout << key << endl;
 
     if(!gameStarted) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
         player.isShooting = true;
+        shootType = "shoot";
         Sounds::playSound("shoot");
-        Fire fire;
 
+        Fire fire;
         int finalTime = time(nullptr);
         if(finalTime - initialTime >= player.timeChargedShot) {
             printf("Tiro carregado\n");
             fire.chargedFire = true;
+            shootType = "chargShoot";
         }
+        initialTime = -1;
+
         player.r = 1;
         player.g = 1;
         player.b = 1;
-        initialTime = -1;
 
         double spawnPoint;
         float shootSpeed;
         double shootDistance = 1.2;
+
         if(player.directionX == RIGHT){
             spawnPoint = player.x + shootDistance;
             shootSpeed = 0.06f;
@@ -399,11 +432,13 @@ static void keyboardUp(unsigned char key, int x, int y)
             fire.speed.x = shootSpeed * 2;
             fire.sizeH = radiusOfFire * 2;
             fire.collision.sizeH = 0.55 * 2;
+            fire.damage = 2;
         }
         else{
             fire.speed.x = shootSpeed;
             fire.sizeH = radiusOfFire;
             fire.collision.sizeH = 0.55;
+            fire.damage = 1;
         }
 
         fire.slicesAndStacks = 16;
@@ -465,7 +500,9 @@ void init(){
     menu.setOptions(options);
 
     player.setAnimations("idle", "../Models/PlayerModel/", "megmanEXE", 0, 1);
-    player.setAnimations("shoot", "../Models/PlayerModel/animations/", "shoot", 27, 10);
+//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
+//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
+    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
@@ -521,7 +558,7 @@ void init(){
     enemy1.setZ(player.z);
     enemy1.setSize(1);
     enemy1.speed.x = 0.01;
-    enemy1.collision.setSize(enemy1.sizeH + 0.2);
+    enemy1.collision.setSize(enemy1.sizeH + 0.2f);
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
@@ -531,7 +568,7 @@ void init(){
     enemy2.setZ(player.z);
     enemy2.setSize(1);
     enemy2.speed.y = 0.01;
-    enemy2.collision.setSize(enemy2.sizeH + 0.2);
+    enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
     enemies.push_back(new EnemyVertical(enemy2));
 
@@ -541,7 +578,7 @@ void init(){
     enemy3.setZ(player.z);
     enemy3.setSize(1);
     enemy3.speed.z = 0.01;
-    enemy3.collision.setSize(enemy3.sizeH + 0.2);
+    enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
     enemies.push_back(new EnemyMet(enemy3));
 }
