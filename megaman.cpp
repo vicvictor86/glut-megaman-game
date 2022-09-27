@@ -499,7 +499,7 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/", "megmanEXE", 0, 1);
+    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
     player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
