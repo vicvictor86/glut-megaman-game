@@ -49,6 +49,7 @@ Scene menu;
 
 string actualAnimation = "idle";
 string shootType = "shoot";
+int framesInIdle = 0;
 
 bool gameStarted = false;
 
@@ -214,6 +215,8 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             actualAnimation = animationName;
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+
+            framesInIdle = 0;
         }
 
         if(frameAnimation >= animationObject.animations[actualAnimation].size()){
@@ -229,6 +232,10 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             actualAnimation = animationName;
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+            cout << framesInIdle << endl;
+            if(actualAnimation == "idle"){
+                framesInIdle++;
+            }
         }
 
         if(frameAnimation >= animationObject.animations[actualAnimation].size()){
@@ -293,8 +300,10 @@ static void display()
     executeAnimation(&player.isShooting, shootType, player);
     bool playerIsMoving = player.speed.isMoving();
     executeAnimation(&playerIsMoving, "running", player, true);
+    bool idleForTooLong = framesInIdle >= 400;
+    executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
-    vector<bool> animationCondition = {player.isShooting, playerIsMoving};
+    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
             break;
@@ -503,6 +512,7 @@ void init(){
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
     player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
