@@ -209,13 +209,13 @@ void drawnLifeHud(){
 void shootAnimation(bool start){
     if(start){
         countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
-        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= 10 && frameAnimation < 27){
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= player.animationFPS[actualAnimation] && frameAnimation < player.animations[actualAnimation].size()){
             actualAnimation = "shoot";
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
         }
 
-        if(frameAnimation >= 27){
+        if(frameAnimation >= player.animations[actualAnimation].size()){
             frameAnimation = 0;
             player.isShooting = false;
             actualAnimation = "idle";
