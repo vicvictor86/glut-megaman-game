@@ -16,7 +16,9 @@
 #include "Enemies/EnemiesImport.h"
 #include "classes/Camera.h"
 #include "classes/Scene.h"
+#include "classes/Menu.h"
 #include "classes/Sounds.h"
+#include "WallWithCollider.h"
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
 
@@ -33,11 +35,6 @@ uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTim
 int WIDTH = 640;
 int HEIGHT = 480;
 
-struct WallWithCollider {
-    Object wallObject;
-    map<char, double> mapColliderWall;
-};
-
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
@@ -45,7 +42,8 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
-Scene menu;
+Menu menu;
+Scene scene;
 
 string actualAnimation = "idle";
 string shootType = "shoot";
@@ -540,49 +538,8 @@ void init(){
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
-    vector<Object> tempWalls;
-
-    Object wall1;
-    wall1.x = 0;
-    wall1.y = -2;
-    wall1.z = player.z;
-    wall1.setSize(2);
-    tempWalls.push_back(wall1);
-
-    Object wall2;
-    wall2.x = 2;
-    wall2.y = -2;
-    wall2.z = player.z;
-    wall2.setSize(2);
-    tempWalls.push_back(wall2);
-
-    Object wall3;
-    wall3.x = -2;
-    wall3.y = 0;
-    wall3.z = player.z;
-    wall3.setSize(2);
-    tempWalls.push_back(wall3);
-
-    Object wall4;
-    wall4.x = 4;
-    wall4.y = -2;
-    wall4.z = player.z;
-    wall4.setSize(2);
-    tempWalls.push_back(wall4);
-
-    Object wall5;
-    wall5.x = -2;
-    wall5.y = 2;
-    wall5.z = player.z;
-    wall5.setSize(2);
-    tempWalls.push_back(wall5);
-
-    for (auto & tempWall : tempWalls){
-        Object wall;
-        WallWithCollider wallWithCollider;
-        wall = tempWall;
-        wallWithCollider.wallObject = wall;
-        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+    for(int i = 0; i < 3; i++) {
+        WallWithCollider wallWithCollider = scene.buildFloorBlock();
         walls.push_back(wallWithCollider);
     }
 
