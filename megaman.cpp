@@ -45,7 +45,14 @@ Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 4, Collision(0, 0, 
 Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
-bool gameStarted = false;
+enum status
+{
+    mainMenu,
+    onGame,
+    gamePaused
+};
+
+status gameStatus = mainMenu;
 
 void countFps(){
     frameCount++;
@@ -269,11 +276,11 @@ static void key(unsigned char key, int x, int y)
 {
     keyBuffer[key] = true;
 
-    if(!gameStarted) {
+    if(gameStatus == mainMenu){
         if(key == 13) {
             switch(menu.getOption()) {
                 case 0:
-                    gameStarted = true;
+                    gameStatus = onGame;
                     cout << "Jogo Iniciado\n";
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
@@ -285,47 +292,42 @@ static void key(unsigned char key, int x, int y)
                     break;
             }
 
-        }
-    }
-
-    if(!gameStarted) {
-        if(key == 'w' || key =='W') {
+        } else if(key == 'w' || key =='W') {
             menu.switchOption(-1);
         } else if(key == 's' || key == 'S') {
             menu.switchOption(1);
         }
-        return;
+    } else if(gameStatus == onGame) {
+        if (keyBuffer['d'] || keyBuffer['D']) {
+            player.speed.x = 0.1;
+            player.directionX = RIGHT;
+        }
+
+        if (keyBuffer['a'] || keyBuffer['A']) {
+            player.speed.x = 0.1;
+            player.directionX = LEFT;
+        }
+
+        if (keyBuffer[' '] && player.speed.y == 0){
+            Sounds::playSound("jump");
+            player.speed.y = 0.05f;
+        }
+
+        if (!fireObjects.empty()) {
+            if (keyBuffer['g']) {
+                fireObjects.pop_back();
+            }
+        }
+
+        if (keyBuffer['f']){
+            if(initialTime == -1){
+                initialTime = time(nullptr);
+            }
+        }
     }
 
     if(key == 'q' || key == 'Q') {
         exit(0);
-    }
-
-    if (keyBuffer['d'] || keyBuffer['D']) {
-        player.speed.x = 0.1;
-        player.directionX = RIGHT;
-    }
-
-    if (keyBuffer['a'] || keyBuffer['A']) {
-        player.speed.x = 0.1;
-        player.directionX = LEFT;
-    }
-
-    if (keyBuffer[' '] && player.speed.y == 0){
-        Sounds::playSound("jump");
-        player.speed.y = 0.05f;
-    }
-
-    if (!fireObjects.empty()) {
-        if (keyBuffer['g']) {
-            fireObjects.pop_back();
-        }
-    }
-
-    if (keyBuffer['f']){
-        if(initialTime == -1){
-            initialTime = time(nullptr);
-        }
     }
 
     glutPostRedisplay();
@@ -336,7 +338,7 @@ static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
 
-    if(!gameStarted) return;
+    if(gameStatus != onGame) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
         Sounds::playSound("shoot");
@@ -398,7 +400,7 @@ static void keyboardUp(unsigned char key, int x, int y)
 
 static void specialKey(int key, int x, int y)
 {
-    if(!gameStarted) {
+    if(gameStatus == mainMenu || gameStatus == gamePaused) {
         switch (key) {
             case GLUT_KEY_UP:
                 menu.switchOption(-1);
