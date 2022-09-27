@@ -43,7 +43,7 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
@@ -104,22 +104,22 @@ int checkCollisionWithWalls(Object * object){
         collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            object->x = walls[i].mapColliderWall['L'] - object->collision.size / 2;
+            object->x = walls[i].mapColliderWall['L'] - object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            object->x = walls[i].mapColliderWall['R'] + object->collision.size / 2;
+            object->x = walls[i].mapColliderWall['R'] + object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            object->y = walls[i].mapColliderWall['B'] - object->collision.size / 2;
+            object->y = walls[i].mapColliderWall['B'] - object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
             object->collision.isOnPlataform = true;
-            object->y = walls[i].mapColliderWall['T'] + object->collision.size / 2;
+            object->y = walls[i].mapColliderWall['T'] + object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em baixo do object\n");
         }
@@ -206,18 +206,18 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
-void shootAnimation(bool start){
-    if(start){
+void executeAnimation(bool *animationCondition, string animationName, Object animationObject){
+    if(*animationCondition){
         countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
-        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= player.animationFPS[actualAnimation] && frameAnimation < player.animations[actualAnimation].size()){
-            actualAnimation = "shoot";
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
+            actualAnimation = animationName;
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
         }
 
-        if(frameAnimation >= player.animations[actualAnimation].size()){
+        if(frameAnimation >= animationObject.animations[actualAnimation].size()){
             frameAnimation = 0;
-            player.isShooting = false;
+            *animationCondition = false;
             actualAnimation = "idle";
         }
     }
@@ -258,16 +258,16 @@ static void display()
     drawnLifeHud();
 
     glColor3d(1, 1, 1);
-    player.drawnPlayer(actualAnimation, frameAnimation, 1.5);
+    player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
+        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
     }
 
     for (auto & enemy : enemies){
-        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->size);
+        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->sizeH);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->shoot(&fireObjects);
@@ -276,7 +276,8 @@ static void display()
 
     checkCollisionsFires(quantityOverLapping);
 
-    shootAnimation(player.isShooting);
+    executeAnimation(&player.isShooting, "shoot", player);
+
     player.move(keyBuffer);
     chargingShott();
 
@@ -378,30 +379,31 @@ static void keyboardUp(unsigned char key, int x, int y)
 
         double spawnPoint;
         float shootSpeed;
+        double shootDistance = 1.2;
         if(player.directionX == RIGHT){
-            spawnPoint = player.x + 0.5;
+            spawnPoint = player.x + shootDistance;
             shootSpeed = 0.06f;
         } else if(player.directionX == LEFT){
-            spawnPoint = player.x - 0.5;
+            spawnPoint = player.x - shootDistance;
             shootSpeed = -0.06f;
         }
 
-        double heightOfPlayer = player.y + 0;
+        double spawnPointY = player.y + 1.5;
         float radiusOfFire = 0.5;
 
         fire.x = spawnPoint;
-        fire.y = heightOfPlayer;
+        fire.y = spawnPointY;
         fire.z = player.z;
 
         if(fire.chargedFire){
             fire.speed.x = shootSpeed * 2;
-            fire.size = radiusOfFire * 2;
-            fire.collision.size = 0.55 * 2;
+            fire.sizeH = radiusOfFire * 2;
+            fire.collision.sizeH = 0.55 * 2;
         }
         else{
             fire.speed.x = shootSpeed;
-            fire.size = radiusOfFire;
-            fire.collision.size = 0.55;
+            fire.sizeH = radiusOfFire;
+            fire.collision.sizeH = 0.55;
         }
 
         fire.slicesAndStacks = 16;
@@ -465,7 +467,7 @@ void init(){
     player.setAnimations("idle", "../Models/PlayerModel/", "megmanEXE", 0, 1);
     player.setAnimations("shoot", "../Models/PlayerModel/animations/", "shoot", 27, 10);
 
-    player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
+    player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
     vector<Object> tempWalls;
 
@@ -473,35 +475,35 @@ void init(){
     wall1.x = 0;
     wall1.y = -2;
     wall1.z = player.z;
-    wall1.size = 2;
+    wall1.setSize(2);
     tempWalls.push_back(wall1);
 
     Object wall2;
     wall2.x = 2;
     wall2.y = -2;
     wall2.z = player.z;
-    wall2.size = 2;
+    wall2.setSize(2);
     tempWalls.push_back(wall2);
 
     Object wall3;
     wall3.x = -2;
     wall3.y = 0;
     wall3.z = player.z;
-    wall3.size = 2;
+    wall3.setSize(2);
     tempWalls.push_back(wall3);
 
     Object wall4;
     wall4.x = 4;
     wall4.y = -2;
     wall4.z = player.z;
-    wall4.size = 2;
+    wall4.setSize(2);
     tempWalls.push_back(wall4);
 
     Object wall5;
     wall5.x = -2;
     wall5.y = 2;
     wall5.z = player.z;
-    wall5.size = 2;
+    wall5.setSize(2);
     tempWalls.push_back(wall5);
 
     for (auto & tempWall : tempWalls){
@@ -509,7 +511,7 @@ void init(){
         WallWithCollider wallWithCollider;
         wall = tempWall;
         wallWithCollider.wallObject = wall;
-        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.size);
+        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
         walls.push_back(wallWithCollider);
     }
 
@@ -519,8 +521,8 @@ void init(){
     enemy1.setZ(player.z);
     enemy1.setSize(1);
     enemy1.speed.x = 0.01;
-    enemy1.collision.size = enemy1.size + 0.2;
-    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.size);
+    enemy1.collision.setSize(enemy1.sizeH + 0.2);
+    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
     EnemyVertical enemy2;
@@ -529,8 +531,8 @@ void init(){
     enemy2.setZ(player.z);
     enemy2.setSize(1);
     enemy2.speed.y = 0.01;
-    enemy2.collision.size = enemy2.size + 0.2;
-    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.size);
+    enemy2.collision.setSize(enemy2.sizeH + 0.2);
+    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
     enemies.push_back(new EnemyVertical(enemy2));
 
     EnemyMet enemy3;
@@ -539,8 +541,8 @@ void init(){
     enemy3.setZ(player.z);
     enemy3.setSize(1);
     enemy3.speed.z = 0.01;
-    enemy3.collision.size = enemy3.size + 0.2;
-    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
+    enemy3.collision.setSize(enemy3.sizeH + 0.2);
+    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
     enemies.push_back(new EnemyMet(enemy3));
 }
 
