@@ -15,7 +15,9 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
-    public: void drawnModel(float scaleSize);
+    public: map<string, vector<Model>> animations;
+    public: map<string, int> animationFPS;
+    public: void drawnModel(double scaleSize);
     public: static void drawnObject(double x, double y, double z, double size);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double size);
     public: virtual void setModel(const string& path);
@@ -23,6 +25,7 @@ class Object {
     public: void setY(double updateY);
     public: void setZ(double updateZ);
     public: void setSize(float size);
+    public: void setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps);
     public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
 
@@ -62,6 +65,24 @@ void Object:: setModel(const string& path){
     this->model.load(path.c_str());
 }
 
+void Object:: setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps) {
+    vector<Model> animation;
+    for (int i = 1; i <= numberOfFrames; i++) {
+        Model actualModel;
+        actualModel.load((directoryPath + fileName + to_string(i) + ".obj").c_str());
+        animation.push_back(actualModel);
+    }
+
+    if(numberOfFrames == 0){
+        Model actualModel;
+        actualModel.load((directoryPath + fileName + ".obj").c_str());
+        animation.push_back(actualModel);
+    }
+
+    this->animations[animationName] = animation;
+    this->animationFPS[animationName] = fps;
+}
+
 map<char, double> Object:: createRetangleCollider(double x, double y, double z, double size){
     map<char, double> mapColliders;
     mapColliders.insert(pair<char, double>('L', x - (size / 2)));
@@ -79,11 +100,11 @@ void Object:: drawnObject(double x, double y, double z, double size){
     glPopMatrix();
 }
 
-void Object:: drawnModel(float scaleSize){
+void Object:: drawnModel(double scaleSize){
     glPushMatrix();
         glLoadIdentity();
         glTranslated(this->x, this->y, this->z);
-        glScalef(scaleSize, scaleSize, scaleSize);
+        glScaled(scaleSize, scaleSize, scaleSize);
         this->model.draw();
     glPopMatrix();
 }

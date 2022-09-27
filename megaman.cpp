@@ -17,6 +17,7 @@
 #include "classes/Camera.h"
 #include "classes/Scene.h"
 #include "classes/Sounds.h"
+#include <chrono>
 #pragma comment(lib, "Winmm.lib")
 
 
@@ -27,6 +28,7 @@ using namespace std;
 
 int initialTime = -1;
 int countFpsInitialTime = time(nullptr), countFpsFinalTime, frameCount, cooldDownWallJump = 1, initialWallJump = -1;
+uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
 
 int WIDTH = 640;
 int HEIGHT = 480;
@@ -41,11 +43,15 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 4, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
 Scene menu;
 
+string actualAnimation = "idle";
+
 bool gameStarted = false;
+
+int frameAnimation = 0;
 
 void countFps(){
     frameCount++;
@@ -200,6 +206,23 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
+void shootAnimation(bool start){
+    if(start){
+        countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= player.animationFPS[actualAnimation] && frameAnimation < player.animations[actualAnimation].size()){
+            actualAnimation = "shoot";
+            frameAnimation++;
+            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+        }
+
+        if(frameAnimation >= player.animations[actualAnimation].size()){
+            frameAnimation = 0;
+            player.isShooting = false;
+            actualAnimation = "idle";
+        }
+    }
+}
+
 void chargingShott(){
     if (keyBuffer[SHOOTKEY]){
         if(initialTime == -1){
@@ -235,13 +258,12 @@ static void display()
     drawnLifeHud();
 
     glColor3d(1, 1, 1);
-    player.drawnPlayer(1.5);
+    player.drawnPlayer(actualAnimation, frameAnimation, 1.5);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
-        wall.wallObject.drawnModel(1);
     }
 
     for (auto & enemy : enemies){
@@ -254,6 +276,7 @@ static void display()
 
     checkCollisionsFires(quantityOverLapping);
 
+    shootAnimation(player.isShooting);
     player.move(keyBuffer);
     chargingShott();
 
@@ -339,6 +362,7 @@ static void keyboardUp(unsigned char key, int x, int y)
     if(!gameStarted) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
+        player.isShooting = true;
         Sounds::playSound("shoot");
         Fire fire;
 
@@ -434,12 +458,12 @@ void init(){
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 
     glEnable(GL_TEXTURE_2D);
-
     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
 
     menu.setOptions(options);
 
-    player.setModel("../Models/PlayerModel/megmanEXE.obj");
+    player.setAnimations("idle", "../Models/PlayerModel/", "megmanEXE", 0, 1);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/", "shoot", 27, 10);
 
     player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 
@@ -450,7 +474,6 @@ void init(){
     wall1.y = -2;
     wall1.z = player.z;
     wall1.size = 2;
-    wall1.setModel("../Models/megmanEXE.obj");
     tempWalls.push_back(wall1);
 
     Object wall2;
