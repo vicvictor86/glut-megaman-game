@@ -21,14 +21,14 @@ void Fire::drawFire(bool drawnCollider){
     glPushMatrix();
         glTranslated(this->x, this->y, this->z);
         glRotated(90, 1, 0, 0);
-        glutSolidSphere(this->size, this->slicesAndStacks, this->slicesAndStacks);
+        glutSolidSphere(this->sizeH, this->slicesAndStacks, this->slicesAndStacks);
     glPopMatrix();
 
     if(drawnCollider){
         glPushMatrix();
             glTranslated(this->collision.x + this->x, this->collision.y + this->y, this->collision.z);
             glRotated(90, 1, 0, 0);
-            glutWireCube(this->collision.size + 0.3);
+            glutWireCube(this->collision.sizeH + 0.3);
         glPopMatrix();
     }
 

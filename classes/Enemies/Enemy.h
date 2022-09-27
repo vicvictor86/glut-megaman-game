@@ -48,8 +48,8 @@ void Enemy::shoot(vector<Fire>* fireObjects) {
         fire.z = this->z;
 
         fire.speed.x = shootSpeed;
-        fire.size = radiusOfFire;
-        fire.collision.size = 0.55;
+        fire.sizeH = radiusOfFire;
+        fire.collision.sizeH = 0.55;
 
         fire.slicesAndStacks = 16;
         fire.collision.x = 0;

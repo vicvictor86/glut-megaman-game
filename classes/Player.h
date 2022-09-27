@@ -51,20 +51,24 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
     g = (g == -1) ? this->g : g;
     b = (b == -1) ? this->b : b;
     glColor3d(r, g, b);
-    //Player
-    glPushMatrix();
-        glTranslated(this->x, this->y, this->z);
-        glutSolidCube(this->size);
-    glPopMatrix();
 
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
-            glTranslated(this->x, this->y, this->z);
-            glutWireCube(this->collision.size);
+            glBegin(GL_LINE_LOOP);
+                double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
+                double xQuadRight = this->collision.x + this->collision.sizeH / 2;
+                double yQuadTop = this->collision.y + this->collision.sizeV / 2;
+                double yQuadBottom = this->collision.y - this->collision.sizeV / 2;
+                glVertex3d(xQuadLeft + this->x, yQuadBottom + this->y, this->collision.z);
+                glVertex3d(xQuadRight + this->x, yQuadBottom + this->y, this->collision.z);
+                glVertex3d(xQuadRight + this->x, yQuadTop + this->y, this->collision.z);
+                glVertex3d(xQuadLeft + this->x, yQuadTop + this->y, this->collision.z);
+            glEnd();
         glPopMatrix();
     }
 
+    //Player model
     glPushMatrix();
         glLoadIdentity();
         glTranslatef((float)this->x, (float)this->y, (float)this->z);
