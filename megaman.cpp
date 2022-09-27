@@ -208,9 +208,42 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
-void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false){
-    if(*animationCondition && !isLoop){
-        countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+    if(*animationCondition && isLoop){
+        countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
+            actualAnimation = animationName;
+            frameAnimation++;
+            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+
+            if(actualAnimation == "idle"){
+                framesInIdle++;
+            }
+        }
+
+        if(frameAnimation >= animationObject.animations[actualAnimation].size()){
+            frameAnimation = 0;
+        }
+        return;
+    }
+
+    if(*animationCondition && lockInEnd){
+        if(frameAnimation > animationObject.animations[actualAnimation].size()){
+            frameAnimation = 0;
+        }
+
+        countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size() - 1){
+            actualAnimation = animationName;
+            frameAnimation++;
+            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
+        }
+
+        return;
+    }
+
+    if(*animationCondition){
+        countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
             actualAnimation = animationName;
             frameAnimation++;
@@ -223,23 +256,6 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             frameAnimation = 0;
             *animationCondition = false;
             actualAnimation = "idle";
-        }
-    }
-
-    if(*animationCondition && isLoop){
-        countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
-        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
-            actualAnimation = animationName;
-            frameAnimation++;
-            countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
-            cout << framesInIdle << endl;
-            if(actualAnimation == "idle"){
-                framesInIdle++;
-            }
-        }
-
-        if(frameAnimation >= animationObject.animations[actualAnimation].size()){
-            frameAnimation = 0;
         }
     }
 }
@@ -298,12 +314,18 @@ static void display()
     checkCollisionsFires(quantityOverLapping);
 
     executeAnimation(&player.isShooting, shootType, player);
+
     bool playerIsMoving = player.speed.isMoving();
     executeAnimation(&playerIsMoving, "running", player, true);
+
     bool idleForTooLong = framesInIdle >= 400;
     executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
-    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong};
+    bool isInTheAir = player.speed.isInTheAir();
+    cout << isInTheAir << endl;
+    executeAnimation(&isInTheAir, "jumping", player, false, true);
+
+    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
             break;
@@ -512,7 +534,9 @@ void init(){
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
     player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 

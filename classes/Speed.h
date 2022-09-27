@@ -4,8 +4,11 @@
 class Speed {
     public: double x=0, y=0, z=0;
     public: bool isMoving();
+    public: bool isInTheAir();
+
     public: Speed() = default;
     public: Speed(double x, double y, double z);
+
 };
 
 Speed:: Speed(double x, double y, double z){
@@ -15,7 +18,11 @@ Speed:: Speed(double x, double y, double z){
 };
 
 bool Speed:: isMoving(){
-    return this->x != 0 || this->y != 0 || this->z != 0;
+    return this->x != 0 || this->z != 0;
+}
+
+bool Speed:: isInTheAir(){
+    return this->y != 0;
 }
 
 #endif
