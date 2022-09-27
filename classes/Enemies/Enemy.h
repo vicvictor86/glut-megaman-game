@@ -15,7 +15,7 @@ class Enemy : public Object {
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects);
     public: void getDamage(int takedDamage);
-    public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision);
+    public: virtual void noticedEnemy(map<char, float> mapCollisionPlayer, float playerX, float playerY, float playerZ, float sizeOfVision, bool drawnCollision);
     public: Enemy() = default;
 };
 
@@ -38,8 +38,8 @@ void Enemy::shoot(vector<Fire>* fireObjects) {
     if (actualTime - this->timeToShoot > this->shootColdDown) {
         Fire fire;
 
-        double spawnPoint = this->x + 1;
-        double heightOfPlayer = this->y + 0;
+        float spawnPoint = this->x + 1;
+        float heightOfPlayer = this->y + 0;
         float shootSpeed = 0.06f;
         float radiusOfFire = 0.5;
 
@@ -70,7 +70,7 @@ void Enemy::getDamage(int takedDamage) {
     }
 }
 
-void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
+void Enemy::noticedEnemy(map<char, float> mapCollisionPlayer, float playerX, float playerY, float playerZ, float sizeOfVision, bool drawnCollision) {
 //    cout << "Enemy noticed" << endl;
 }
 

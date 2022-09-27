@@ -5,7 +5,7 @@
 
 class EnemyMet : public Enemy {
     public: void move() override;
-    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) override;
+    public: void noticedEnemy(map<char, float> mapCollisionPlayer, float playerX, float playerY, float playerZ, float sizeOfVision, bool drawnCollision) override;
     public: EnemyMet() = default;
 };
 
@@ -25,8 +25,8 @@ void EnemyMet :: move() {
     }
 }
 
-void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
-    map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, sizeOfVision);
+void EnemyMet:: noticedEnemy(map<char, float> mapCollisionPlayer, float playerX, float playerY, float playerZ, float sizeOfVision, bool drawnCollision) {
+    map<char, float> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, sizeOfVision);
     if(drawnCollision){
         Object::drawnObject(this->x, this->y, this->z, 2);
     }

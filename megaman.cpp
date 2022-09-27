@@ -35,7 +35,7 @@ int HEIGHT = 480;
 
 struct WallWithCollider {
     Object wallObject;
-    map<char, double> mapColliderWall;
+    map<char, float> mapColliderWall;
 };
 
 bool keyBuffer[256];
@@ -69,7 +69,7 @@ static void resize(int width, int height)
     HEIGHT = height;
     camera.width = width;
     camera.height = height > 0 ? height : camera.height;
-    camera.aspect = (double)camera.width / (double)camera.height;
+    camera.aspect = (float)camera.width / (float)camera.height;
     glMatrixMode (GL_PROJECTION);
         glLoadIdentity();
         glViewport (camera.x, camera.y, camera.width, camera.height);
@@ -191,16 +191,16 @@ void drawnLifeHud(){
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
         glBegin(GL_QUADS);
-            glColor3d(1.0, 0.0, 0.0);
-            double percentLifeReduction = (double)player.life / player.maxLife;
-            double xQuadLeft = -8;
-            double xQuadRight = xQuadLeft + 5.0 * percentLifeReduction;
-            double yQuadTop = 5.5;
-            double yQuadBottom = yQuadTop - 1;
-            glVertex3d(xQuadLeft + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
-            glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
+            glColor3f(1.0, 0.0, 0.0);
+            float percentLifeReduction = (float)player.life / (float)player.maxLife;
+            float xQuadLeft = -8;
+            float xQuadRight = xQuadLeft + 5.0f * percentLifeReduction;
+            float yQuadTop = 5.5;
+            float yQuadBottom = yQuadTop - 1;
+            glVertex3f(xQuadLeft + player.x, yQuadBottom + player.y, -6);
+            glVertex3f(xQuadRight + player.x, yQuadBottom + player.y, -6);
+            glVertex3f(xQuadRight + player.x, yQuadTop + player.y, -6);
+            glVertex3f(xQuadLeft + player.x, yQuadTop + player.y, -6);
         glEnd();
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
@@ -257,7 +257,7 @@ static void display()
 
     drawnLifeHud();
 
-    glColor3d(1, 1, 1);
+    glColor3f(1, 1, 1);
     player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
@@ -377,9 +377,9 @@ static void keyboardUp(unsigned char key, int x, int y)
         player.b = 1;
         initialTime = -1;
 
-        double spawnPoint;
+        float spawnPoint;
         float shootSpeed;
-        double shootDistance = 1.2;
+        float shootDistance = 1.2;
         if(player.directionX == RIGHT){
             spawnPoint = player.x + shootDistance;
             shootSpeed = 0.06f;
@@ -388,7 +388,7 @@ static void keyboardUp(unsigned char key, int x, int y)
             shootSpeed = -0.06f;
         }
 
-        double spawnPointY = player.y + 1.5;
+        float spawnPointY = player.y + 1.5;
         float radiusOfFire = 0.5;
 
         fire.x = spawnPoint;
@@ -521,7 +521,7 @@ void init(){
     enemy1.setZ(player.z);
     enemy1.setSize(1);
     enemy1.speed.x = 0.01;
-    enemy1.collision.setSize(enemy1.sizeH + 0.2);
+    enemy1.collision.setSize(enemy1.sizeH + 0.2f);
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
@@ -531,7 +531,7 @@ void init(){
     enemy2.setZ(player.z);
     enemy2.setSize(1);
     enemy2.speed.y = 0.01;
-    enemy2.collision.setSize(enemy2.sizeH + 0.2);
+    enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
     enemies.push_back(new EnemyVertical(enemy2));
 
@@ -541,7 +541,7 @@ void init(){
     enemy3.setZ(player.z);
     enemy3.setSize(1);
     enemy3.speed.z = 0.01;
-    enemy3.collision.setSize(enemy3.sizeH + 0.2);
+    enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
     enemies.push_back(new EnemyMet(enemy3));
 }

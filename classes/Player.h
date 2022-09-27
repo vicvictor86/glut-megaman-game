@@ -15,13 +15,13 @@ class Player : public Object
     public: bool isShooting=false;
     public: Directions directionX = RIGHT;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, double r, double g, double b);
+    public: void drawnPlayer(const string& animationName, int animationFrame, float scaleSize, bool drawnCollider, float r, float g, float b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
-    public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
+    public: Player(float x, float y, float z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
 };
 
-Player:: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
+Player:: Player(float x, float y, float z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision) : Object(x, y, z, r, g, b, speed, size, collision){
     this->life = life;
     this->damage = damage;
     this->timeChargedShot = timeChargedShot;
@@ -46,7 +46,7 @@ void Player:: move(bool keyBuffer[256]){
      }
 }
 
-void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
+void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, float scaleSize=1, bool drawnCollider=false, float r=-1, float g=-1, float b=-1){
     r = (r == -1) ? this->r : r;
     g = (g == -1) ? this->g : g;
     b = (b == -1) ? this->b : b;
@@ -56,10 +56,10 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
     if(drawnCollider){
         glPushMatrix();
             glBegin(GL_LINE_LOOP);
-                double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
-                double xQuadRight = this->collision.x + this->collision.sizeH / 2;
-                double yQuadTop = this->collision.y + this->collision.sizeV / 2;
-                double yQuadBottom = this->collision.y - this->collision.sizeV / 2;
+                float xQuadLeft = this->collision.x - this->collision.sizeH / 2;
+                float xQuadRight = this->collision.x + this->collision.sizeH / 2;
+                float yQuadTop = this->collision.y + this->collision.sizeV / 2;
+                float yQuadBottom = this->collision.y - this->collision.sizeV / 2;
                 glVertex3d(xQuadLeft + this->x, yQuadBottom + this->y, this->collision.z);
                 glVertex3d(xQuadRight + this->x, yQuadBottom + this->y, this->collision.z);
                 glVertex3d(xQuadRight + this->x, yQuadTop + this->y, this->collision.z);

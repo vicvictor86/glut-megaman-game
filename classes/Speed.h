@@ -2,12 +2,12 @@
 #define SPEED_H
 
 class Speed {
-    public: double x=0, y=0, z=0;
+    public: float x=0, y=0, z=0;
     public: Speed() = default;
-    public: Speed(double x, double y, double z);
+    public: Speed(float x, float y, float z);
 };
 
-Speed:: Speed(double x, double y, double z){
+Speed:: Speed(float x, float y, float z){
     this->x = x;
     this->y = y;
     this->z = z;

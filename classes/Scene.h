@@ -21,7 +21,7 @@ public: int getOption();
 public: void switchOption(int op);
 };
 
-static void writeOnScreen(double x, double y, string text)
+static void writeOnScreen(float x, float y, string text)
 {
     glRasterPos2f(x, y);
     for(int i = 0; i < (int)text.length(); i++){

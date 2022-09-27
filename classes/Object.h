@@ -7,32 +7,32 @@ using namespace std;
 #define OBJECT_H
 
 class Object {
-    public: double x=0, y=0, z=0;
+    public: float x=0, y=0, z=0;
     public: float r=0, g=0, b=0;
     public: Speed speed;
     public: float sizeH = 1;
     public: float sizeV = 1;
-    public: map<char, double> mapCollider;
+    public: map<char, float> mapCollider;
     public: Collision collision;
     public: string tag;
     public: Model model;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
-    public: void drawnModel(double scaleSize);
-    public: static void drawnObject(double x, double y, double z, double size);
-    public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
+    public: void drawnModel(float scaleSize);
+    public: static void drawnObject(float x, float y, float z, float size);
+    public: static map<char, float> createRetangleCollider(float x, float y, float z, float sizeH, float sizeV);
     public: virtual void setModel(const string& path);
-    public: void setX(double updateX);
-    public: void setY(double updateY);
-    public: void setZ(double updateZ);
+    public: void setX(float updateX);
+    public: void setY(float updateY);
+    public: void setZ(float updateZ);
     public: void setSize(float sizeH, float sizeV);
     public: void setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps);
     public: Object() = default;
-    public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
+    public: Object(float x, float y, float z, float r, float g, float b, Speed speed, float size, Collision collision);
 
 };
 
-Object :: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision){
+Object :: Object(float x, float y, float z, float r, float g, float b, Speed speed, float size, Collision collision){
     this->x = x;
     this->y = y;
     this->z = z;
@@ -44,15 +44,15 @@ Object :: Object(double x, double y, double z, float r, float g, float b, Speed 
     this->collision = collision;
 }
 
-void Object:: setX(double updateX){
+void Object:: setX(float updateX){
     this->x = updateX;
 }
 
-void Object:: setY(double updateY){
+void Object:: setY(float updateY){
     this->y = updateY;
 }
 
-void Object:: setZ(double updateZ){
+void Object:: setZ(float updateZ){
     this->z = updateZ;
     this->collision.z = updateZ;
 }
@@ -89,32 +89,32 @@ void Object:: setAnimations(const string& animationName, const string& directory
     this->animationFPS[animationName] = fps;
 }
 
-map<char, double> Object:: createRetangleCollider(double x, double y, double z, double sizeH, double sizeV=-1){
+map<char, float> Object:: createRetangleCollider(float x, float y, float z, float sizeH, float sizeV=-1){
     if(sizeV == -1){
         sizeV = sizeH;
     }
 
-    map<char, double> mapColliders;
-    mapColliders.insert(pair<char, double>('L', x - (sizeH / 2)));
-    mapColliders.insert(pair<char, double>('R', x + (sizeH / 2)));
-    mapColliders.insert(pair<char, double>('T', y + (sizeV / 2)));
-    mapColliders.insert(pair<char, double>('B', y - (sizeV / 2)));
+    map<char, float> mapColliders;
+    mapColliders.insert(pair<char, float>('L', x - (sizeH / 2)));
+    mapColliders.insert(pair<char, float>('R', x + (sizeH / 2)));
+    mapColliders.insert(pair<char, float>('T', y + (sizeV / 2)));
+    mapColliders.insert(pair<char, float>('B', y - (sizeV / 2)));
 
     return mapColliders;
 }
 
-void Object:: drawnObject(double x, double y, double z, double size){
+void Object:: drawnObject(float x, float y, float z, float size){
     glPushMatrix();
-        glTranslated(x, y, z);
+        glTranslatef(x, y, z);
         glutWireCube(size);
     glPopMatrix();
 }
 
-void Object:: drawnModel(double scaleSize){
+void Object:: drawnModel(float scaleSize){
     glPushMatrix();
         glLoadIdentity();
         glTranslated(this->x, this->y, this->z);
-        glScaled(scaleSize, scaleSize, scaleSize);
+        glScalef(scaleSize, scaleSize, scaleSize);
         this->model.draw();
     glPopMatrix();
 }
