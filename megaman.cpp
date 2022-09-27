@@ -206,18 +206,18 @@ void drawnLifeHud(){
     glEnable(GL_LIGHTING);
 }
 
-void shootAnimation(bool start){
-    if(start){
+void executeAnimation(bool *animationCondition, string animationName, Object animationObject){
+    if(*animationCondition){
         countFramesShootAnimationFinalTime =  chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
-        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= player.animationFPS[actualAnimation] && frameAnimation < player.animations[actualAnimation].size()){
-            actualAnimation = "shoot";
+        if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
+            actualAnimation = animationName;
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
         }
 
-        if(frameAnimation >= player.animations[actualAnimation].size()){
+        if(frameAnimation >= animationObject.animations[actualAnimation].size()){
             frameAnimation = 0;
-            player.isShooting = false;
+            *animationCondition = false;
             actualAnimation = "idle";
         }
     }
@@ -276,7 +276,8 @@ static void display()
 
     checkCollisionsFires(quantityOverLapping);
 
-    shootAnimation(player.isShooting);
+    executeAnimation(&player.isShooting, "shoot", player);
+
     player.move(keyBuffer);
     chargingShott();
 
