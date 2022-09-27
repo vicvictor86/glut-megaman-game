@@ -5,6 +5,7 @@
 #include <cstdlib>
 
 //Imports proprios
+#include <typeinfo>
 #include <ctime>
 #include <vector>
 #include <Windows.h>
@@ -12,11 +13,13 @@
 #include "classes/Fire.h"
 #include "classes/Player.h"
 #include "classes/Collision.h"
-#include "classes/EnemiesImport.h"
+#include "Enemies/EnemiesImport.h"
 #include "classes/Camera.h"
+#include "classes/Scene.h"
 #include "classes/Sounds.h"
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
+
 
 #define FPS 70
 #define SHOOTKEY 'j'
@@ -40,8 +43,11 @@ vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
 vector<Enemy*> enemies;
 
-Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 0, -6, 1));
+Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 4, Collision(0, 0, -6, 1));
 Camera camera(WIDTH, HEIGHT);
+Scene menu;
+
+bool gameStarted = false;
 
 int frameAnimation = 0;
 
@@ -222,26 +228,42 @@ void chargingShott(){
             initialTime = time(nullptr);
         }
 
-        if(player.g >= 0.01 && player.b >= 0.01){
-            player.g -= 0.01;
-            player.b -= 0.01;
+        int actualTime = time(nullptr);
+        int pastTime = actualTime - initialTime;
+        float percent = (float)(pastTime + 1) / (float)player.timeChargedShot;
+
+        if(player.g >= 0.01 && player.b >= 0.01 && pastTime > 0){
+            player.g = 1 - player.g * percent;
+            player.b = 1 - player.b * percent;
         }
     }
+}
+
+static void showMenu(){
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glLoadIdentity();
+
+    menu.openMenu();
+
+    glutSwapBuffers();
 }
 
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glColor4f(1, 0, 0, 1);
+    glLoadIdentity();
 
     drawnLifeHud();
 
     glColor3d(1, 1, 1);
-    player.drawnPlayer(true);
+    player.drawnPlayer(1.5);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.size);
+        wall.wallObject.drawnModel(1);
     }
 
     for (auto & enemy : enemies){
@@ -249,6 +271,7 @@ static void display()
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->shoot(&fireObjects);
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
     }
 
     checkCollisionsFires(quantityOverLapping);
@@ -259,14 +282,43 @@ static void display()
 
     updateCamera();
 
+    countFps();
+
     glutSwapBuffers();
 
-    countFps();
 }
 
 static void key(unsigned char key, int x, int y)
 {
     keyBuffer[key] = true;
+
+    if(!gameStarted) {
+        if(key == 13) {
+            switch(menu.getOption()) {
+                case 0:
+                    gameStarted = true;
+                    cout << "Jogo Iniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    break;
+                case 2:
+                    exit(0);
+                    break;
+            }
+
+        }
+    }
+
+    if(!gameStarted) {
+        if(key == 'w' || key =='W') {
+            menu.switchOption(-1);
+        } else if(key == 's' || key == 'S') {
+            menu.switchOption(1);
+        }
+        return;
+    }
 
     if(key == 'q' || key == 'Q') {
         exit(0);
@@ -292,11 +344,22 @@ static void key(unsigned char key, int x, int y)
             fireObjects.pop_back();
         }
     }
+
+    if (keyBuffer['f']){
+        if(initialTime == -1){
+            initialTime = time(nullptr);
+        }
+    }
+
+    glutPostRedisplay();
+
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
+
+    if(!gameStarted) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
         player.isShooting = true;
@@ -357,6 +420,23 @@ static void keyboardUp(unsigned char key, int x, int y)
     }
 }
 
+static void specialKey(int key, int x, int y)
+{
+    if(!gameStarted) {
+        switch (key) {
+            case GLUT_KEY_UP:
+                menu.switchOption(-1);
+                break;
+            case GLUT_KEY_DOWN:
+                menu.switchOption(1);
+                break;
+            default:
+                break;
+        }
+        glutPostRedisplay();
+    }
+}
+
 static void idle(int)
 {
     glutPostRedisplay();
@@ -374,9 +454,15 @@ const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
 const GLfloat high_shininess[] = {100.0f};
 
 void init(){
+
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+
     glEnable(GL_TEXTURE_2D);
-    glEnable(GL_DEPTH_TEST);
-    player.setModel("../Models/PlayerModel/AnimationObjects/MegamanTes0.obj");
+    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+
+    menu.setOptions(options);
+
+    player.setModel("../Models/PlayerModel/megmanEXE.obj");
 
     player.mapCollider = Object:: createRetangleCollider(0, 0, player.z, 1);
 
@@ -387,6 +473,7 @@ void init(){
     wall1.y = -2;
     wall1.z = player.z;
     wall1.size = 2;
+    wall1.setModel("../Models/megmanEXE.obj");
     tempWalls.push_back(wall1);
 
     Object wall2;
@@ -446,7 +533,7 @@ void init(){
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.size);
     enemies.push_back(new EnemyVertical(enemy2));
 
-    EnemyJumping enemy3;
+    EnemyMet enemy3;
     enemy3.setX(2);
     enemy3.setY(0);
     enemy3.setZ(player.z);
@@ -454,7 +541,7 @@ void init(){
     enemy3.speed.z = 0.01;
     enemy3.collision.size = enemy3.size + 0.2;
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.size);
-    enemies.push_back(new EnemyJumping(enemy3));
+    enemies.push_back(new EnemyMet(enemy3));
 }
 
 /* Program entry point */
@@ -468,21 +555,23 @@ int main(int argc, char *argv[])
     glutCreateWindow("Mega Man");
 
     glutReshapeFunc(resize);
-    glutDisplayFunc(display);
+    glutDisplayFunc(showMenu);
     glutKeyboardFunc(key);
     glutKeyboardUpFunc(keyboardUp);
+    glutSpecialFunc(specialKey);
     glutTimerFunc(1000/FPS, idle, 0);
 
-    glClearColor(1, 1, 1, 1);
     glEnable(GL_CULL_FACE);
     glCullFace(GL_BACK);
+
+    glEnable(GL_DEPTH_TEST);
 
     glDepthFunc(GL_LESS);
 
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-    glEnable(GL_LIGHTING);
+//    glEnable(GL_LIGHTING);
 //
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);

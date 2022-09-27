@@ -1,7 +1,7 @@
 #ifndef GAME_PROJECT_ENEMYJUMPING_H
 #define GAME_PROJECT_ENEMYJUMPING_H
 
-#include "Enemy.h"
+#include "Enemies/Enemy.h"
 
 class EnemyJumping : public Enemy{
     public: void move() override;
