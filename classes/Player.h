@@ -78,7 +78,9 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
         glTranslatef((float)this->x, (float)this->y, (float)this->z);
         glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
         glScaled(scaleSize, scaleSize, scaleSize);
-        this->animations[animationName][animationFrame].draw();
+        if(this->animations[animationName].size() > 0){
+            this->animations[animationName][animationFrame].draw();
+        }
     glPopMatrix();
 }
 

@@ -538,7 +538,9 @@ void init(){
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
-    for(int i = 0; i < 3; i++) {
+    for(int i = 0; i < 8; i++) {
+        if(i == 4)
+            scene.buildHole();
         WallWithCollider wallWithCollider = scene.buildFloorBlock();
         walls.push_back(wallWithCollider);
     }
@@ -602,7 +604,7 @@ int main(int argc, char *argv[])
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
 //    glEnable(GL_LIGHTING);
-//
+
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
 //    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
