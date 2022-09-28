@@ -209,6 +209,10 @@ void drawnLifeHud(){
 }
 
 void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+    if(animationCondition == nullptr){
+        return;
+    }
+
     if(*animationCondition && isLoop){
         countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
@@ -216,8 +220,10 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
 
-            if(actualAnimation == "idle"){
+            if(actualAnimation == "idle" || actualAnimation == "sadIdle"){
                 framesInIdle++;
+            } else {
+                framesInIdle = 0;
             }
         }
 
@@ -257,6 +263,8 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             *animationCondition = false;
             actualAnimation = "idle";
         }
+
+        return;
     }
 }
 
@@ -304,28 +312,26 @@ static void display()
     }
 
     for (auto & enemy : enemies){
-        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->sizeH);
+        enemy->drawEnemy("met", 0, 1.5, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->shoot(&fireObjects);
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
     }
 
-    checkCollisionsFires(quantityOverLapping);
-
+    chargingShott();
     executeAnimation(&player.isShooting, shootType, player);
 
-    bool playerIsMoving = player.speed.isMoving();
-    executeAnimation(&playerIsMoving, "running", player, true);
+    bool playerIsMovingInGround = player.speed.isMoving() && !player.speed.isInTheAir();
+    executeAnimation(&playerIsMovingInGround, "running", player, true);
 
     bool idleForTooLong = framesInIdle >= 400;
     executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
     bool isInTheAir = player.speed.isInTheAir();
-    cout << isInTheAir << endl;
     executeAnimation(&isInTheAir, "jumping", player, false, true);
 
-    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong, isInTheAir};
+    vector<bool> animationCondition = {player.isShooting, playerIsMovingInGround, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
             break;
@@ -338,7 +344,8 @@ static void display()
     }
 
     player.move(keyBuffer);
-    chargingShott();
+
+    checkCollisionsFires(quantityOverLapping);
 
     updateCamera();
 
@@ -418,7 +425,6 @@ static void key(unsigned char key, int x, int y)
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
-    cout << key << endl;
 
     if(!gameStarted) return;
 
@@ -530,11 +536,11 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
@@ -594,6 +600,7 @@ void init(){
     enemy1.speed.x = 0.01;
     enemy1.collision.setSize(enemy1.sizeH + 0.2f);
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
+    enemy1.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
     EnemyVertical enemy2;
@@ -604,6 +611,7 @@ void init(){
     enemy2.speed.y = 0.01;
     enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
+//    enemy2.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
     enemies.push_back(new EnemyVertical(enemy2));
 
     EnemyMet enemy3;
@@ -614,6 +622,7 @@ void init(){
     enemy3.speed.z = 0.01;
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
+//    enemy3.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
     enemies.push_back(new EnemyMet(enemy3));
 }
 
