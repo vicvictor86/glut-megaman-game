@@ -15,7 +15,7 @@ class Player : public Object
     public: bool isShooting=false;
     public: Directions directionX = RIGHT;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode, double r, double g, double b);
+    public: int drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode, double r, double g, double b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
@@ -50,7 +50,7 @@ void Player:: move(bool keyBuffer[256]){
     }
 }
 
-void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, bool devMode=false, double r=-1, double g=-1, double b=-1){
+int Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, bool devMode=false, double r=-1, double g=-1, double b=-1){
     r = (r == -1) ? this->r : r;
     g = (g == -1) ? this->g : g;
     b = (b == -1) ? this->b : b;
@@ -80,6 +80,9 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
             glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
             glScaled(scaleSize, scaleSize, scaleSize);
             if(!this->animations[animationName].empty()){
+                if(animationFrame > this->animations[animationName].size()){
+                    animationFrame = 0;
+                }
                 this->animations[animationName][animationFrame].draw();
             } else {
 //                cout << "A animacao " << animationName << " nao existe" << endl;
@@ -88,6 +91,8 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
     }
 
     glColor3d(1, 1, 1);
+
+    return animationFrame;
 }
 
 void Player:: getDamage(int takedDamage){

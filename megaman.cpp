@@ -213,6 +213,18 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
         return;
     }
 
+    if(player.isShooting && animationName != "shoot" && animationName != "chargShoot"){
+        return;
+    }
+
+    if(*animationCondition && animationName != actualAnimation){
+        frameAnimation = 0;
+    }
+
+    if(*animationCondition && animationName != "idle" && animationName != "sadIdle"){
+        framesInIdle = 0;
+    }
+
     if(*animationCondition && isLoop){
         countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
@@ -222,8 +234,6 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
 
             if(actualAnimation == "idle" || actualAnimation == "sadIdle"){
                 framesInIdle++;
-            } else {
-                framesInIdle = 0;
             }
         }
 
@@ -303,7 +313,7 @@ static void display()
     drawnLifeHud();
 
     glColor3d(1, 1, 1);
-    player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
+    frameAnimation = player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
@@ -319,18 +329,20 @@ static void display()
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
     }
 
-    chargingShott();
-    executeAnimation(&player.isShooting, shootType, player);
+    map<string, bool> animationsConditions;
+    bool idleForTooLong = framesInIdle >= 400;
+    executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
     bool playerIsMovingInGround = player.speed.isMoving() && !player.speed.isInTheAir();
     executeAnimation(&playerIsMovingInGround, "running", player, true);
 
-    bool idleForTooLong = framesInIdle >= 400;
-    executeAnimation(&idleForTooLong, "sadIdle", player, true);
-
     bool isInTheAir = player.speed.isInTheAir();
     executeAnimation(&isInTheAir, "jumping", player, false, true);
 
+    chargingShott();
+    executeAnimation(&player.isShooting, shootType, player);
+
+    cout << framesInIdle << endl;
     vector<bool> animationCondition = {player.isShooting, playerIsMovingInGround, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
@@ -536,12 +548,12 @@ void init(){
 
     menu.setOptions(options);
 
-//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
-//    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
+    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 20);
+    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
@@ -600,7 +612,7 @@ void init(){
     enemy1.speed.x = 0.01;
     enemy1.collision.setSize(enemy1.sizeH + 0.2f);
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
-    enemy1.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
+//    enemy1.setAnimations("met", "../Models/Enemies/met/", "idleMet", 0, 20);
     enemies.push_back(new EnemyHorizontal(enemy1));
 
     EnemyVertical enemy2;
@@ -622,7 +634,7 @@ void init(){
     enemy3.speed.z = 0.01;
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-//    enemy3.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
+    enemy3.setAnimations("met", "../Models/Enemies/met/", "idleMet", 0, 20);
     enemies.push_back(new EnemyMet(enemy3));
 }
 
@@ -653,7 +665,7 @@ int main(int argc, char *argv[])
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-//    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHTING);
 //
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);

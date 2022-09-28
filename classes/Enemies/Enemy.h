@@ -100,7 +100,6 @@ void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, doub
         if(!this->animations[animationName].empty()){
             this->animations[animationName][animationFrame].draw();
         }
-        glColor3d(1, 1, 1);
     glPopMatrix();
 }
 
