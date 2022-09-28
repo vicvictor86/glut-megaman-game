@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-slicing"
 #include "classes/Model.h"
 
 // Biblioteca com funcoes matematicas
@@ -189,9 +191,10 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
-void drawnLifeHud(){
+void drawLifeHud(){
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
+    glPushMatrix();
         glBegin(GL_QUADS);
             glColor3d(1.0, 0.0, 0.0);
             double percentLifeReduction = (double)player.life / player.maxLife;
@@ -204,11 +207,12 @@ void drawnLifeHud(){
             glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
             glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
         glEnd();
+    glPopMatrix();
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
 }
 
-void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+void executeAnimation(bool *animationCondition, const string& animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
     if(animationCondition == nullptr){
         return;
     }
@@ -307,18 +311,16 @@ static void showMenu(){
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor4f(1, 0, 0, 1);
     glLoadIdentity();
 
-    drawnLifeHud();
+    drawLifeHud();
 
-    glColor3d(1, 1, 1);
-    frameAnimation = player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
+    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
+        Object ::drawObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
     }
 
     for (auto & enemy : enemies){
@@ -342,7 +344,6 @@ static void display()
     chargingShott();
     executeAnimation(&player.isShooting, shootType, player);
 
-    cout << framesInIdle << endl;
     vector<bool> animationCondition = {player.isShooting, playerIsMovingInGround, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
@@ -685,3 +686,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+#pragma clang diagnostic pop

@@ -15,7 +15,7 @@ class Player : public Object
     public: bool isShooting=false;
     public: Directions directionX = RIGHT;
     public: void move(bool keyBuffer[256]);
-    public: int drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode, double r, double g, double b);
+    public: int drawPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
@@ -50,15 +50,11 @@ void Player:: move(bool keyBuffer[256]){
     }
 }
 
-int Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, bool devMode=false, double r=-1, double g=-1, double b=-1){
-    r = (r == -1) ? this->r : r;
-    g = (g == -1) ? this->g : g;
-    b = (b == -1) ? this->b : b;
-    glColor3d(r, g, b);
-
+int Player:: drawPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, bool devMode=false){
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
+            glColor3d(0, 0, 0);
             glBegin(GL_LINE_LOOP);
                 double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
                 double xQuadRight = this->collision.x + this->collision.sizeH / 2;
@@ -75,6 +71,7 @@ int Player:: drawnPlayer(const string& animationName="", int animationFrame=1, d
     if(!devMode){
         //Player model
         glPushMatrix();
+            glColor3d(this->r, this->g, this->b);
             glLoadIdentity();
             glTranslatef((float)this->x, (float)this->y, (float)this->z);
             glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
@@ -89,8 +86,6 @@ int Player:: drawnPlayer(const string& animationName="", int animationFrame=1, d
             }
         glPopMatrix();
     }
-
-    glColor3d(1, 1, 1);
 
     return animationFrame;
 }

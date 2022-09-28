@@ -19,6 +19,7 @@ class Fire : public Object
 
 void Fire::drawFire(bool drawnCollider){
     glPushMatrix();
+        glColor3d(1, 0, 0);
         glTranslated(this->x, this->y, this->z);
         glRotated(90, 1, 0, 0);
         glutSolidSphere(this->sizeH, this->slicesAndStacks, this->slicesAndStacks);
@@ -26,6 +27,7 @@ void Fire::drawFire(bool drawnCollider){
 
     if(drawnCollider){
         glPushMatrix();
+            glColor3d(0, 0, 0);
             glTranslated(this->collision.x + this->x, this->collision.y + this->y, this->collision.z);
             glRotated(90, 1, 0, 0);
             glutWireCube(this->collision.sizeH + 0.3);

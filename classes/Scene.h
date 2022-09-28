@@ -41,10 +41,16 @@ void Scene::openMenu(void) {
     float x = -0.75;
     float y = 0.6;
     for(int i = 0; i < this->getOptions().size(); i++) {
-        if(option == i)
-            glColor3f(0.0f,0.0f,1.0f);
-        else
-            glColor3f(1.0f,1.0f,1.0f);
+        if(option == i){
+            glPushMatrix();
+                glColor3f(0.0f,0.0f,1.0f);
+            glPopMatrix();
+        }
+        else{
+            glPushMatrix();
+                glColor3f(1.0f,1.0f,1.0f);
+            glPopMatrix();
+        }
 
         writeOnScreen(x, y, options[i]);
         y -= 0.7;

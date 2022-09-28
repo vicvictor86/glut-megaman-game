@@ -28,7 +28,7 @@ void EnemyMet :: move() {
 void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
     map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, sizeOfVision);
     if(drawnCollision){
-        Object::drawnObject(this->x, this->y, this->z, 2);
+        Object::drawObject(this->x, this->y, this->z, 2);
     }
 
     int quantityOverLapping = 0;

@@ -79,6 +79,7 @@ void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, doub
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
+            glColor3d(0, 0, 0);
             glBegin(GL_LINE_LOOP);
                 double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
                 double xQuadRight = this->collision.x + this->collision.sizeH / 2;
@@ -94,6 +95,7 @@ void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, doub
 
     //Player model
     glPushMatrix();
+        glColor3d(1, 1 , 1);
         glLoadIdentity();
         glTranslatef((float)this->x, (float)this->y, (float)this->z);
         glScaled(scaleSize, scaleSize, scaleSize);
