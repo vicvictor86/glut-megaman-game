@@ -6,7 +6,7 @@
 
 class Scene {
 public: WallWithCollider buildFloorBlock();
-public: WallWithCollider buildRaisedBlock(int level);
+public: WallWithCollider buildRaisedBlock(int yValue);
 public: void buildHole();
 public: Scene() {currentX = 0;};
 private: int currentX;
@@ -32,18 +32,15 @@ void Scene::buildHole() {
     this->currentX += 2;
 }
 
-WallWithCollider Scene::buildRaisedBlock(int level) {
+WallWithCollider Scene::buildRaisedBlock(int yValue) {
     Object wall;
     wall.x = this->currentX;
-    switch(level) {
+    switch(yValue) {
         case 0:
-            wall.y = level;
+            wall.y = yValue;
             break;
         case 1:
             wall.y = 2;
-            break;
-        case 2:
-            wall.y = 4;
             break;
         default:
             break;

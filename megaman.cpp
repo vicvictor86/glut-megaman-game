@@ -538,11 +538,35 @@ void init(){
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
-    for(int i = 0; i < 8; i++) {
-        if(i == 4)
-            scene.buildHole();
-        WallWithCollider wallWithCollider = scene.buildFloorBlock();
-        walls.push_back(wallWithCollider);
+    enum sceneComponents {
+        Floor,
+        Wall,
+        Hole
+    };
+
+    vector<sceneComponents> componentsScene = {};
+    for(int i = 0; i < 20; i++) {
+        if(i == 10)
+            componentsScene.push_back(Wall);
+        else
+            componentsScene.push_back(Floor);
+    }
+
+    WallWithCollider wallWithCollider = scene.buildFloorBlock();
+
+    for(int i = 0; i < componentsScene.size(); i++) {
+        switch (componentsScene[i]) {
+            case Floor:
+                wallWithCollider = scene.buildFloorBlock();
+                walls.push_back(wallWithCollider);
+                break;
+            case Wall:
+                wallWithCollider = scene.buildRaisedBlock(0, true);
+                walls.push_back(wallWithCollider);
+                break;
+            case Hole:
+                break;
+        }
     }
 
     EnemyHorizontal enemy1;
