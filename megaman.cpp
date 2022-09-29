@@ -540,14 +540,20 @@ void init(){
 
     enum sceneComponents {
         Floor,
-        Wall,
+        Wall1,
+        Wall2,
+        Met,
         Hole
     };
 
     vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i < 20; i++) {
-        if(i == 10)
-            componentsScene.push_back(Wall);
+    for(int i = 0; i < 100; i++) {
+        if(i == 15) {
+            componentsScene.push_back(Wall1);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Hole);
+        } else if (i == 18)
+            componentsScene.push_back(Met);
         else
             componentsScene.push_back(Floor);
     }
@@ -560,11 +566,20 @@ void init(){
                 wallWithCollider = scene.buildFloorBlock();
                 walls.push_back(wallWithCollider);
                 break;
-            case Wall:
-                wallWithCollider = scene.buildRaisedBlock(0, true);
+            case Wall1:
+                wallWithCollider = scene.buildRaisedBlock(0);
+                walls.push_back(wallWithCollider);
+                break;
+            case Wall2:
+                wallWithCollider = scene.buildRaisedBlock(1);
                 walls.push_back(wallWithCollider);
                 break;
             case Hole:
+                scene.buildHole();
+                break;
+            case Met:
+                EnemyMet enemy = scene.spawnEnemyMet();
+                enemies.push_back(new EnemyMet(enemy));
                 break;
         }
     }
@@ -588,16 +603,6 @@ void init(){
     enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
     enemies.push_back(new EnemyVertical(enemy2));
-
-    EnemyMet enemy3;
-    enemy3.setX(2);
-    enemy3.setY(0);
-    enemy3.setZ(player.z);
-    enemy3.setSize(1);
-    enemy3.speed.z = 0.01;
-    enemy3.collision.setSize(enemy3.sizeH + 0.2f);
-    enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-    enemies.push_back(new EnemyMet(enemy3));
 }
 
 /* Program entry point */

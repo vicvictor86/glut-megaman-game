@@ -8,7 +8,9 @@ class Scene {
 public: WallWithCollider buildFloorBlock();
 public: WallWithCollider buildRaisedBlock(int yValue);
 public: void buildHole();
-public: Scene() {currentX = 0;};
+public: EnemyMet spawnEnemyMet();
+public: Scene() {currentX = -2;};
+
 private: int currentX;
 };
 
@@ -54,6 +56,18 @@ WallWithCollider Scene::buildRaisedBlock(int yValue) {
     wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 
     return wallWithCollider;
+}
+
+EnemyMet Scene::spawnEnemyMet() {
+    EnemyMet enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.z = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
 }
 
 #endif //GAME_PROJECT_SCENE_H
