@@ -35,6 +35,8 @@ uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTim
 int WIDTH = 640;
 int HEIGHT = 480;
 
+int actualFps = 60;
+
 struct WallWithCollider {
     Object wallObject;
     map<char, double> mapColliderWall;
@@ -61,7 +63,8 @@ void countFps(){
     frameCount++;
     countFpsFinalTime = time(nullptr);
     if(countFpsFinalTime - countFpsInitialTime > 0){
-        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
+        actualFps = frameCount / (countFpsFinalTime - countFpsInitialTime);
+        printf("FPS: %d\n", actualFps);
         frameCount = 0;
         countFpsInitialTime = countFpsFinalTime;
     }
@@ -308,6 +311,28 @@ static void showMenu(){
     glutSwapBuffers();
 }
 
+void showRayCast(bool show, Enemy *enemy){
+    if(show){
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+            glPushMatrix();
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(player.x, enemy->y, -6);
+            glEnd();
+
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(enemy->x - 1, player.y + player.collision.sizeV/2, -6);
+            glEnd();
+            glPopMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_LIGHTING);
+    }
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -327,8 +352,9 @@ static void display()
         enemy->drawEnemy("idle", 0, 1.5, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->shoot(&fireObjects);
+        enemy->shoot(&fireObjects, player, actualFps);
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
+        showRayCast(true, enemy);
     }
 
     map<string, bool> animationsConditions;
@@ -549,12 +575,12 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
-    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 20);
-    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
-    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
+//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 20);
+//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);

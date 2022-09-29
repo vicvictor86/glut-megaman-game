@@ -35,6 +35,7 @@ void Fire::drawFire(bool drawnCollider){
     }
 
     this->x += this->speed.x;
+    this->y += this->speed.y;
 }
 
 bool Fire::isAlive(){

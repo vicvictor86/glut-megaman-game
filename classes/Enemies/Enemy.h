@@ -13,7 +13,7 @@ class Enemy : public Object {
     public: bool canTakeDamage=true;
     public: Collision viewOfEnemy;
     public: virtual void move();
-    public: virtual void shoot(vector<Fire>* fireObjects);
+    public: virtual void shoot(vector<Fire>* fireObjects, Player player, int actualFps);
     public: void getDamage(int takedDamage);
     public: void drawEnemy(const string &animationName, int animationFrame, double scaleSize, bool drawnCollider);
     public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision);
@@ -30,7 +30,7 @@ void Enemy:: move(){
     }
 }
 
-void Enemy::shoot(vector<Fire>* fireObjects) {
+void Enemy::shoot(vector<Fire>* fireObjects, Player player, int actualFps) {
     if (this->timeToShoot == -1) {
         this->timeToShoot = time(nullptr);
     }
@@ -39,16 +39,19 @@ void Enemy::shoot(vector<Fire>* fireObjects) {
     if (actualTime - this->timeToShoot > this->shootColdDown) {
         Fire fire;
 
-        double spawnPoint = this->x + 1;
-        double heightOfPlayer = this->y + 0;
-        float shootSpeed = 0.06f;
+        double spawnPointX = this->x + 1;
+        double spawnPointY = this->y + 0;
         float radiusOfFire = 0.5;
 
-        fire.x = spawnPoint;
-        fire.y = heightOfPlayer;
+        fire.x = spawnPointX;
+        fire.y = spawnPointY;
         fire.z = this->z;
 
-        fire.speed.x = shootSpeed;
+        double deltaX = player.x - this->x;
+        double deltaY = player.y + player.collision.sizeV/2 - this->y;
+
+        fire.speed.x = deltaX/actualFps;
+        fire.speed.y = deltaY/actualFps;
         fire.sizeH = radiusOfFire;
         fire.collision.sizeH = 0.55;
 
