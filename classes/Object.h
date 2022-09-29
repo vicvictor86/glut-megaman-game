@@ -19,7 +19,7 @@ class Object {
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
     public: void drawModel(double scaleSize);
-    public: static void drawObject(double x, double y, double z, double size);
+    public: static void drawObject(double x, double y, double z, double sizeH, double sizeV, double r, double g, double b);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);
@@ -103,11 +103,12 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawObject(double x, double y, double z, double size){
+void Object:: drawObject(double x, double y, double z, double sizeH, double sizeV, double r=0, double g=0, double b=0){
     glPushMatrix();
-        glColor3d(0, 0, 0);
+        glColor3d(r, g, b);
         glTranslated(x, y, z);
-        glutWireCube(size);
+        glScaled(sizeH, sizeV, z);
+        glutWireCube(1);
     glPopMatrix();
 }
 

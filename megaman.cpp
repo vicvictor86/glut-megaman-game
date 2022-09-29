@@ -345,15 +345,15 @@ static void display()
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
-        Object ::drawObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
+        Object ::drawObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH, wall.wallObject.sizeV);
     }
 
     for (auto & enemy : enemies){
         enemy->drawEnemy("idle", 0, 1.5, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
         enemy->shoot(&fireObjects, player, actualFps);
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
         showRayCast(true, enemy);
     }
 
@@ -627,7 +627,7 @@ void init(){
         WallWithCollider wallWithCollider;
         wall = tempWall;
         wallWithCollider.wallObject = wall;
-        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+        wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
         walls.push_back(wallWithCollider);
     }
 
@@ -649,6 +649,7 @@ void init(){
     enemy2.setSize(1);
     enemy2.speed.y = 0.01;
     enemy2.collision.setSize(enemy2.sizeH + 0.2f);
+    enemy2.setSizeVision(2);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
 //    enemy2.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
     enemies.push_back(new EnemyVertical(enemy2));

@@ -11,12 +11,14 @@ class Enemy : public Object {
     public: int coldDown=2;
     public: int timeToChangeDirection=-1;
     public: bool canTakeDamage=true;
-    public: Collision viewOfEnemy;
+    public: bool canShoot=false;
+    public: double sizeVisionX = 2, sizeVisionY = 2;
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects, Player player, int actualFps);
     public: void getDamage(int takedDamage);
+    public: void setSizeVision(double sizeVisionX, double sizeVisionY);
     public: void drawEnemy(const string &animationName, int animationFrame, double scaleSize, bool drawnCollider);
-    public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision);
+    public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision);
     public: Enemy() = default;
 };
 
@@ -31,13 +33,14 @@ void Enemy:: move(){
 }
 
 void Enemy::shoot(vector<Fire>* fireObjects, Player player, int actualFps) {
-    if (this->timeToShoot == -1) {
-        this->timeToShoot = time(nullptr);
+    if(!this->canShoot){
+        return;
     }
 
     int actualTime = time(nullptr);
-    if (actualTime - this->timeToShoot > this->shootColdDown) {
+    if (actualTime - this->timeToShoot > this->shootColdDown || this->timeToShoot == -1) {
         Fire fire;
+        cout <<"shoot"<<endl;
 
         double spawnPointX = this->x + 1;
         double spawnPointY = this->y + 0;
@@ -64,7 +67,8 @@ void Enemy::shoot(vector<Fire>* fireObjects, Player player, int actualFps) {
         fire.damage = this->damage;
 
         fireObjects->push_back(fire);
-        this->timeToShoot = -1;
+
+        this->timeToShoot = this->timeToShoot == -1 ? time(nullptr) : -1;
     }
 }
 
@@ -74,8 +78,17 @@ void Enemy::getDamage(int takedDamage) {
     }
 }
 
-void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
-//    cout << "Enemy noticed" << endl;
+void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
+    map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX);
+    if(drawnCollision){
+        glPushMatrix();
+            Object::drawObject(this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
+        glPopMatrix();
+    }
+
+    int quantityOverLapping = 0;
+    Collision::checkCollision(mapCollisionoViewOfPlayer, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
+    this->canShoot = quantityOverLapping > 0;
 }
 
 void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false){
@@ -106,6 +119,14 @@ void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, doub
             this->animations[animationName][animationFrame].draw();
         }
     glPopMatrix();
+}
+
+void Enemy::setSizeVision(double updateSizeVisionX, double updateSizeVisionY=-1) {
+    if(updateSizeVisionY == -1){
+        updateSizeVisionY = updateSizeVisionX;
+    }
+    this->sizeVisionX = updateSizeVisionX;
+    this->sizeVisionY = updateSizeVisionY;
 }
 
 #endif //GAME_PROJECT_ENEMY_H
