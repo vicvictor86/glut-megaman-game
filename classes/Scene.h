@@ -9,6 +9,8 @@ public: WallWithCollider buildFloorBlock();
 public: WallWithCollider buildRaisedBlock(int yValue);
 public: void buildHole();
 public: EnemyMet spawnEnemyMet();
+public: EnemyHorizontal spawnHorizontalEnemy();
+public: EnemyVertical spawnVerticalEnemy();
 public: Scene() {currentX = -2;};
 
 private: int currentX;
@@ -65,6 +67,30 @@ EnemyMet Scene::spawnEnemyMet() {
     enemy.setZ(-6);
     enemy.setSize(1);
     enemy.speed.z = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
+}
+
+EnemyHorizontal Scene::spawnHorizontalEnemy() {
+    EnemyHorizontal enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.x = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
+}
+
+EnemyVertical Scene::spawnVerticalEnemy(){
+    EnemyVertical enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.y = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
     enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
     return enemy;

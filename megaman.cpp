@@ -542,8 +542,10 @@ void init(){
         Floor,
         Wall1,
         Wall2,
-        Met,
-        Hole
+        Hole,
+        MetEnemy,
+        HorizontalEnemy,
+        VerticalEnemy
     };
 
     vector<sceneComponents> componentsScene = {};
@@ -553,56 +555,36 @@ void init(){
             componentsScene.push_back(Floor);
             componentsScene.push_back(Hole);
         } else if (i == 18)
-            componentsScene.push_back(Met);
+            componentsScene.push_back(VerticalEnemy);
         else
             componentsScene.push_back(Floor);
     }
 
-    WallWithCollider wallWithCollider = scene.buildFloorBlock();
-
-    for(int i = 0; i < componentsScene.size(); i++) {
-        switch (componentsScene[i]) {
+    for(auto & i : componentsScene) {
+        switch (i) {
             case Floor:
-                wallWithCollider = scene.buildFloorBlock();
-                walls.push_back(wallWithCollider);
+                walls.push_back(scene.buildFloorBlock());
                 break;
             case Wall1:
-                wallWithCollider = scene.buildRaisedBlock(0);
-                walls.push_back(wallWithCollider);
+                walls.push_back(scene.buildRaisedBlock(0));
                 break;
             case Wall2:
-                wallWithCollider = scene.buildRaisedBlock(1);
-                walls.push_back(wallWithCollider);
+                walls.push_back(scene.buildRaisedBlock(1));
                 break;
             case Hole:
                 scene.buildHole();
                 break;
-            case Met:
-                EnemyMet enemy = scene.spawnEnemyMet();
-                enemies.push_back(new EnemyMet(enemy));
+            case MetEnemy:
+                enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
+                break;
+            case HorizontalEnemy:
+                enemies.push_back(new EnemyHorizontal(scene.spawnHorizontalEnemy()));
+                break;
+            case VerticalEnemy:
+                enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
                 break;
         }
     }
-
-    EnemyHorizontal enemy1;
-    enemy1.setX(4);
-    enemy1.setY(0);
-    enemy1.setZ(player.z);
-    enemy1.setSize(1);
-    enemy1.speed.x = 0.01;
-    enemy1.collision.setSize(enemy1.sizeH + 0.2f);
-    enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
-    enemies.push_back(new EnemyHorizontal(enemy1));
-
-    EnemyVertical enemy2;
-    enemy2.setX(8);
-    enemy2.setY(0);
-    enemy2.setZ(player.z);
-    enemy2.setSize(1);
-    enemy2.speed.y = 0.01;
-    enemy2.collision.setSize(enemy2.sizeH + 0.2f);
-    enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
-    enemies.push_back(new EnemyVertical(enemy2));
 }
 
 /* Program entry point */
