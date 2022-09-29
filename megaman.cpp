@@ -603,21 +603,21 @@ void init(){
 
     Object wall3;
     wall3.x = -2;
-    wall3.y = 0;
+    wall3.y = 2;
     wall3.z = player.z;
     wall3.setSize(2);
     tempWalls.push_back(wall3);
 
     Object wall4;
-    wall4.x = 4;
-    wall4.y = -2;
+    wall4.x = 0;
+    wall4.y = 4;
     wall4.z = player.z;
     wall4.setSize(2);
     tempWalls.push_back(wall4);
 
     Object wall5;
     wall5.x = -2;
-    wall5.y = 2;
+    wall5.y = 0;
     wall5.z = player.z;
     wall5.setSize(2);
     tempWalls.push_back(wall5);
@@ -661,6 +661,7 @@ void init(){
     enemy3.setSize(1);
     enemy3.speed.z = 0.01;
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
+    enemy3.setSizeVision(4);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
     enemy3.setAnimations("idle", "../Models/Enemies/met/", "idleMet", 0, 20);
     enemies.push_back(new EnemyMet(enemy3));
