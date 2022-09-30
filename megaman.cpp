@@ -681,12 +681,13 @@ void init(){
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.setSizeVision(4);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-    enemy3.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
+    enemy3.setAnimations("idle", "../Models/Enemies/rounderingEnemy/", "rounderingEnemy", 0, 20);
     enemies.push_back(new EnemyJumping(enemy3));
 }
 
 /* Program entry point */
 int main(int argc, char *argv[])
+
 {
     glutInit(&argc, argv);
     glutInitWindowSize(WIDTH, HEIGHT);
