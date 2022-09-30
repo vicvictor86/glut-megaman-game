@@ -87,7 +87,13 @@ int Player:: drawPlayer(const string& animationName="", int animationFrame=1, do
     if(!devMode){
         //Player model
         glPushMatrix();
-            glColor3d(this->r, this->g, this->b);
+            if(this->isInvincible){
+                double firstTick = this->timeInvencible % 2 == 0 ? 1 : 0;
+                double secondTick = this->timeInvencible % 2 != 0 ? 1 : 0;
+                glColor3d(0, firstTick, secondTick);
+            } else {
+                glColor3d(this->r, this->g, this->b);
+            }
             glLoadIdentity();
             glTranslatef((float)this->x, (float)this->y, (float)this->z);
             glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
