@@ -366,7 +366,7 @@ static void display()
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy("idle", 0, 1.5, true);
+        enemy->drawEnemy("idle", player, 0, enemy->scaleSizeModel, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
@@ -656,7 +656,8 @@ void init(){
     enemy1.speed.x = 0.01;
     enemy1.collision.setSize(enemy1.sizeH + 0.2f);
     enemy1.mapCollider = Object ::createRetangleCollider(enemy1.collision.x, enemy1.collision.y, enemy1.collision.z, enemy1.collision.sizeH);
-    enemy1.setAnimations("idle", "../Models/Enemies/horizontalDrone/", "horizontalDrone", 0, 20);
+    enemy1.setAnimations("idle", "../Models/Enemies/horizontalAirPlane/", "horizontalAirPlane", 0, 20);
+    enemy1.scaleSizeModel = 0.5;
     enemies.push_back(new EnemyHorizontal(enemy1));
 
     EnemyVertical enemy2;
@@ -668,7 +669,7 @@ void init(){
     enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.setSizeVision(2);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
-//    enemy2.setAnimations("met", "../Models/Enemies/met/", "met", 0, 20);
+    enemy2.setAnimations("idle", "../Models/Enemies/blaster/", "blaster", 0, 20);
     enemies.push_back(new EnemyVertical(enemy2));
 
     EnemyMet enemy3;
@@ -680,7 +681,7 @@ void init(){
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.setSizeVision(4);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-    enemy3.setAnimations("idle", "../Models/Enemies/met/", "idleMet", 0, 20);
+//    enemy3.setAnimations("idle", "../Models/Enemies/met/", "idleMet", 0, 20);
     enemies.push_back(new EnemyMet(enemy3));
 }
 

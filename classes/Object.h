@@ -16,6 +16,7 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
+    public: double scaleSizeModel = 1;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
     public: void drawModel(double scaleSize);

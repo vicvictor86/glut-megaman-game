@@ -17,7 +17,7 @@ class Enemy : public Object {
     public: virtual void shoot(vector<Fire>* fireObjects, Player player, int actualFps);
     public: void getDamage(int takedDamage);
     public: void setSizeVision(double sizeVisionX, double sizeVisionY);
-    public: void drawEnemy(const string &animationName, int animationFrame, double scaleSize, bool drawnCollider);
+    public: void drawEnemy(const string &animationName, const Player& player, int animationFrame, double scaleSize, double rotationX, double rotationY, bool drawnCollider);
     public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision);
     public: Enemy() = default;
 };
@@ -91,7 +91,7 @@ void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, d
     this->canShoot = quantityOverLapping > 0;
 }
 
-void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false){
+void Enemy::drawEnemy(const string& animationName, const Player& player, int animationFrame=1, double scaleSize=1, double rotationX=0, double rotationY=0, bool drawnCollider=false){
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
@@ -109,11 +109,17 @@ void Enemy::drawEnemy(const string& animationName="", int animationFrame=1, doub
         glPopMatrix();
     }
 
+    double deltaX = player.x - this->x;
+
     //Player model
     glPushMatrix();
-        glColor3d(1, 1 , 1);
         glLoadIdentity();
+        glColor3d(1, 1 , 1);
         glTranslatef((float)this->x, (float)this->y, (float)this->z);
+
+        double angleRotate = deltaX >=0 ? 90 : -90;
+        glRotated(angleRotate, 0, 1, 0);
+
         glScaled(scaleSize, scaleSize, scaleSize);
         if(!this->animations[animationName].empty()){
             this->animations[animationName][animationFrame].draw();
@@ -127,6 +133,7 @@ void Enemy::setSizeVision(double updateSizeVisionX, double updateSizeVisionY=-1)
     }
     this->sizeVisionX = updateSizeVisionX;
     this->sizeVisionY = updateSizeVisionY;
+
 }
 
 #endif //GAME_PROJECT_ENEMY_H

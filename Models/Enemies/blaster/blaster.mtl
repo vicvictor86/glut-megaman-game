@@ -1,34 +1,37 @@
-# Blender 3.3.0 MTL File: 'recon_drone.blend'
+# Blender 3.3.0 MTL File: 'blaster.blend'
 # www.blender.org
 
-newmtl eye
-Ns 360.000000
-Ka 1.000000 1.000000 1.000000
-Kd 1.000000 0.005605 0.000000
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.000000
-d 1.000000
-illum
-map_Kd Sphere.png
-
-
-newmtl hull
+newmtl Black_rubber
 Ns 250.000000
 Ka 1.000000 1.000000 1.000000
-Kd 0.037748 0.039312 0.056704
-Ks 0.500000 0.500000 0.500000
-Ke 0.000000 0.000000 0.000000
-Ni 1.450000
-d 1.000000
-illum 3
-
-newmtl other_light
-Ns 360.000000
-Ka 1.000000 1.000000 1.000000
-Kd 0.434154 0.000000 1.000000
+Kd 0.233327 0.233327 0.233327
 Ks 0.500000 0.500000 0.500000
 Ke 0.000000 0.000000 0.000000
 Ni 1.000000
 d 1.000000
 illum 2
+map_Kd textures/blackrubberspec.png
+
+
+newmtl Metal_grid
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/metalgridespecular.png
+
+
+newmtl Orange_plastic
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 1.000000 0.250964 0.058512
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 2
+map_Kd textures/orangeplasticspecular.png
