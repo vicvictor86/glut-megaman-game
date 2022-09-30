@@ -672,7 +672,7 @@ void init(){
     enemy2.setAnimations("idle", "../Models/Enemies/blaster/", "blaster", 0, 20);
     enemies.push_back(new EnemyVertical(enemy2));
 
-    EnemyMet enemy3;
+    EnemyJumping enemy3;
     enemy3.setX(2);
     enemy3.setY(0);
     enemy3.setZ(player.z);
@@ -681,8 +681,8 @@ void init(){
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.setSizeVision(4);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-//    enemy3.setAnimations("idle", "../Models/Enemies/met/", "idleMet", 0, 20);
-    enemies.push_back(new EnemyMet(enemy3));
+    enemy3.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
+    enemies.push_back(new EnemyJumping(enemy3));
 }
 
 /* Program entry point */
