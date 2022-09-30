@@ -19,6 +19,7 @@
 #include "classes/Menu.h"
 #include "classes/Sounds.h"
 #include "WallWithCollider.h"
+#include "classes/FloatingBlocks.h"
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
 
@@ -38,6 +39,7 @@ int HEIGHT = 480;
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<WallWithCollider> walls;
+vector<FloatingBlocks> floatingBlocks;
 vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
@@ -301,6 +303,12 @@ static void display()
         Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
     }
 
+    for(auto & floatingBlock : floatingBlocks) {
+        cout << "wall.y = " << floatingBlock.wallObject.y << endl;
+        Object ::drawnObject(floatingBlock.wallObject.x, floatingBlock.wallObject.y, floatingBlock.wallObject.z, floatingBlock.wallObject.sizeH);
+        floatingBlock.move();
+    }
+
     for (auto & enemy : enemies){
         Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->sizeH);
         checkCollisionWithWalls(enemy);
@@ -545,7 +553,8 @@ void init(){
         Hole,
         MetEnemy,
         HorizontalEnemy,
-        VerticalEnemy
+        VerticalEnemy,
+        BlockFloating
     };
 
     vector<sceneComponents> componentsScene = {};
@@ -554,8 +563,9 @@ void init(){
             componentsScene.push_back(Wall1);
             componentsScene.push_back(Floor);
             componentsScene.push_back(Hole);
-        } else if (i == 18)
-            componentsScene.push_back(VerticalEnemy);
+        } else if (i == 18) {
+            componentsScene.push_back(BlockFloating);
+        }
         else
             componentsScene.push_back(Floor);
     }
@@ -582,6 +592,26 @@ void init(){
                 break;
             case VerticalEnemy:
                 enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
+                break;
+            case BlockFloating:
+                Object wall;
+                wall.x = 6;
+                wall.y = 0;
+                wall.z = -6;
+                wall.setSize(1);
+
+                FloatingBlocks floating;
+
+                floating.speed.y = 1;
+                floating.collision.setSize(wall.sizeH + 0.2f);
+                floating.wallObject = wall;
+                cout << "AAAAAA" << floating.speed.y << endl;
+                floating.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+                WallWithCollider teste;
+                teste.mapColliderWall = floating.mapColliderWall;
+                teste.wallObject = wall;
+//                walls.push_back(teste);
+                floatingBlocks.push_back(floating);
                 break;
         }
     }

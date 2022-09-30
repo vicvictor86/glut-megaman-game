@@ -1,8 +1,8 @@
-#include "Object.h"
-#include "WallWithCollider.h"
-
 #ifndef GAME_PROJECT_SCENE_H
 #define GAME_PROJECT_SCENE_H
+
+#include "Object.h"
+#include "WallWithCollider.h"
 
 class Scene {
 public: WallWithCollider buildFloorBlock();
