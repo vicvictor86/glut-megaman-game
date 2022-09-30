@@ -194,9 +194,24 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
+void checkCollisionWithEnemies(){
+    int quantityOverLapping = 0;
+    for(int i = 0; i < enemies.size(); i++){
+        collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, enemies[i]->mapCollider, enemies[i]->x, enemies[i]->y, i + 1 >= enemies.size(), &quantityOverLapping);
+        if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
+            player.getDamage(enemies[i]->damage);
+            if(player.life <= 0){
+                printf("Game over\n");
+                exit(0);
+            }
+        }
+    }
+}
+
 void drawLifeHud(){
     glDisable(GL_LIGHTING);
     glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
     glPushMatrix();
         glBegin(GL_QUADS);
             glColor3d(1.0, 0.0, 0.0);
@@ -213,6 +228,7 @@ void drawLifeHud(){
     glPopMatrix();
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
 }
 
 void executeAnimation(bool *animationCondition, const string& animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
@@ -343,6 +359,7 @@ static void display()
     frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
+    checkCollisionWithEnemies();
 
     for (auto & wall : walls){
         Object ::drawObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH, wall.wallObject.sizeV);

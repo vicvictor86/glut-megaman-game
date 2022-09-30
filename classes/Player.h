@@ -13,10 +13,14 @@ class Player : public Object
     public: int damage=1;
     public: int timeChargedShot=3;
     public: bool isShooting=false;
+    public: bool isInvincible=false;
     public: Directions directionX = RIGHT;
+    public: int coldDownInvencible = 4;
+    public: int timeInvencible = -1;
     public: void move(bool keyBuffer[256]);
     public: int drawPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode);
     public: void getDamage(int takedDamage);
+    public: void checkIfIsInvencible();
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
 };
@@ -28,7 +32,19 @@ Player:: Player(double x, double y, double z, float r, float g, float b, Speed s
     this->maxLife = life;
 }
 
+void Player:: checkIfIsInvencible(){
+    int actualTime = time(nullptr);
+    if(this->timeInvencible == -1){
+        this->timeInvencible = time(nullptr);
+    } else if(actualTime - this->timeInvencible >= this->coldDownInvencible){
+        this->isInvincible = false;
+        this->timeInvencible = -1;
+    }
+}
+
 void Player:: move(bool keyBuffer[256]){
+    checkIfIsInvencible();
+
     if (this->speed.x != 0 && (keyBuffer['d'] || keyBuffer['D'])) {
         this->x += this->speed.x;
     }
@@ -91,8 +107,11 @@ int Player:: drawPlayer(const string& animationName="", int animationFrame=1, do
 }
 
 void Player:: getDamage(int takedDamage){
-    this->life -= takedDamage;
-    Sounds::playSound("playerDamage");
+    if(!this->isInvincible){
+        this->life -= takedDamage;
+        this->isInvincible = true;
+        Sounds::playSound("playerDamage");
+    }
 }
 
 #endif
