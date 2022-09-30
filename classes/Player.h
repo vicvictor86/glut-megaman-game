@@ -94,10 +94,12 @@ int Player:: drawPlayer(const string& animationName="", int animationFrame=1, do
             } else {
                 glColor3d(this->r, this->g, this->b);
             }
+
             glLoadIdentity();
             glTranslatef((float)this->x, (float)this->y, (float)this->z);
             glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
             glScaled(scaleSize, scaleSize, scaleSize);
+
             if(!this->animations[animationName].empty()){
                 if(animationFrame > this->animations[animationName].size()){
                     animationFrame = 0;

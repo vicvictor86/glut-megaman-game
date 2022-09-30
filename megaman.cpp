@@ -593,8 +593,8 @@ void init(){
     menu.setOptions(options);
 
 //    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 20);
+//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
+//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
 //    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
 //    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
@@ -669,7 +669,7 @@ void init(){
     enemy2.collision.setSize(enemy2.sizeH + 0.2f);
     enemy2.setSizeVision(2);
     enemy2.mapCollider = Object ::createRetangleCollider(enemy2.collision.x, enemy2.collision.y, enemy2.collision.z, enemy2.collision.sizeH);
-    enemy2.setAnimations("idle", "../Models/Enemies/blaster/", "blaster", 0, 20);
+    enemy2.setAnimations("idle", "../Models/Enemies/rounderingEnemy/", "rounderingEnemy", 0, 20);
     enemies.push_back(new EnemyVertical(enemy2));
 
     EnemyJumping enemy3;
@@ -681,7 +681,7 @@ void init(){
     enemy3.collision.setSize(enemy3.sizeH + 0.2f);
     enemy3.setSizeVision(4);
     enemy3.mapCollider = Object ::createRetangleCollider(enemy3.collision.x, enemy3.collision.y, enemy3.collision.z, enemy3.collision.sizeH);
-    enemy3.setAnimations("idle", "../Models/Enemies/rounderingEnemy/", "rounderingEnemy", 0, 20);
+    enemy3.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
     enemies.push_back(new EnemyJumping(enemy3));
 }
 
