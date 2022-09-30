@@ -592,11 +592,11 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 20);
 //    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
