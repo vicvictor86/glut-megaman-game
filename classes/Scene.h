@@ -1,70 +1,99 @@
-#include <cstdio>
-#include <GL/gl.h>
-#include <GL/glu.h>
-#include <GL/glut.h>
-#include <iostream>
-#include <vector>
+#ifndef GAME_PROJECT_SCENE_H
+#define GAME_PROJECT_SCENE_H
 
-using namespace std;
-
-#ifndef GAME_PROJECT_SCENES_H
-#define GAME_PROJECT_SCENES_H
+#include "Object.h"
+#include "WallWithCollider.h"
 
 class Scene {
-private: vector<string> options;
-private: int option;
-public: Scene(){option = 0;};
-public: void openMenu();
-public: vector<string> getOptions();
-public: void setOptions(vector<string> options);
-public: int getOption();
-public: void switchOption(int op);
+public: WallWithCollider buildFloorBlock();
+public: WallWithCollider buildRaisedBlock(int yValue);
+public: void buildHole();
+public: EnemyMet spawnEnemyMet();
+public: EnemyHorizontal spawnHorizontalEnemy();
+public: EnemyVertical spawnVerticalEnemy();
+public: Scene() {currentX = -2;};
+
+private: int currentX;
 };
 
-static void writeOnScreen(double x, double y, string text)
-{
-    glRasterPos2f(x, y);
-    for(int i = 0; i < (int)text.length(); i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+WallWithCollider Scene::buildFloorBlock() {
+    Object wall;
+    wall.x = this->currentX;
+    wall.y = -2;
+    wall.z = -6;
+    wall.setSize(2);
+
+    WallWithCollider wallWithCollider;
+    wallWithCollider.wallObject = wall;
+    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
+
+    this->currentX += 2;
+
+    return wallWithCollider;
+}
+
+void Scene::buildHole() {
+    this->currentX += 2;
+}
+
+WallWithCollider Scene::buildRaisedBlock(int yValue) {
+    Object wall;
+    wall.x = this->currentX;
+    switch(yValue) {
+        case 0:
+            wall.y = yValue;
+            break;
+        case 1:
+            wall.y = 2;
+            break;
+        default:
+            break;
     }
+
+    wall.z = -6;
+    wall.setSize(2);
+
+    WallWithCollider wallWithCollider;
+    wallWithCollider.wallObject = wall;
+    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+
+    return wallWithCollider;
 }
 
-vector<string> Scene::getOptions() {
-    return this->options;
+EnemyMet Scene::spawnEnemyMet() {
+    EnemyMet enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.z = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
 }
 
-void Scene::setOptions(vector<string> options) {
-    this->options = options;
+EnemyHorizontal Scene::spawnHorizontalEnemy() {
+    EnemyHorizontal enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.x = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
 }
 
-void Scene::openMenu(void) {
-    float x = -0.75;
-    float y = 0.6;
-    for(int i = 0; i < this->getOptions().size(); i++) {
-        if(option == i)
-            glColor3f(0.0f,0.0f,1.0f);
-        else
-            glColor3f(1.0f,1.0f,1.0f);
-
-        writeOnScreen(x, y, options[i]);
-        y -= 0.7;
-    }
+EnemyVertical Scene::spawnVerticalEnemy(){
+    EnemyVertical enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.y = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
 }
 
-int Scene::getOption(){
-    return this->option;
-}
-
-void Scene::switchOption(int op) {
-    if(this->option == 0 && op == -1) {
-        this->option = getOptions().size() - 1;
-    } else if (this->option == getOptions().size() - 1 && op == 1){
-        this->option = 0;
-    } else {
-        this->option += op;
-    }
-}
-
-
-
-#endif //GAME_PROJECT_SCENES_H
+#endif //GAME_PROJECT_SCENE_H

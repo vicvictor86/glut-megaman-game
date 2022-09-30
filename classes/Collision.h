@@ -9,18 +9,31 @@ enum collisionDirections {TOPCOLLISION, BOTTOMCOLLISION, LEFTCOLLISION, RIGHTCOL
 class Collision {
     public: double x=0, y=0, z=0;
     public: float r=0, g=0, b=0;
-    public: double size=1;
+    public: double sizeH=1, sizeV=1;
     public: bool isOnPlataform = false;
     public: Collision()= default;
-    public: Collision(double x, double y, double z, float size);
+    public: Collision(double x, double y, double z, float sizeH, float sizeV);
+    public: void setSize(float sizeH, float sizeV);
     public: static collisionDirections checkCollision(map<char, double> mapCollider1, double x1, double y1, map<char, double> mapCollider2, double x2, double y2, bool lastIteration, int* quantityOverLapping);
 };
 
-Collision :: Collision(double x, double y, double z, float size){
+Collision :: Collision(double x, double y, double z, float sizeH, float sizeV=-1){
+    if(sizeV == -1){
+        sizeV = sizeH;
+    }
     this->x = x;
     this->y = y;
     this->z = z;
-    this->size = size;
+    this->sizeH = sizeH;
+    this->sizeV = sizeV;
+}
+
+void Collision :: setSize(float updateSizeH, float updateSizeV=-1){
+    if(updateSizeV == -1){
+        updateSizeV = updateSizeH;
+    }
+    this->sizeH = updateSizeH;
+    this->sizeV = updateSizeV;
 }
 
 collisionDirections Collision :: checkCollision(map<char, double> mapCollider1 = map<char, double>(), double x1=0, double y1=0, map<char, double> mapCollider2 = map<char, double>(), double x2=0, double y2=0, bool lastIteration=false, int* quantityOverLapping=nullptr){

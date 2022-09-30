@@ -12,9 +12,10 @@ class Player : public Object
     public: int maxLife=3;
     public: int damage=1;
     public: int timeChargedShot=3;
+    public: bool isShooting=false;
     public: Directions directionX = RIGHT;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(bool drawnCollider, double r, double g, double b);
+    public: void drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, double r, double g, double b);
     public: void getDamage(int takedDamage);
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
@@ -43,37 +44,43 @@ void Player:: move(bool keyBuffer[256]){
      if (!this->collision.isOnPlataform){
          this->speed.y -= 0.001f;
      }
+
+    if (!keyBuffer['a'] && !keyBuffer['A'] && !keyBuffer['d'] && !keyBuffer['D']) {
+        this->speed.x = 0;
+    }
 }
 
-void Player:: drawnPlayer(bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
+void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
     r = (r == -1) ? this->r : r;
     g = (g == -1) ? this->g : g;
     b = (b == -1) ? this->b : b;
     glColor3d(r, g, b);
-    //Player
-    glPushMatrix();
-        glTranslated(this->x, this->y, this->z);
-        glutSolidCube(this->size);
-    glPopMatrix();
 
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
-            glTranslated(this->x, this->y, this->z);
-            glutWireCube(this->collision.size);
+            glBegin(GL_LINE_LOOP);
+                double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
+                double xQuadRight = this->collision.x + this->collision.sizeH / 2;
+                double yQuadTop = this->collision.y + this->collision.sizeV / 2;
+                double yQuadBottom = this->collision.y - this->collision.sizeV / 2;
+                glVertex3d(xQuadLeft + this->x, yQuadBottom + this->y, this->collision.z);
+                glVertex3d(xQuadRight + this->x, yQuadBottom + this->y, this->collision.z);
+                glVertex3d(xQuadRight + this->x, yQuadTop + this->y, this->collision.z);
+                glVertex3d(xQuadLeft + this->x, yQuadTop + this->y, this->collision.z);
+            glEnd();
         glPopMatrix();
     }
 
+    //Player model
     glPushMatrix();
         glLoadIdentity();
         glTranslatef((float)this->x, (float)this->y, (float)this->z);
-        if(this->directionX == RIGHT){
-            glRotatef(90, 0, 1, 0);
-        }else{
-            glRotatef(-90, 0, 1, 0);
+        glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
+        glScaled(scaleSize, scaleSize, scaleSize);
+        if(this->animations[animationName].size() > 0){
+            this->animations[animationName][animationFrame].draw();
         }
-        glScalef(0.3, 0.3, 0.3);
-        this->model.draw();
     glPopMatrix();
 }
 

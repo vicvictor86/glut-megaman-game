@@ -335,12 +335,12 @@ public:
         }
         glEndList();
 
-        printf("Model: %s\n", filename);
-        printf("Vertices: %d\n", vertices.size());
-        printf("Texcoords: %d\n", texcoords.size());
-        printf("Normals: %d\n", normals.size());
-        printf("Faces: %d\n", faces.size());
-        printf("Materials: %d\n", materials.size());
+//        printf("Model: %s\n", filename);
+//        printf("Vertices: %d\n", vertices.size());
+//        printf("Texcoords: %d\n", texcoords.size());
+//        printf("Normals: %d\n", normals.size());
+//        printf("Faces: %d\n", faces.size());
+//        printf("Materials: %d\n", materials.size());
 
         sum_x /= vertices.size();
         sum_y /= vertices.size();
