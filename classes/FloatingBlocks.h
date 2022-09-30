@@ -13,7 +13,7 @@ class FloatingBlocks : public Object {
 };
 
 void FloatingBlocks :: move() {
-    cout << "speed" << this->speed.y << endl;
+//    cout << "speed" << this->speed.y << endl;
     if (this->timeToChangeDirection == -1) {
         this->timeToChangeDirection = time(nullptr);
     }

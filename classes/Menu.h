@@ -14,9 +14,10 @@ class Menu {
 private: vector<string> options;
 private: int option;
 public: Menu(){ option = 0;};
-public: void openMenu();
+public: void openMenu(float x, float y);
 public: vector<string> getOptions();
 public: void setOptions(vector<string> options);
+public: void setOption(int option);
 public: int getOption();
 public: void switchOption(int op);
 };
@@ -24,8 +25,8 @@ public: void switchOption(int op);
 static void writeOnScreen(double x, double y, string text)
 {
     glRasterPos2f(x, y);
-    for(int i = 0; i < (int)text.length(); i++){
-        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, text[i]);
+    for(char i : text){
+        glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, i);
     }
 }
 
@@ -33,13 +34,15 @@ vector<string> Menu::getOptions() {
     return this->options;
 }
 
-void Menu::setOptions(vector<string> options) {
-    this->options = options;
+void Menu::setOptions(vector<string> ops) {
+    this->options = ops;
 }
 
-void Menu::openMenu(void) {
-    float x = -0.75;
-    float y = 0.6;
+void Menu::setOption(int op) {
+    this->option = op;
+}
+
+void Menu::openMenu(float x, float y) {
     for(int i = 0; i < this->getOptions().size(); i++) {
         if(option == i)
             glColor3f(0.0f,0.0f,1.0f);

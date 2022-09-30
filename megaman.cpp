@@ -285,12 +285,24 @@ void chargingShott(){
 }
 
 static void showMenu(){
+//    glEnable(GL_DEPTH_TEST);da
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
-
-    menu.openMenu();
-
+    float adjustmentX, adjustmentY;
+    switch (gameStatus) {
+        case mainMenu:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
+        case gamePaused:
+            adjustmentX = -0.78;
+            adjustmentY = 0.45;
+            break;
+    }
+    menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
     glutSwapBuffers();
+
 }
 
 static void display()
@@ -311,7 +323,7 @@ static void display()
     }
 
     for(auto & floatingBlock : floatingBlocks) {
-        cout << "wall.y = " << floatingBlock.wallObject.y << endl;
+//        cout << "wall.y = " << floatingBlock.wallObject.y << endl;
         Object ::drawnObject(floatingBlock.wallObject.x, floatingBlock.wallObject.y, floatingBlock.wallObject.z, floatingBlock.wallObject.sizeH);
         floatingBlock.move();
     }
@@ -335,7 +347,7 @@ static void display()
     executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
     bool isInTheAir = player.speed.isInTheAir();
-    cout << isInTheAir << endl;
+//    cout << isInTheAir << endl;
     executeAnimation(&isInTheAir, "jumping", player, false, true);
 
     vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong, isInTheAir};
@@ -361,15 +373,16 @@ static void display()
 
 }
 
-static void key(unsigned char key, int x, int y)
-{
+static void key(unsigned char key, int x, int y) {
     keyBuffer[key] = true;
 
-    if(gameStatus == mainMenu){
-        if(key == 13) {
-            switch(menu.getOption()) {
+    if (gameStatus == mainMenu) {
+        if (key == 13) {
+            switch (menu.getOption()) {
                 case 0:
                     gameStatus = onGame;
+                    player.x = 0;
+                    player.y = 0;
                     cout << "Jogo Iniciado\n";
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
@@ -381,42 +394,75 @@ static void key(unsigned char key, int x, int y)
                     break;
             }
 
-        } else if(key == 'w' || key =='W') {
+        } else if (key == 'w' || key == 'W') {
             menu.switchOption(-1);
-        } else if(key == 's' || key == 'S') {
+        } else if (key == 's' || key == 'S') {
             menu.switchOption(1);
         }
-    } else if(gameStatus == onGame) {
-        if (keyBuffer['d'] || keyBuffer['D']) {
-            player.speed.x = 0.1;
-            player.directionX = RIGHT;
-        }
+    } else if (gameStatus == gamePaused) {
+        if (key == 13) {
+            switch (menu.getOption()) {
+                case 0:
+                    gameStatus = onGame;
+                    cout << "Jogo Iniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    gameStatus = mainMenu;
+                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    break;
+            }
 
-        if (keyBuffer['a'] || keyBuffer['A']) {
-            player.speed.x = 0.1;
-            player.directionX = LEFT;
+        } else if (key == 'w' || key == 'W') {
+            menu.switchOption(-1);
+        } else if (key == 's' || key == 'S') {
+            menu.switchOption(1);
         }
+    } else if (gameStatus == onGame) {
+        if (keyBuffer[27]) {
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+            vector<string> options = {"Continuar Jornada", "Menu Principal"};
+            menu.setOptions(options);
 
-        if (keyBuffer[' '] && player.speed.y == 0){
-            Sounds::playSound("jump");
-            player.speed.y = 0.05f;
-        }
+            menu.setOption(0);
+            gameStatus = gamePaused;
+            cout << "Jogo Pausado\n";
+            glutDisplayFunc(showMenu);
+        } else {
+            if (keyBuffer['d'] || keyBuffer['D']) {
+                player.speed.x = 0.1;
+                player.directionX = RIGHT;
+            }
 
-        if (!fireObjects.empty()) {
-            if (keyBuffer['g']) {
-                fireObjects.pop_back();
+            if (keyBuffer['a'] || keyBuffer['A']) {
+                player.speed.x = 0.1;
+                player.directionX = LEFT;
+            }
+
+            if (keyBuffer[' '] && player.speed.y == 0) {
+                Sounds::playSound("jump");
+                player.speed.y = 0.05f;
+            }
+
+            if (!fireObjects.empty()) {
+                if (keyBuffer['g']) {
+                    fireObjects.pop_back();
+                }
+            }
+
+            if (keyBuffer['f']) {
+                if (initialTime == -1) {
+                    initialTime = time(nullptr);
+                }
+            }
+
+            if (key == 'q' || key == 'Q') {
+                exit(0);
             }
         }
-
-        if (keyBuffer['f']){
-            if(initialTime == -1){
-                initialTime = time(nullptr);
-            }
-        }
-    }
-
-    if(key == 'q' || key == 'Q') {
-        exit(0);
     }
 
     glutPostRedisplay();
@@ -426,7 +472,7 @@ static void key(unsigned char key, int x, int y)
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
-    cout << key << endl;
+//    cout << key << endl;
 
     if(gameStatus != onGame) return;
 
@@ -607,7 +653,7 @@ void init(){
                 floating.speed.y = 1;
                 floating.collision.setSize(wall.sizeH + 0.2f);
                 floating.wallObject = wall;
-                cout << "AAAAAA" << floating.speed.y << endl;
+//                cout << "AAAAAA" << floating.speed.y << endl;
                 floating.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
                 WallWithCollider teste;
                 teste.mapColliderWall = floating.mapColliderWall;
