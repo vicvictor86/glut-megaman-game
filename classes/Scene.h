@@ -3,15 +3,18 @@
 
 #include "Object.h"
 #include "Wall.h"
+#include "FloatingBlocksHor.h"
 
 class Scene {
+public: bool changeDirection;
 public: Wall buildFloorBlock();
 public: Wall buildRaisedBlock(int yValue);
-public: void buildHole();
+public: FloatingBlocksHor buildFloatBlockHor(float y);
+public: void buildHole(float x);
 public: EnemyMet spawnEnemyMet();
 public: EnemyHorizontal spawnHorizontalEnemy();
 public: EnemyVertical spawnVerticalEnemy();
-public: Scene() {currentX = -2;};
+public: Scene() {currentX = -2;changeDirection = true;};
 
 private: int currentX;
 };
@@ -29,8 +32,8 @@ Wall Scene::buildFloorBlock() {
     return wall;
 }
 
-void Scene::buildHole() {
-    this->currentX += 2;
+void Scene::buildHole(float x = 2) {
+    this->currentX += x;
 }
 
 Wall Scene::buildRaisedBlock(int yValue) {
@@ -52,6 +55,33 @@ Wall Scene::buildRaisedBlock(int yValue) {
     wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 
     return wall;
+}
+
+FloatingBlocksHor Scene::buildFloatBlockHor(float y = -1) {
+    FloatingBlocksHor floating;
+    floating.x = this->currentX;
+    floating.y = y;
+    floating.z = -6;
+    floating.setSize(1);
+
+    floating.collision.setSize(floating.sizeH + 0.2f);
+    floating.x = this->currentX;
+    floating.y = y;
+    floating.z = -6;
+
+    if(this->changeDirection) {
+        floating.speed.x = 0.02;
+        changeDirection = false;
+    } else {
+        floating.speed.x = -0.02;
+        changeDirection = true;
+    }
+
+    floating.mapColliderWall = Object ::createRetangleCollider(floating.x, floating.y, floating.z, floating.sizeH);
+
+    this->currentX += 2;
+
+    return floating;
 }
 
 EnemyMet Scene::spawnEnemyMet() {
