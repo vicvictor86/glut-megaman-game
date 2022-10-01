@@ -38,7 +38,7 @@ int HEIGHT = 480;
 
 bool keyBuffer[256];
 vector<Fire> fireObjects;
-vector<WallWithCollider> walls;
+vector<Wall *> walls;
 vector<FloatingBlocks> floatingBlocks;
 vector<Enemy*> enemies;
 
@@ -110,25 +110,25 @@ int checkCollisionWithWalls(Object * object){
     for(int i = 0; i < walls.size(); i++){
         bool lastIteration = i + 1 >= walls.size();
 
-        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
+        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i]->mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            object->x = walls[i].mapColliderWall['L'] - object->collision.sizeH / 2 - object->collision.x;
+            object->x = walls[i]->mapColliderWall['L'] - object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            object->x = walls[i].mapColliderWall['R'] + object->collision.sizeH / 2 - object->collision.x;
+            object->x = walls[i]->mapColliderWall['R'] + object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            object->y = walls[i].mapColliderWall['B'] - object->collision.sizeV / 2 - object->collision.y;
+            object->y = walls[i]->mapColliderWall['B'] - object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
             object->collision.isOnPlataform = true;
-            object->y = walls[i].mapColliderWall['T'] + object->collision.sizeV / 2 - object->collision.y;
+            object->y = walls[i]->mapColliderWall['T'] + object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em baixo do object\n");
         }
@@ -150,6 +150,7 @@ int checkCollisionWithWalls(Object * object){
             initialWallJump = -1;
         }
     }
+
 
     return quantityOverLapping;
 }
@@ -319,13 +320,8 @@ static void display()
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
-    }
-
-    for(auto & floatingBlock : floatingBlocks) {
-//        cout << "wall.y = " << floatingBlock.wallObject.y << endl;
-        Object ::drawnObject(floatingBlock.wallObject.x, floatingBlock.wallObject.y, floatingBlock.wallObject.z, floatingBlock.wallObject.sizeH);
-        floatingBlock.move();
+        Object ::drawnObject(wall->wallObject.x, wall->wallObject.y, wall->wallObject.z, wall->wallObject.sizeH);
+        wall->move();
     }
 
     for (auto & enemy : enemies){
@@ -584,11 +580,11 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
@@ -621,13 +617,13 @@ void init(){
     for(auto & i : componentsScene) {
         switch (i) {
             case Floor:
-                walls.push_back(scene.buildFloorBlock());
+                walls.push_back(new Wall(scene.buildFloorBlock()));
                 break;
             case Wall1:
-                walls.push_back(scene.buildRaisedBlock(0));
+                walls.push_back(new Wall(scene.buildRaisedBlock(0)));
                 break;
             case Wall2:
-                walls.push_back(scene.buildRaisedBlock(1));
+                walls.push_back(new Wall(scene.buildRaisedBlock(1)));
                 break;
             case Hole:
                 scene.buildHole();
@@ -642,24 +638,21 @@ void init(){
                 enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
                 break;
             case BlockFloating:
-                Object wall;
-                wall.x = 6;
-                wall.y = 0;
-                wall.z = -6;
-                wall.setSize(1);
-
                 FloatingBlocks floating;
+                floating.x = 6;
+                floating.y = 0;
+                floating.z = -6;
+                floating.setSize(1);
 
                 floating.speed.y = 1;
-                floating.collision.setSize(wall.sizeH + 0.2f);
-                floating.wallObject = wall;
-//                cout << "AAAAAA" << floating.speed.y << endl;
-                floating.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
-                WallWithCollider teste;
-                teste.mapColliderWall = floating.mapColliderWall;
-                teste.wallObject = wall;
-//                walls.push_back(teste);
-                floatingBlocks.push_back(floating);
+                floating.collision.setSize(floating.sizeH + 0.2f);
+                floating.wallObject.x = 6;
+                floating.wallObject.y = 0;
+                floating.wallObject.z = -6;
+                floating.speed.y = 0.01;
+                cout << "AAAAAA" << floating.speed.y << endl;
+                floating.mapColliderWall = Object ::createRetangleCollider(floating.wallObject.x, floating.wallObject.y, floating.wallObject.z, floating.wallObject.sizeH);
+                walls.push_back(new FloatingBlocks(floating));
                 break;
         }
     }

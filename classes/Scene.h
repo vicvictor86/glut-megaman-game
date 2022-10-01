@@ -2,11 +2,11 @@
 #define GAME_PROJECT_SCENE_H
 
 #include "Object.h"
-#include "WallWithCollider.h"
+#include "Wall.h"
 
 class Scene {
-public: WallWithCollider buildFloorBlock();
-public: WallWithCollider buildRaisedBlock(int yValue);
+public: Wall buildFloorBlock();
+public: Wall buildRaisedBlock(int yValue);
 public: void buildHole();
 public: EnemyMet spawnEnemyMet();
 public: EnemyHorizontal spawnHorizontalEnemy();
@@ -16,14 +16,14 @@ public: Scene() {currentX = -2;};
 private: int currentX;
 };
 
-WallWithCollider Scene::buildFloorBlock() {
+Wall Scene::buildFloorBlock() {
     Object wall;
     wall.x = this->currentX;
     wall.y = -2;
     wall.z = -6;
     wall.setSize(2);
 
-    WallWithCollider wallWithCollider;
+    Wall wallWithCollider;
     wallWithCollider.wallObject = wall;
     wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
 
@@ -36,7 +36,7 @@ void Scene::buildHole() {
     this->currentX += 2;
 }
 
-WallWithCollider Scene::buildRaisedBlock(int yValue) {
+Wall Scene::buildRaisedBlock(int yValue) {
     Object wall;
     wall.x = this->currentX;
     switch(yValue) {
@@ -53,7 +53,7 @@ WallWithCollider Scene::buildRaisedBlock(int yValue) {
     wall.z = -6;
     wall.setSize(2);
 
-    WallWithCollider wallWithCollider;
+    Wall wallWithCollider;
     wallWithCollider.wallObject = wall;
     wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 

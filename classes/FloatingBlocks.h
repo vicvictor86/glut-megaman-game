@@ -2,18 +2,18 @@
 #define GAME_PROJECT_FLOATINGBLOCKS_H
 
 #include "Object.h"
+#include "Wall.h"
 
-class FloatingBlocks : public Object {
+class FloatingBlocks : public Wall {
     public: int coldDown = 2;
     public: int timeToChangeDirection = -1;
-    public: void move();
+    public: void move() override;
     public: FloatingBlocks() = default;
-    public: Object wallObject;
-    public: map<char, double> mapColliderWall;
+    public: FloatingBlocks(Object wallObject, map<char, double> mapColliderWall, int coldDown);
 };
 
 void FloatingBlocks :: move() {
-//    cout << "speed" << this->speed.y << endl;
+    cout << "TANKA AI" << endl;
     if (this->timeToChangeDirection == -1) {
         this->timeToChangeDirection = time(nullptr);
     }
@@ -25,8 +25,16 @@ void FloatingBlocks :: move() {
     }
 
     if (this->speed.y != 0) {
-        this->y += this->speed.y;
+        this->wallObject.y += this->speed.y;
     }
+
+    this->mapColliderWall = Object ::createRetangleCollider(this->wallObject.x, this->wallObject.y, this->wallObject.z, this->sizeH, this->sizeV);
+}
+
+FloatingBlocks::FloatingBlocks(Object wallObject, map<char, double> mapColliderWall, int coldDown=2) {
+    this->wallObject = wallObject;
+    this->mapColliderWall = mapColliderWall;
+    this->coldDown = coldDown;
 }
 
 #endif //GAME_PROJECT_FLOATINGBLOCKS_H
