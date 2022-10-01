@@ -13,6 +13,7 @@ class Enemy : public Object {
     public: bool canTakeDamage=true;
     public: bool canShoot=false;
     public: double sizeVisionX = 2, sizeVisionY = 2;
+    public: double offSetShootX = 1, offSetShootY = 0;
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects, Player player, int actualFps);
     public: void getDamage(int takedDamage);
@@ -40,18 +41,22 @@ void Enemy::shoot(vector<Fire>* fireObjects, Player player, int actualFps) {
     int actualTime = time(nullptr);
     if (actualTime - this->timeToShoot > this->shootColdDown || this->timeToShoot == -1) {
         Fire fire;
-        cout <<"shoot"<<endl;
 
-        double spawnPointX = this->x + 1;
-        double spawnPointY = this->y + 0;
+        double deltaX = player.x - this->x;
+        double deltaY = player.y + player.collision.sizeV/2 - this->y;
+
+        double offSetXDirectional = deltaX > 0 ? this->offSetShootX : -this->offSetShootX;
+        double offSetYDirectional = deltaY > 0 ? this->offSetShootY : -this->offSetShootY;
+
+        double spawnPointX = this->x + offSetXDirectional;
+        double spawnPointY = this->y + offSetYDirectional;
         float radiusOfFire = 0.5;
 
         fire.x = spawnPointX;
         fire.y = spawnPointY;
         fire.z = this->z;
 
-        double deltaX = player.x - this->x;
-        double deltaY = player.y + player.collision.sizeV/2 - this->y;
+
 
         fire.speed.x = deltaX/actualFps;
         fire.speed.y = deltaY/actualFps;

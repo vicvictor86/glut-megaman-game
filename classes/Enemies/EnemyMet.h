@@ -23,6 +23,14 @@ void EnemyMet :: move() {
     if (this->speed.x != 0) {
         this->x += this->speed.x;
     }
+
+    if (this->speed.y != 0) {
+        this->y += this->speed.y;
+    }
+
+    if (!this->collision.isOnPlataform){
+        this->speed.y -= 0.001f;
+    }
 }
 
 void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {

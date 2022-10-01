@@ -395,17 +395,17 @@ static void display()
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall->x, wall->y, wall->z, wall->sizeH);
+        Object ::drawObject(wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
         wall->move();
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy("idle", player, 0, enemy->scaleSizeModel, true);
+        enemy->drawEnemy("idle", player, 0, enemy->scaleSizeModel, 0, 0, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
         enemy->shoot(&fireObjects, player, actualFps);
-        showRayCast(true, enemy);
+        showRayCast(false, enemy);
     }
 
     map<string, bool> animationsConditions;

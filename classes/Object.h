@@ -108,7 +108,7 @@ void Object:: drawObject(double x, double y, double z, double sizeH, double size
     glPushMatrix();
         glColor3d(r, g, b);
         glTranslated(x, y, z);
-        glScaled(sizeH, sizeV, z);
+        glScaled(sizeH, sizeV, sizeH);
         glutWireCube(1);
     glPopMatrix();
 }

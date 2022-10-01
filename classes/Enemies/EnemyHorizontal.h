@@ -22,10 +22,6 @@ void EnemyHorizontal :: move() {
     if (this->speed.x != 0) {
         this->x += this->speed.x;
     }
-
-    //    if (!this->collision.isOnPlataform){
-//        this->speed.y -= 0.001f;
-//    }
 }
 
 #endif //GAME_PROJECT_ENEMYHORIZONTAL_H

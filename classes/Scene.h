@@ -91,33 +91,53 @@ EnemyMet Scene::spawnEnemyMet() {
     enemy.setY(0);
     enemy.setZ(-6);
     enemy.setSize(1);
+    enemy.scaleSizeModel = 4;
     enemy.speed.z = 0.01;
-    enemy.collision.setSize(enemy.sizeH + 0.2f);
-    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+
+    double heightCollisionY = 0.5;
+    enemy.collision.y = heightCollisionY;
+    enemy.collision.setSize(enemy.sizeH + 0.2f, enemy.sizeV);
+
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
+
+    enemy.setSizeVision(4);
+    enemy.offSetShootX = 1;
+    enemy.offSetShootY = 0.5;
+
+    enemy.setAnimations("idle", "../Models/Enemies/metalMet/", "metalMet", 0, 20);
     return enemy;
 }
 
 EnemyHorizontal Scene::spawnHorizontalEnemy() {
     EnemyHorizontal enemy;
     enemy.setX(this->currentX);
-    enemy.setY(0);
+    enemy.setY(-0.5);
     enemy.setZ(-6);
     enemy.setSize(1);
+
+    enemy.scaleSizeModel = 0.5;
+
     enemy.speed.x = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
     enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+
+    enemy.setSizeVision(5);
+    enemy.offSetShootY = 0.5;
+
+    enemy.setAnimations("idle", "../Models/Enemies/horizontalAirPlane/", "horizontalAirPlane", 0, 20);
     return enemy;
 }
 
 EnemyVertical Scene::spawnVerticalEnemy(){
     EnemyVertical enemy;
     enemy.setX(this->currentX);
-    enemy.setY(0);
+    enemy.setY(1);
     enemy.setZ(-6);
     enemy.setSize(1);
     enemy.speed.y = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
     enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.setAnimations("idle", "../Models/Enemies/rounderingEnemy/", "rounderingEnemy", 0, 20);
     return enemy;
 }
 
@@ -130,6 +150,7 @@ EnemyJumping Scene::spawnJumpingEnemy() {
     enemy.speed.y = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
     enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
     return enemy;
 }
 
