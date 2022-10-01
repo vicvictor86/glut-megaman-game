@@ -9,11 +9,10 @@ class FloatingBlocks : public Wall {
     public: int timeToChangeDirection = -1;
     public: void move() override;
     public: FloatingBlocks() = default;
-    public: FloatingBlocks(Object wallObject, map<char, double> mapColliderWall, int coldDown);
+    public: FloatingBlocks(int coldDown);
 };
 
 void FloatingBlocks :: move() {
-    cout << "TANKA AI" << endl;
     if (this->timeToChangeDirection == -1) {
         this->timeToChangeDirection = time(nullptr);
     }
@@ -25,15 +24,13 @@ void FloatingBlocks :: move() {
     }
 
     if (this->speed.y != 0) {
-        this->wallObject.y += this->speed.y;
+        this->y += this->speed.y;
     }
 
-    this->mapColliderWall = Object ::createRetangleCollider(this->wallObject.x, this->wallObject.y, this->wallObject.z, this->sizeH, this->sizeV);
+    this->mapColliderWall = Object ::createRetangleCollider(this->x, this->y, this->z, this->sizeH, this->sizeV);
 }
 
-FloatingBlocks::FloatingBlocks(Object wallObject, map<char, double> mapColliderWall, int coldDown=2) {
-    this->wallObject = wallObject;
-    this->mapColliderWall = mapColliderWall;
+FloatingBlocks::FloatingBlocks(int coldDown) : Wall(x,  y,  z, mapColliderWall) {
     this->coldDown = coldDown;
 }
 

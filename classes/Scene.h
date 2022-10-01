@@ -17,19 +17,16 @@ private: int currentX;
 };
 
 Wall Scene::buildFloorBlock() {
-    Object wall;
+    Wall wall;
     wall.x = this->currentX;
     wall.y = -2;
     wall.z = -6;
     wall.setSize(2);
-
-    Wall wallWithCollider;
-    wallWithCollider.wallObject = wall;
-    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
+    wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
 
     this->currentX += 2;
 
-    return wallWithCollider;
+    return wall;
 }
 
 void Scene::buildHole() {
@@ -37,7 +34,7 @@ void Scene::buildHole() {
 }
 
 Wall Scene::buildRaisedBlock(int yValue) {
-    Object wall;
+    Wall wall;
     wall.x = this->currentX;
     switch(yValue) {
         case 0:
@@ -52,12 +49,9 @@ Wall Scene::buildRaisedBlock(int yValue) {
 
     wall.z = -6;
     wall.setSize(2);
+    wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 
-    Wall wallWithCollider;
-    wallWithCollider.wallObject = wall;
-    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
-
-    return wallWithCollider;
+    return wall;
 }
 
 EnemyMet Scene::spawnEnemyMet() {

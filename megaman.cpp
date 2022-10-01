@@ -18,7 +18,6 @@
 #include "classes/Scene.h"
 #include "classes/Menu.h"
 #include "classes/Sounds.h"
-#include "WallWithCollider.h"
 #include "classes/FloatingBlocks.h"
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
@@ -39,7 +38,6 @@ int HEIGHT = 480;
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<Wall *> walls;
-vector<FloatingBlocks> floatingBlocks;
 vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
@@ -320,7 +318,7 @@ static void display()
     int quantityOverLapping = checkCollisionWithWalls(&player);
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall->wallObject.x, wall->wallObject.y, wall->wallObject.z, wall->wallObject.sizeH);
+        Object ::drawnObject(wall->x, wall->y, wall->z, wall->sizeH);
         wall->move();
     }
 
@@ -580,11 +578,11 @@ void init(){
 
     menu.setOptions(options);
 
-//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
 //    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
@@ -646,12 +644,12 @@ void init(){
 
                 floating.speed.y = 1;
                 floating.collision.setSize(floating.sizeH + 0.2f);
-                floating.wallObject.x = 6;
-                floating.wallObject.y = 0;
-                floating.wallObject.z = -6;
+                floating.x = 6;
+                floating.y = 0;
+                floating.z = -6;
                 floating.speed.y = 0.01;
                 cout << "AAAAAA" << floating.speed.y << endl;
-                floating.mapColliderWall = Object ::createRetangleCollider(floating.wallObject.x, floating.wallObject.y, floating.wallObject.z, floating.wallObject.sizeH);
+                floating.mapColliderWall = Object ::createRetangleCollider(floating.x, floating.y, floating.z, floating.sizeH);
                 walls.push_back(new FloatingBlocks(floating));
                 break;
         }
