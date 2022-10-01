@@ -14,6 +14,7 @@ public: void buildHole(float x);
 public: EnemyMet spawnEnemyMet();
 public: EnemyHorizontal spawnHorizontalEnemy();
 public: EnemyVertical spawnVerticalEnemy();
+public: EnemyJumping spawnJumpingEnemy();
 public: Scene() {currentX = -2;changeDirection = true;};
 
 private: int currentX;
@@ -57,7 +58,7 @@ Wall Scene::buildRaisedBlock(int yValue) {
     return wall;
 }
 
-FloatingBlocksHor Scene::buildFloatBlockHor(float y = -1) {
+FloatingBlocksHor Scene::buildFloatBlockHor(float y = -1.5) {
     FloatingBlocksHor floating;
     floating.x = this->currentX;
     floating.y = y;
@@ -110,6 +111,18 @@ EnemyHorizontal Scene::spawnHorizontalEnemy() {
 
 EnemyVertical Scene::spawnVerticalEnemy(){
     EnemyVertical enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+    enemy.speed.y = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    return enemy;
+}
+
+EnemyJumping Scene::spawnJumpingEnemy() {
+    EnemyJumping enemy;
     enemy.setX(this->currentX);
     enemy.setY(0);
     enemy.setZ(-6);

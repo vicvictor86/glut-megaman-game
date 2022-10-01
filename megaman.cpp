@@ -597,25 +597,39 @@ void init(){
         MetEnemy,
         HorizontalEnemy,
         VerticalEnemy,
+        JumpingEnemy,
         BlockFloatingHor
     };
 
     vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i < 100; i++) {
-        if(i == 15) {
+    for(int i = 0; i < 50; i++) {
+        if(i == 24) {
             componentsScene.push_back(Wall1);
             componentsScene.push_back(Floor);
             componentsScene.push_back(Hole);
-        } else if (i == 10) {
+        } else if(i == 20) {
+            componentsScene.push_back(HorizontalEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(VerticalEnemy);
+        }
+        else if (i == 14) {
             componentsScene.push_back(Hole);
             componentsScene.push_back(BlockFloatingHor);
             componentsScene.push_back(Hole);
             componentsScene.push_back(Hole);
             componentsScene.push_back(Hole);
             componentsScene.push_back(Hole);
-            componentsScene.push_back(SmallHole);
             componentsScene.push_back(BlockFloatingHor);
             componentsScene.push_back(Hole);
+            componentsScene.push_back(VerticalEnemy);
+        } else if(i == 8) {
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 45) {
+            componentsScene.push_back(MetEnemy);
+        } else if(i == 30) {
+            componentsScene.push_back(JumpingEnemy);
+        } else if(i == 38) {
+            componentsScene.push_back(JumpingEnemy);
         }
         else
             componentsScene.push_back(Floor);
@@ -646,6 +660,9 @@ void init(){
                 break;
             case VerticalEnemy:
                 enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
+                break;
+            case JumpingEnemy:
+                enemies.push_back(new EnemyJumping(scene.spawnJumpingEnemy()));
                 break;
             case BlockFloatingHor:
                 walls.push_back(new FloatingBlocksHor(scene.buildFloatBlockHor()));

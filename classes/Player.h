@@ -42,7 +42,7 @@ void Player:: move(bool keyBuffer[256]){
     }
 
      if (!this->collision.isOnPlataform){
-         this->speed.y -= 0.001f;
+         this->speed.y -= 0.0015f;
      }
 
     if (!keyBuffer['a'] && !keyBuffer['A'] && !keyBuffer['d'] && !keyBuffer['D']) {
