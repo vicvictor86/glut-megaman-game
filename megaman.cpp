@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-slicing"
 #include "classes/Model.h"
 
 // Biblioteca com funcoes matematicas
@@ -35,6 +37,13 @@ uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTim
 int WIDTH = 640;
 int HEIGHT = 480;
 
+int actualFps = 60;
+
+struct WallWithCollider {
+    Object wallObject;
+    map<char, double> mapColliderWall;
+};
+
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<Wall *> walls;
@@ -64,7 +73,8 @@ void countFps(){
     frameCount++;
     countFpsFinalTime = time(nullptr);
     if(countFpsFinalTime - countFpsInitialTime > 0){
-        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
+        actualFps = frameCount / (countFpsFinalTime - countFpsInitialTime);
+        printf("FPS: %d\n", actualFps);
         frameCount = 0;
         countFpsInitialTime = countFpsFinalTime;
     }
@@ -195,26 +205,70 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
-void drawnLifeHud(){
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-        glBegin(GL_QUADS);
-            glColor3d(1.0, 0.0, 0.0);
-            double percentLifeReduction = (double)player.life / player.maxLife;
-            double xQuadLeft = -8;
-            double xQuadRight = xQuadLeft + 5.0 * percentLifeReduction;
-            double yQuadTop = 5.5;
-            double yQuadBottom = yQuadTop - 1;
-            glVertex3d(xQuadLeft + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
-            glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
-        glEnd();
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
+void checkCollisionWithEnemies(){
+    int quantityOverLapping = 0;
+    for(int i = 0; i < enemies.size(); i++){
+        collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, enemies[i]->mapCollider, enemies[i]->x, enemies[i]->y, i + 1 >= enemies.size(), &quantityOverLapping);
+        if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
+            player.getDamage(enemies[i]->damage);
+            if(player.life <= 0){
+                printf("Game over\n");
+                exit(0);
+            }
+        }
+    }
 }
 
-void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+void drawLifeHud(){
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, 1, 0, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+            glBegin(GL_QUADS);
+                glColor3d(1.0, 0.0, 0.0);
+                double percentLifeReduction = (double)player.life / player.maxLife;
+                double xQuadLeft = 0.05;
+                double xQuadRight = 0.3 * percentLifeReduction;
+                double yQuadBottom = 0.85;
+                double yQuadTop = 0.95;
+                glTexCoord2d(0, 1); glVertex2d(xQuadLeft, yQuadBottom);
+                glTexCoord2d(1, 1) ;glVertex2d(xQuadRight, yQuadBottom);
+                glTexCoord2d(1, 0) ;glVertex2d(xQuadRight, yQuadTop);
+                glTexCoord2d(0, 0) ;glVertex2d(xQuadLeft, yQuadTop);
+            glEnd();
+            glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void executeAnimation(bool *animationCondition, const string& animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+    if(animationCondition == nullptr){
+        return;
+    }
+
+    if(player.isShooting && animationName != "shoot" && animationName != "chargShoot"){
+        return;
+    }
+
+    if(*animationCondition && animationName != actualAnimation){
+        frameAnimation = 0;
+    }
+
+    if(*animationCondition && animationName != "idle" && animationName != "sadIdle"){
+        framesInIdle = 0;
+    }
+
     if(*animationCondition && isLoop){
         countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
@@ -222,7 +276,7 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
 
-            if(actualAnimation == "idle"){
+            if(actualAnimation == "idle" || actualAnimation == "sadIdle"){
                 framesInIdle++;
             }
         }
@@ -263,6 +317,8 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             *animationCondition = false;
             actualAnimation = "idle";
         }
+
+        return;
     }
 }
 
@@ -304,18 +360,39 @@ static void showMenu(){
 
 }
 
+void showRayCast(bool show, Enemy *enemy){
+    if(show){
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+            glPushMatrix();
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(player.x, enemy->y, -6);
+            glEnd();
+
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(enemy->x - 1, player.y + player.collision.sizeV/2, -6);
+            glEnd();
+            glPopMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_LIGHTING);
+    }
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor4f(1, 0, 0, 1);
     glLoadIdentity();
 
-    drawnLifeHud();
+    drawLifeHud();
 
-    glColor3d(1, 1, 1);
-    player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
+    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
+    checkCollisionWithEnemies();
 
     for (auto & wall : walls){
         Object ::drawnObject(wall->x, wall->y, wall->z, wall->sizeH);
@@ -323,28 +400,28 @@ static void display()
     }
 
     for (auto & enemy : enemies){
-        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->sizeH);
+        enemy->drawEnemy("idle", player, 0, enemy->scaleSizeModel, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->shoot(&fireObjects);
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
+        enemy->shoot(&fireObjects, player, actualFps);
+        showRayCast(true, enemy);
     }
 
-    checkCollisionsFires(quantityOverLapping);
-
-    executeAnimation(&player.isShooting, shootType, player);
-
-    bool playerIsMoving = player.speed.isMoving();
-    executeAnimation(&playerIsMoving, "running", player, true);
-
+    map<string, bool> animationsConditions;
     bool idleForTooLong = framesInIdle >= 400;
     executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
+    bool playerIsMovingInGround = player.speed.isMoving() && !player.speed.isInTheAir();
+    executeAnimation(&playerIsMovingInGround, "running", player, true);
+
     bool isInTheAir = player.speed.isInTheAir();
-//    cout << isInTheAir << endl;
     executeAnimation(&isInTheAir, "jumping", player, false, true);
 
-    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong, isInTheAir};
+    chargingShott();
+    executeAnimation(&player.isShooting, shootType, player);
+
+    vector<bool> animationCondition = {player.isShooting, playerIsMovingInGround, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
             break;
@@ -357,7 +434,8 @@ static void display()
     }
 
     player.move(keyBuffer);
-    chargingShott();
+
+    checkCollisionsFires(quantityOverLapping);
 
     updateCamera();
 
@@ -466,8 +544,7 @@ static void key(unsigned char key, int x, int y) {
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
-//    cout << key << endl;
-
+    
     if(gameStatus != onGame) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
@@ -578,11 +655,11 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
+//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
+//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
@@ -670,10 +747,12 @@ void init(){
 
         }
     }
+
 }
 
 /* Program entry point */
 int main(int argc, char *argv[])
+
 {
     glutInit(&argc, argv);
     glutInitWindowSize(WIDTH, HEIGHT);
@@ -699,7 +778,8 @@ int main(int argc, char *argv[])
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-//    glEnable(GL_LIGHTING);
+
+    glEnable(GL_LIGHTING);
 
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -719,3 +799,5 @@ int main(int argc, char *argv[])
 
     return EXIT_SUCCESS;
 }
+
+#pragma clang diagnostic pop

@@ -5,7 +5,7 @@
 
 class EnemyMet : public Enemy {
     public: void move() override;
-    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) override;
+    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) override;
     public: EnemyMet() = default;
 };
 
@@ -25,20 +25,22 @@ void EnemyMet :: move() {
     }
 }
 
-void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
-    map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, sizeOfVision);
+void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
+    map<char, double> mapCollisionCanShoot = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX);
+    map<char, double> mapCollisionCantTakeDamage = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX / 2);
     if(drawnCollision){
-        Object::drawnObject(this->x, this->y, this->z, 2);
+        glPushMatrix();
+            Object::drawObject(this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
+        glPopMatrix();
     }
 
     int quantityOverLapping = 0;
-    Collision::checkCollision(mapCollisionoViewOfPlayer, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
-    if(quantityOverLapping > 0){
-        this->canTakeDamage = false;
-        cout << "Nao toma dano" << endl;
-    } else {
-        this->canTakeDamage = true;
-    }
+    Collision::checkCollision(mapCollisionCanShoot, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
+    this->canShoot = quantityOverLapping > 0;
+
+    quantityOverLapping = 0;
+    Collision::checkCollision(mapCollisionCantTakeDamage, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
+    this->canTakeDamage = quantityOverLapping > 0 ? false : true;
 }
 
 

@@ -13,10 +13,14 @@ class Player : public Object
     public: int damage=1;
     public: int timeChargedShot=3;
     public: bool isShooting=false;
+    public: bool isInvincible=false;
     public: Directions directionX = RIGHT;
+    public: int coldDownInvencible = 4;
+    public: int timeInvencible = -1;
     public: void move(bool keyBuffer[256]);
-    public: void drawnPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, double r, double g, double b);
+    public: int drawPlayer(const string& animationName, int animationFrame, double scaleSize, bool drawnCollider, bool devMode);
     public: void getDamage(int takedDamage);
+    public: void checkIfIsInvencible();
     public: Player()= default;
     public: Player(double x, double y, double z, float r, float g, float b, Speed speed, float size, int life, int damage, int timeChargedShot, Collision collision);
 };
@@ -28,7 +32,19 @@ Player:: Player(double x, double y, double z, float r, float g, float b, Speed s
     this->maxLife = life;
 }
 
+void Player:: checkIfIsInvencible(){
+    int actualTime = time(nullptr);
+    if(this->timeInvencible == -1){
+        this->timeInvencible = time(nullptr);
+    } else if(actualTime - this->timeInvencible >= this->coldDownInvencible){
+        this->isInvincible = false;
+        this->timeInvencible = -1;
+    }
+}
+
 void Player:: move(bool keyBuffer[256]){
+    checkIfIsInvencible();
+
     if (this->speed.x != 0 && (keyBuffer['d'] || keyBuffer['D'])) {
         this->x += this->speed.x;
     }
@@ -50,15 +66,11 @@ void Player:: move(bool keyBuffer[256]){
     }
 }
 
-void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, double r=-1, double g=-1, double b=-1){
-    r = (r == -1) ? this->r : r;
-    g = (g == -1) ? this->g : g;
-    b = (b == -1) ? this->b : b;
-    glColor3d(r, g, b);
-
+int Player:: drawPlayer(const string& animationName="", int animationFrame=1, double scaleSize=1, bool drawnCollider=false, bool devMode=false){
     //Collision Cube
     if(drawnCollider){
         glPushMatrix();
+            glColor3d(0, 0, 0);
             glBegin(GL_LINE_LOOP);
                 double xQuadLeft = this->collision.x - this->collision.sizeH / 2;
                 double xQuadRight = this->collision.x + this->collision.sizeH / 2;
@@ -72,21 +84,42 @@ void Player:: drawnPlayer(const string& animationName="", int animationFrame=1, 
         glPopMatrix();
     }
 
-    //Player model
-    glPushMatrix();
-        glLoadIdentity();
-        glTranslatef((float)this->x, (float)this->y, (float)this->z);
-        glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
-        glScaled(scaleSize, scaleSize, scaleSize);
-        if(this->animations[animationName].size() > 0){
-            this->animations[animationName][animationFrame].draw();
-        }
-    glPopMatrix();
+    if(!devMode){
+        //Player model
+        glPushMatrix();
+            if(this->isInvincible){
+                double firstTick = this->timeInvencible % 2 == 0 ? 1 : 0;
+                double secondTick = this->timeInvencible % 2 != 0 ? 1 : 0;
+                glColor3d(0, firstTick, secondTick);
+            } else {
+                glColor3d(this->r, this->g, this->b);
+            }
+
+            glLoadIdentity();
+            glTranslatef((float)this->x, (float)this->y, (float)this->z);
+            glRotatef(this->directionX == RIGHT ? 90 : -90, 0, 1, 0);
+            glScaled(scaleSize, scaleSize, scaleSize);
+
+            if(!this->animations[animationName].empty()){
+                if(animationFrame > this->animations[animationName].size()){
+                    animationFrame = 0;
+                }
+                this->animations[animationName][animationFrame].draw();
+            } else {
+//                cout << "A animacao " << animationName << " nao existe" << endl;
+            }
+        glPopMatrix();
+    }
+
+    return animationFrame;
 }
 
 void Player:: getDamage(int takedDamage){
-    this->life -= takedDamage;
-    Sounds::playSound("playerDamage");
+    if(!this->isInvincible){
+        this->life -= takedDamage;
+        this->isInvincible = true;
+        Sounds::playSound("playerDamage");
+    }
 }
 
 #endif
