@@ -120,7 +120,7 @@ void Enemy::drawEnemy(const string& animationName, const Player& player, int ani
     glPushMatrix();
         glLoadIdentity();
         glColor3d(1, 1 , 1);
-        glTranslatef((float)this->x, (float)this->y, (float)this->z);
+        glTranslated(this->modelX + this->x, this->modelY + this->y, this->z);
 
         double angleRotate = deltaX >=0 ? 90 : -90;
         glRotated(angleRotate, 0, 1, 0);

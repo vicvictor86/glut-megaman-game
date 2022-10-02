@@ -113,13 +113,13 @@ EnemyHorizontal Scene::spawnHorizontalEnemy() {
     enemy.setX(this->currentX);
     enemy.setY(-0.5);
     enemy.setZ(-6);
-    enemy.setSize(1);
+    enemy.setSize(1, 2);
 
     enemy.scaleSizeModel = 0.5;
 
     enemy.speed.x = 0.01;
-    enemy.collision.setSize(enemy.sizeH + 0.2f);
-    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.collision.setSize(enemy.sizeH + 0.2f, enemy.sizeV);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
 
     enemy.setSizeVision(5);
     enemy.offSetShootY = 0.5;
@@ -147,9 +147,12 @@ EnemyJumping Scene::spawnJumpingEnemy() {
     enemy.setY(0);
     enemy.setZ(-6);
     enemy.setSize(1);
+
     enemy.speed.y = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
-    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.modelY = enemy.y - 1;
+
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
     enemy.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
     return enemy;
 }

@@ -17,6 +17,7 @@ class Object {
     public: string tag;
     public: Model model;
     public: double scaleSizeModel = 1;
+    public: double modelX=0, modelY=0, modelZ=0;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
     public: void drawModel(double scaleSize);
@@ -30,7 +31,6 @@ class Object {
     public: void setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps);
     public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
-
 };
 
 Object :: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision){
