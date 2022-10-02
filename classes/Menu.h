@@ -43,6 +43,8 @@ void Menu::setOption(int op) {
 }
 
 void Menu::openMenu(float x, float y) {
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
     for(int i = 0; i < this->getOptions().size(); i++) {
         if(option == i)
             glColor3f(0.0f,0.0f,1.0f);
@@ -52,6 +54,8 @@ void Menu::openMenu(float x, float y) {
         writeOnScreen(x, y, options[i]);
         y -= 0.7;
     }
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
 }
 
 int Menu::getOption(){
