@@ -57,12 +57,15 @@ enum status
 {
     mainMenu,
     onGame,
-    gamePaused
+    gamePaused,
+    playerDeath
 };
 
 status gameStatus = mainMenu;
 
 int frameAnimation = 0;
+
+static void showMenu();
 
 void countFps(){
     frameCount++;
@@ -173,8 +176,17 @@ void checkCollisionsFires(int quantityOverLapping){
                 player.getDamage(fireObjects[i].damage);
                 fireObjects.erase(fireObjects.begin() + i);
                 if(player.life <= 0){
+                    player.life = player.maxLife;
+                    player.setY(0);
+                    player.setX(0);
+                    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                    vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
+                    menu.setOptions(options);
+
+                    menu.setOption(0);
+                    gameStatus = playerDeath;
+                    glutDisplayFunc(showMenu);
                     printf("Game over\n");
-                    exit(0);
                 }
             }
 
@@ -206,8 +218,17 @@ void checkCollisionWithEnemies(){
         if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
             player.getDamage(enemies[i]->damage);
             if(player.life <= 0){
+                player.life = player.maxLife;
+                player.setY(0);
+                player.setX(0);
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
+                menu.setOptions(options);
+
+                menu.setOption(0);
+                gameStatus = playerDeath;
+                glutDisplayFunc(showMenu);
                 printf("Game over\n");
-                exit(0);
             }
         }
     }
@@ -353,6 +374,10 @@ static void showMenu(){
             adjustmentX = -0.78;
             adjustmentY = 0.45;
             break;
+        case playerDeath:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
     }
     menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
     glutSwapBuffers();
@@ -405,6 +430,20 @@ static void display()
         enemy->noticedEnemy(enemy->animationStatus, 0, player.mapCollider, player.x, player.y, player.z, true);
         enemy->shoot(&fireObjects, player, actualFps);
         showRayCast(false, enemy);
+    }
+
+    if (player.y <= -18) {
+        player.life = player.maxLife;
+        player.setY(0);
+        player.setX(0);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+        vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
+        menu.setOptions(options);
+
+        menu.setOption(0);
+        gameStatus = playerDeath;
+        glutDisplayFunc(showMenu);
+        printf("Game over\n");
     }
 
     map<string, bool> animationsConditions;
@@ -484,6 +523,28 @@ static void key(unsigned char key, int x, int y) {
                 case 0:
                     gameStatus = onGame;
                     cout << "Jogo Iniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    gameStatus = mainMenu;
+                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    break;
+            }
+
+        } else if (key == 'w' || key == 'W') {
+            menu.switchOption(-1);
+        } else if (key == 's' || key == 'S') {
+            menu.switchOption(1);
+        }
+    } else if (gameStatus == playerDeath) {
+        if (key == 13) {
+            switch (menu.getOption()) {
+                case 0:
+                    gameStatus = onGame;
+                    cout << "Jogo Reiniciado\n";
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
