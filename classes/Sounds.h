@@ -5,6 +5,7 @@
 
 char const *backgroundMusic = "../Sounds/background.wav";
 char const *menuMusic = "../Sounds/menu.wav";
+char const *deathMusic = "../Sounds/death.wav";
 char const *jumpSound = "../Sounds/Jump.wav";
 char const *shootSound = "../Sounds/shoot.wav";
 char const *playerDamage = "../Sounds/playerDamage.wav";
@@ -12,6 +13,7 @@ irrklang::ISoundEngine* engine = irrklang::createIrrKlangDevice();
 
 map<string, char const *> sounds = {
         {"menu", menuMusic},
+        {"death", deathMusic},
         {"background", backgroundMusic},
         {"jump", jumpSound},
         {"shoot", shootSound},

@@ -78,6 +78,23 @@ void countFps(){
     }
 }
 
+void playerDead() {
+    Sounds::stopSounds();
+    Sounds::setVolume(0.6);
+    Sounds::playSound("death", false);
+    player.life = player.maxLife;
+    player.setY(0);
+    player.setX(0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
+    menu.setOptions(options);
+
+    menu.setOption(0);
+    gameStatus = playerDeath;
+    glutDisplayFunc(showMenu);
+    printf("Game over\n");
+}
+
 static void resize(int width, int height)
 {
     WIDTH = width;
@@ -176,17 +193,7 @@ void checkCollisionsFires(int quantityOverLapping){
                 player.getDamage(fireObjects[i].damage);
                 fireObjects.erase(fireObjects.begin() + i);
                 if(player.life <= 0){
-                    player.life = player.maxLife;
-                    player.setY(0);
-                    player.setX(0);
-                    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                    vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
-                    menu.setOptions(options);
-
-                    menu.setOption(0);
-                    gameStatus = playerDeath;
-                    glutDisplayFunc(showMenu);
-                    printf("Game over\n");
+                    playerDead();
                 }
             }
 
@@ -218,17 +225,7 @@ void checkCollisionWithEnemies(){
         if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
             player.getDamage(enemies[i]->damage);
             if(player.life <= 0){
-                player.life = player.maxLife;
-                player.setY(0);
-                player.setX(0);
-                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-                vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
-                menu.setOptions(options);
-
-                menu.setOption(0);
-                gameStatus = playerDeath;
-                glutDisplayFunc(showMenu);
-                printf("Game over\n");
+                playerDead();
             }
         }
     }
@@ -433,17 +430,7 @@ static void display()
     }
 
     if (player.y <= -18) {
-        player.life = player.maxLife;
-        player.setY(0);
-        player.setX(0);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-        vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
-        menu.setOptions(options);
-
-        menu.setOption(0);
-        gameStatus = playerDeath;
-        glutDisplayFunc(showMenu);
-        printf("Game over\n");
+        playerDead();
     }
 
     map<string, bool> animationsConditions;
@@ -498,7 +485,6 @@ static void key(unsigned char key, int x, int y) {
                     actualAnimation = "idle";
 
                     Sounds::stopSounds();
-
                     Sounds::setVolume(0.6);
                     Sounds::playSound("background", true);
 
@@ -527,6 +513,9 @@ static void key(unsigned char key, int x, int y) {
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    Sounds::stopSounds();
+                    Sounds::setVolume(0.6);
+                    Sounds::playSound("menu", true);
                     gameStatus = mainMenu;
                     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
                     menu.setOptions(options);
@@ -543,12 +532,18 @@ static void key(unsigned char key, int x, int y) {
         if (key == 13) {
             switch (menu.getOption()) {
                 case 0:
+                    Sounds::stopSounds();
+                    Sounds::setVolume(0.6);
+                    Sounds::playSound("background", true);
                     gameStatus = onGame;
                     cout << "Jogo Reiniciado\n";
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    Sounds::stopSounds();
+                    Sounds::setVolume(0.6);
+                    Sounds::playSound("menu", true);
                     gameStatus = mainMenu;
                     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
                     menu.setOptions(options);
@@ -609,7 +604,6 @@ static void key(unsigned char key, int x, int y) {
     }
 
     glutPostRedisplay();
-
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -823,6 +817,7 @@ void init(){
     }
 
     Sounds::playSound("menu", true);
+
 }
 
 /* Program entry point */
