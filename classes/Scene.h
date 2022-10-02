@@ -105,6 +105,7 @@ EnemyMet Scene::spawnEnemyMet() {
     enemy.offSetShootY = 0.5;
 
     enemy.setAnimations("idle", "../Models/Enemies/metalMet/", "metalMet", 0, 20);
+    enemy.setAnimations("hidden", "../Models/Enemies/metalMet/", "metalMetHidden", 0, 20);
     return enemy;
 }
 

@@ -14,6 +14,7 @@ class Enemy : public Object {
     public: bool canShoot=false;
     public: double sizeVisionX = 2, sizeVisionY = 2;
     public: double offSetShootX = 1, offSetShootY = 0;
+    public: string animationStatus = "idle";
     public: virtual void move();
     public: virtual void shoot(vector<Fire>* fireObjects, Player player, int actualFps);
     public: void getDamage(int takedDamage);

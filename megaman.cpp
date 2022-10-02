@@ -24,7 +24,6 @@
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
 
-
 #define FPS 70
 #define SHOOTKEY 'j'
 
@@ -394,7 +393,7 @@ static void display()
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy("idle", player, 0, enemy->scaleSizeModel, 0, 0, true);
+        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);

@@ -42,13 +42,14 @@ void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double player
         glPopMatrix();
     }
 
-    int quantityOverLapping = 0;
-    Collision::checkCollision(mapCollisionCanShoot, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
-    this->canShoot = quantityOverLapping > 0;
+    int triggerWithPlayer = 0;
+    Collision::checkCollision(mapCollisionCanShoot, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &triggerWithPlayer);
 
-    quantityOverLapping = 0;
-    Collision::checkCollision(mapCollisionCantTakeDamage, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
-    this->canTakeDamage = quantityOverLapping > 0 ? false : true;
+    int triggerTooCloseWithPlayer = 0;
+    Collision::checkCollision(mapCollisionCantTakeDamage, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &triggerTooCloseWithPlayer);
+    this->canTakeDamage = triggerTooCloseWithPlayer > 0 ? false : true;
+    this->animationStatus = this->canTakeDamage ? "idle" : "hidden";
+    this->canShoot = triggerWithPlayer > 0 && this->canTakeDamage;
 }
 
 
