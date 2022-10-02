@@ -26,7 +26,11 @@ Wall Scene::buildFloorBlock() {
     wall.y = -2;
     wall.z = -6;
     wall.setSize(2);
+    wall.scaleSizeModel = 5.5;
+    wall.modelY = -0.4;
+
     wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
+    wall.setAnimations("metalWall", "../Models/Environment/ground/", "metalBlock", 0, 20);
 
     this->currentX += 2;
 
@@ -53,7 +57,11 @@ Wall Scene::buildRaisedBlock(int yValue) {
 
     wall.z = -6;
     wall.setSize(2);
+    wall.scaleSizeModel = 5.5;
+    wall.modelY = -0.4;
+
     wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+    wall.setAnimations("metalWall", "../Models/Environment/ground/", "metalBlock", 0, 20);
 
     return wall;
 }
@@ -78,7 +86,11 @@ FloatingBlocksHor Scene::buildFloatBlockHor(float y = -1.5) {
         changeDirection = true;
     }
 
+    floating.modelY = -0.45;
+
+    floating.scaleSizeModel = 4;
     floating.mapColliderWall = Object ::createRetangleCollider(floating.x, floating.y, floating.z, floating.sizeH);
+    floating.setAnimations("metalWall", "../Models/Environment/ground/", "metalBlock", 0, 20);
 
     this->currentX += 2;
 
@@ -126,6 +138,7 @@ EnemyHorizontal Scene::spawnHorizontalEnemy() {
     enemy.offSetShootY = 0.5;
 
     enemy.setAnimations("idle", "../Models/Enemies/horizontalAirPlane/", "horizontalAirPlane", 0, 20);
+
     return enemy;
 }
 
