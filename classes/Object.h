@@ -16,10 +16,12 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
+    public: double scaleSizeModel = 1;
+    public: double modelX=0, modelY=0, modelZ=0;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
-    public: void drawnModel(double scaleSize);
-    public: static void drawnObject(double x, double y, double z, double size);
+    public: void drawModel(double scaleSize);
+    public: static void drawObject(double x, double y, double z, double sizeH, double sizeV, double r, double g, double b);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);
@@ -29,7 +31,6 @@ class Object {
     public: void setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps);
     public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
-
 };
 
 Object :: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision){
@@ -103,15 +104,18 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawnObject(double x, double y, double z, double size){
+void Object:: drawObject(double x, double y, double z, double sizeH, double sizeV, double r=0, double g=0, double b=0){
     glPushMatrix();
+        glColor3d(r, g, b);
         glTranslated(x, y, z);
-        glutWireCube(size);
+        glScaled(sizeH, sizeV, sizeH);
+        glutWireCube(1);
     glPopMatrix();
 }
 
-void Object:: drawnModel(double scaleSize){
+void Object:: drawModel(double scaleSize){
     glPushMatrix();
+        glColor3d(1, 1, 1);
         glLoadIdentity();
         glTranslated(this->x, this->y, this->z);
         glScaled(scaleSize, scaleSize, scaleSize);

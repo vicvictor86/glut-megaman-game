@@ -2,42 +2,43 @@
 #define GAME_PROJECT_SCENE_H
 
 #include "Object.h"
-#include "WallWithCollider.h"
+#include "Wall.h"
+#include "FloatingBlocksHor.h"
 
 class Scene {
-public: WallWithCollider buildFloorBlock();
-public: WallWithCollider buildRaisedBlock(int yValue);
-public: void buildHole();
+public: bool changeDirection;
+public: Wall buildFloorBlock();
+public: Wall buildRaisedBlock(int yValue);
+public: FloatingBlocksHor buildFloatBlockHor(float y);
+public: void buildHole(float x);
 public: EnemyMet spawnEnemyMet();
 public: EnemyHorizontal spawnHorizontalEnemy();
 public: EnemyVertical spawnVerticalEnemy();
-public: Scene() {currentX = -2;};
+public: EnemyJumping spawnJumpingEnemy();
+public: Scene() {currentX = -2;changeDirection = true;};
 
 private: int currentX;
 };
 
-WallWithCollider Scene::buildFloorBlock() {
-    Object wall;
+Wall Scene::buildFloorBlock() {
+    Wall wall;
     wall.x = this->currentX;
     wall.y = -2;
     wall.z = -6;
     wall.setSize(2);
-
-    WallWithCollider wallWithCollider;
-    wallWithCollider.wallObject = wall;
-    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
+    wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
 
     this->currentX += 2;
 
-    return wallWithCollider;
+    return wall;
 }
 
-void Scene::buildHole() {
-    this->currentX += 2;
+void Scene::buildHole(float x = 2) {
+    this->currentX += x;
 }
 
-WallWithCollider Scene::buildRaisedBlock(int yValue) {
-    Object wall;
+Wall Scene::buildRaisedBlock(int yValue) {
+    Wall wall;
     wall.x = this->currentX;
     switch(yValue) {
         case 0:
@@ -52,12 +53,36 @@ WallWithCollider Scene::buildRaisedBlock(int yValue) {
 
     wall.z = -6;
     wall.setSize(2);
+    wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 
-    WallWithCollider wallWithCollider;
-    wallWithCollider.wallObject = wall;
-    wallWithCollider.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
+    return wall;
+}
 
-    return wallWithCollider;
+FloatingBlocksHor Scene::buildFloatBlockHor(float y = -1.5) {
+    FloatingBlocksHor floating;
+    floating.x = this->currentX;
+    floating.y = y;
+    floating.z = -6;
+    floating.setSize(1);
+
+    floating.collision.setSize(floating.sizeH + 0.2f);
+    floating.x = this->currentX;
+    floating.y = y;
+    floating.z = -6;
+
+    if(this->changeDirection) {
+        floating.speed.x = 0.02;
+        changeDirection = false;
+    } else {
+        floating.speed.x = -0.02;
+        changeDirection = true;
+    }
+
+    floating.mapColliderWall = Object ::createRetangleCollider(floating.x, floating.y, floating.z, floating.sizeH);
+
+    this->currentX += 2;
+
+    return floating;
 }
 
 EnemyMet Scene::spawnEnemyMet() {
@@ -66,33 +91,70 @@ EnemyMet Scene::spawnEnemyMet() {
     enemy.setY(0);
     enemy.setZ(-6);
     enemy.setSize(1);
+    enemy.scaleSizeModel = 4;
     enemy.speed.z = 0.01;
-    enemy.collision.setSize(enemy.sizeH + 0.2f);
-    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+
+    double heightCollisionY = 0.5;
+    enemy.collision.y = heightCollisionY;
+    enemy.collision.setSize(enemy.sizeH + 0.2f, enemy.sizeV);
+
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
+
+    enemy.setSizeVision(4);
+    enemy.offSetShootX = 1;
+    enemy.offSetShootY = 0.5;
+
+    enemy.setAnimations("idle", "../Models/Enemies/metalMet/", "metalMet", 0, 20);
+    enemy.setAnimations("hidden", "../Models/Enemies/metalMet/", "metalMetHidden", 0, 20);
     return enemy;
 }
 
 EnemyHorizontal Scene::spawnHorizontalEnemy() {
     EnemyHorizontal enemy;
     enemy.setX(this->currentX);
-    enemy.setY(0);
+    enemy.setY(-0.5);
     enemy.setZ(-6);
-    enemy.setSize(1);
+    enemy.setSize(1, 2);
+
+    enemy.scaleSizeModel = 0.5;
+
     enemy.speed.x = 0.01;
-    enemy.collision.setSize(enemy.sizeH + 0.2f);
-    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.collision.setSize(enemy.sizeH + 0.2f, enemy.sizeV);
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
+
+    enemy.setSizeVision(5);
+    enemy.offSetShootY = 0.5;
+
+    enemy.setAnimations("idle", "../Models/Enemies/horizontalAirPlane/", "horizontalAirPlane", 0, 20);
     return enemy;
 }
 
 EnemyVertical Scene::spawnVerticalEnemy(){
     EnemyVertical enemy;
     enemy.setX(this->currentX);
-    enemy.setY(0);
+    enemy.setY(1);
     enemy.setZ(-6);
     enemy.setSize(1);
     enemy.speed.y = 0.01;
     enemy.collision.setSize(enemy.sizeH + 0.2f);
     enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH);
+    enemy.setAnimations("idle", "../Models/Enemies/rounderingEnemy/", "rounderingEnemy", 0, 20);
+    return enemy;
+}
+
+EnemyJumping Scene::spawnJumpingEnemy() {
+    EnemyJumping enemy;
+    enemy.setX(this->currentX);
+    enemy.setY(0);
+    enemy.setZ(-6);
+    enemy.setSize(1);
+
+    enemy.speed.y = 0.01;
+    enemy.collision.setSize(enemy.sizeH + 0.2f);
+    enemy.modelY = enemy.y - 1;
+
+    enemy.mapCollider = Object ::createRetangleCollider(enemy.collision.x, enemy.collision.y, enemy.collision.z, enemy.collision.sizeH, enemy.collision.sizeV);
+    enemy.setAnimations("idle", "../Models/Enemies/jumperEnemy/", "jumperEnemy", 0, 20);
     return enemy;
 }
 

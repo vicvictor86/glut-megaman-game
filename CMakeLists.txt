@@ -16,6 +16,7 @@ add_executable(game_project
         classes/Speed.h
         classes/Enemies/Enemy.h
         classes/Camera.h
-        megaman.cpp classes/Enemies/EnemyHorizontal.h classes/Enemies/EnemyVertical.h classes/Enemies/EnemyDepth.h classes/Enemies/EnemiesImport.h classes/Enemies/EnemyJumping.h classes/Sounds.h classes/Enemies/EnemyMet.h)
+        megaman.cpp classes/Enemies/EnemyHorizontal.h classes/Enemies/EnemyVertical.h classes/Enemies/EnemyDepth.h classes/Enemies/EnemiesImport.h classes/Enemies/EnemyJumping.h classes/Sounds.h classes/Enemies/EnemyMet.h classes/Wall.h)
 
-target_link_libraries(${PROJECT_NAME} -Wall -Wextra -lglut32 -lglu32 -lopengl32 -lwinmm)
+find_library(irrklang_lib NAMES irrklang PATHS C:\\MinGW\\lib)
+target_link_libraries(${PROJECT_NAME} -Wall -Wextra -lglut32 -lglu32 -lopengl32 -lwinmm -lirrklang)

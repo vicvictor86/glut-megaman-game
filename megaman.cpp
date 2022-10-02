@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-slicing"
 #include "classes/Model.h"
 
 // Biblioteca com funcoes matematicas
@@ -18,11 +20,9 @@
 #include "classes/Scene.h"
 #include "classes/Menu.h"
 #include "classes/Sounds.h"
-#include "WallWithCollider.h"
-#include "classes/FloatingBlocks.h"
+#include "classes/FloatingBlocksHor.h"
 #include <chrono>
 #pragma comment(lib, "Winmm.lib")
-
 
 #define FPS 70
 #define SHOOTKEY 'j'
@@ -36,10 +36,11 @@ uint64_t countFramesShootAnimationFinalTime, countFramesShootAnimationInitialTim
 int WIDTH = 640;
 int HEIGHT = 480;
 
+int actualFps = 60;
+
 bool keyBuffer[256];
 vector<Fire> fireObjects;
-vector<WallWithCollider> walls;
-vector<FloatingBlocks> floatingBlocks;
+vector<Wall *> walls;
 vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
@@ -66,7 +67,8 @@ void countFps(){
     frameCount++;
     countFpsFinalTime = time(nullptr);
     if(countFpsFinalTime - countFpsInitialTime > 0){
-        printf("FPS: %d\n", frameCount / (countFpsFinalTime - countFpsInitialTime));
+        actualFps = frameCount / (countFpsFinalTime - countFpsInitialTime);
+        printf("FPS: %d\n", actualFps);
         frameCount = 0;
         countFpsInitialTime = countFpsFinalTime;
     }
@@ -110,25 +112,25 @@ int checkCollisionWithWalls(Object * object){
     for(int i = 0; i < walls.size(); i++){
         bool lastIteration = i + 1 >= walls.size();
 
-        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i].mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
+        collisionDirections typeCollision = Collision::checkCollision(object->mapCollider, object->x, object->y, walls[i]->mapColliderWall, 0, 0, lastIteration, &quantityOverLapping);
 
         if(typeCollision == RIGHTCOLLISION){
-            object->x = walls[i].mapColliderWall['L'] - object->collision.sizeH / 2 - object->collision.x;
+            object->x = walls[i]->mapColliderWall['L'] - object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na direita do object\n");
         }
         else if(typeCollision == LEFTCOLLISION){
-            object->x = walls[i].mapColliderWall['R'] + object->collision.sizeH / 2 - object->collision.x;
+            object->x = walls[i]->mapColliderWall['R'] + object->collision.sizeH / 2 - object->collision.x;
             printf("Colidiu na esquerda do object\n");
         }
 
         if(typeCollision == TOPCOLLISION){
-            object->y = walls[i].mapColliderWall['B'] - object->collision.sizeV / 2 - object->collision.y;
+            object->y = walls[i]->mapColliderWall['B'] - object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em cima do object\n");
         }
         else if(typeCollision == BOTTOMCOLLISION){
             object->collision.isOnPlataform = true;
-            object->y = walls[i].mapColliderWall['T'] + object->collision.sizeV / 2 - object->collision.y;
+            object->y = walls[i]->mapColliderWall['T'] + object->collision.sizeV / 2 - object->collision.y;
             object->speed.y = 0;
             printf("Colidiu em baixo do object\n");
         }
@@ -196,26 +198,70 @@ void checkCollisionsFires(int quantityOverLapping){
     }
 }
 
-void drawnLifeHud(){
-    glDisable(GL_LIGHTING);
-    glDisable(GL_TEXTURE_2D);
-        glBegin(GL_QUADS);
-            glColor3d(1.0, 0.0, 0.0);
-            double percentLifeReduction = (double)player.life / player.maxLife;
-            double xQuadLeft = -8;
-            double xQuadRight = xQuadLeft + 5.0 * percentLifeReduction;
-            double yQuadTop = 5.5;
-            double yQuadBottom = yQuadTop - 1;
-            glVertex3d(xQuadLeft + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadBottom + player.y, -6);
-            glVertex3d(xQuadRight + player.x, yQuadTop + player.y, -6);
-            glVertex3d(xQuadLeft + player.x, yQuadTop + player.y, -6);
-        glEnd();
-    glEnable(GL_TEXTURE_2D);
-    glEnable(GL_LIGHTING);
+void checkCollisionWithEnemies(){
+    int quantityOverLapping = 0;
+    for(int i = 0; i < enemies.size(); i++){
+        collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, enemies[i]->mapCollider, enemies[i]->x, enemies[i]->y, i + 1 >= enemies.size(), &quantityOverLapping);
+        if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
+            player.getDamage(enemies[i]->damage);
+            if(player.life <= 0){
+                printf("Game over\n");
+                exit(0);
+            }
+        }
+    }
 }
 
-void executeAnimation(bool *animationCondition, string animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+void drawLifeHud(){
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
+    glDisable(GL_DEPTH_TEST);
+
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+        glLoadIdentity();
+        gluOrtho2D(0, 1, 0, 1);
+        glMatrixMode(GL_MODELVIEW);
+        glPushMatrix();
+            glLoadIdentity();
+            glBegin(GL_QUADS);
+                glColor3d(1.0, 0.0, 0.0);
+                double percentLifeReduction = (double)player.life / player.maxLife;
+                double xQuadLeft = 0.05;
+                double xQuadRight = 0.3 * percentLifeReduction;
+                double yQuadBottom = 0.85;
+                double yQuadTop = 0.95;
+                glTexCoord2d(0, 1); glVertex2d(xQuadLeft, yQuadBottom);
+                glTexCoord2d(1, 1) ;glVertex2d(xQuadRight, yQuadBottom);
+                glTexCoord2d(1, 0) ;glVertex2d(xQuadRight, yQuadTop);
+                glTexCoord2d(0, 0) ;glVertex2d(xQuadLeft, yQuadTop);
+            glEnd();
+            glMatrixMode(GL_PROJECTION);
+        glPopMatrix();
+        glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_DEPTH_TEST);
+}
+
+void executeAnimation(bool *animationCondition, const string& animationName, Object animationObject, bool isLoop=false, bool lockInEnd=false){
+    if(animationCondition == nullptr){
+        return;
+    }
+
+    if(player.isShooting && animationName != "shoot" && animationName != "chargShoot"){
+        return;
+    }
+
+    if(*animationCondition && animationName != actualAnimation){
+        frameAnimation = 0;
+    }
+
+    if(*animationCondition && animationName != "idle" && animationName != "sadIdle"){
+        framesInIdle = 0;
+    }
+
     if(*animationCondition && isLoop){
         countFramesShootAnimationFinalTime = chrono::duration_cast<chrono::milliseconds>(chrono::system_clock::now().time_since_epoch()).count();
         if(countFramesShootAnimationFinalTime - countFramesShootAnimationInitialTime >= animationObject.animationFPS[actualAnimation] && frameAnimation < animationObject.animations[actualAnimation].size()){
@@ -223,7 +269,7 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             frameAnimation++;
             countFramesShootAnimationInitialTime = countFramesShootAnimationFinalTime;
 
-            if(actualAnimation == "idle"){
+            if(actualAnimation == "idle" || actualAnimation == "sadIdle"){
                 framesInIdle++;
             }
         }
@@ -264,6 +310,8 @@ void executeAnimation(bool *animationCondition, string animationName, Object ani
             *animationCondition = false;
             actualAnimation = "idle";
         }
+
+        return;
     }
 }
 
@@ -305,52 +353,68 @@ static void showMenu(){
 
 }
 
+void showRayCast(bool show, Enemy *enemy){
+    if(show){
+        glDisable(GL_LIGHTING);
+        glDisable(GL_TEXTURE_2D);
+            glPushMatrix();
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(player.x, enemy->y, -6);
+            glEnd();
+
+            glBegin(GL_LINE_LOOP);
+                glColor3d(1, 0, 0);
+                glVertex3d(enemy->x - 1, enemy->y, -6);
+                glVertex3d(enemy->x - 1, player.y + player.collision.sizeV/2, -6);
+            glEnd();
+            glPopMatrix();
+        glEnable(GL_TEXTURE_2D);
+        glEnable(GL_LIGHTING);
+    }
+}
+
 static void display()
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glColor4f(1, 0, 0, 1);
     glLoadIdentity();
 
-    drawnLifeHud();
+    drawLifeHud();
 
-    glColor3d(1, 1, 1);
-    player.drawnPlayer(actualAnimation, frameAnimation, 1.5, true);
+    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
+    checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        Object ::drawnObject(wall.wallObject.x, wall.wallObject.y, wall.wallObject.z, wall.wallObject.sizeH);
-    }
-
-    for(auto & floatingBlock : floatingBlocks) {
-//        cout << "wall.y = " << floatingBlock.wallObject.y << endl;
-        Object ::drawnObject(floatingBlock.wallObject.x, floatingBlock.wallObject.y, floatingBlock.wallObject.z, floatingBlock.wallObject.sizeH);
-        floatingBlock.move();
+        Object ::drawObject(wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
+        wall->move();
     }
 
     for (auto & enemy : enemies){
-        Enemy ::drawnObject(enemy->x, enemy->y, enemy->z, enemy->sizeH);
+        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->shoot(&fireObjects);
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, 2, false);
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
+        enemy->shoot(&fireObjects, player, actualFps);
+        showRayCast(false, enemy);
     }
 
-    checkCollisionsFires(quantityOverLapping);
-
-    executeAnimation(&player.isShooting, shootType, player);
-
-    bool playerIsMoving = player.speed.isMoving();
-    executeAnimation(&playerIsMoving, "running", player, true);
-
+    map<string, bool> animationsConditions;
     bool idleForTooLong = framesInIdle >= 400;
     executeAnimation(&idleForTooLong, "sadIdle", player, true);
 
+    bool playerIsMovingInGround = player.speed.isMoving() && !player.speed.isInTheAir();
+    executeAnimation(&playerIsMovingInGround, "running", player, true);
+
     bool isInTheAir = player.speed.isInTheAir();
-//    cout << isInTheAir << endl;
     executeAnimation(&isInTheAir, "jumping", player, false, true);
 
-    vector<bool> animationCondition = {player.isShooting, playerIsMoving, idleForTooLong, isInTheAir};
+    chargingShott();
+    executeAnimation(&player.isShooting, shootType, player);
+
+    vector<bool> animationCondition = {player.isShooting, playerIsMovingInGround, idleForTooLong, isInTheAir};
     for(int i = 0; i < animationCondition.size(); i++){
         if(animationCondition[i]){
             break;
@@ -363,7 +427,8 @@ static void display()
     }
 
     player.move(keyBuffer);
-    chargingShott();
+
+    checkCollisionsFires(quantityOverLapping);
 
     updateCamera();
 
@@ -384,6 +449,12 @@ static void key(unsigned char key, int x, int y) {
                     player.x = 0;
                     player.y = 0;
                     cout << "Jogo Iniciado\n";
+
+                    Sounds::stopSounds();
+
+                    Sounds::setVolume(0.6);
+                    Sounds::playSound("background", true);
+
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
@@ -472,8 +543,7 @@ static void key(unsigned char key, int x, int y) {
 static void keyboardUp(unsigned char key, int x, int y)
 {
     keyBuffer[key] = false;
-//    cout << key << endl;
-
+    
     if(gameStatus != onGame) return;
 
     if (!keyBuffer[SHOOTKEY] && key == SHOOTKEY){
@@ -584,11 +654,11 @@ void init(){
 
     menu.setOptions(options);
 
-    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shoot", 27, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargShoot", 27, 10);
-    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
+//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
+//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
 //    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
 
@@ -599,20 +669,43 @@ void init(){
         Wall1,
         Wall2,
         Hole,
+        SmallHole,
         MetEnemy,
         HorizontalEnemy,
         VerticalEnemy,
-        BlockFloating
+        JumpingEnemy,
+        BlockFloatingHor
     };
 
     vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i < 100; i++) {
-        if(i == 15) {
+    for(int i = 0; i < 50; i++) {
+        if(i == 24) {
             componentsScene.push_back(Wall1);
             componentsScene.push_back(Floor);
             componentsScene.push_back(Hole);
-        } else if (i == 18) {
-            componentsScene.push_back(BlockFloating);
+        } else if(i == 20) {
+            componentsScene.push_back(HorizontalEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(VerticalEnemy);
+        }
+        else if (i == 14) {
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(BlockFloatingHor);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(BlockFloatingHor);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(VerticalEnemy);
+        } else if(i == 8) {
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 45) {
+            componentsScene.push_back(MetEnemy);
+        } else if(i == 30) {
+            componentsScene.push_back(JumpingEnemy);
+        } else if(i == 38) {
+            componentsScene.push_back(JumpingEnemy);
         }
         else
             componentsScene.push_back(Floor);
@@ -621,16 +714,19 @@ void init(){
     for(auto & i : componentsScene) {
         switch (i) {
             case Floor:
-                walls.push_back(scene.buildFloorBlock());
+                walls.push_back(new Wall(scene.buildFloorBlock()));
                 break;
             case Wall1:
-                walls.push_back(scene.buildRaisedBlock(0));
+                walls.push_back(new Wall(scene.buildRaisedBlock(0)));
                 break;
             case Wall2:
-                walls.push_back(scene.buildRaisedBlock(1));
+                walls.push_back(new Wall(scene.buildRaisedBlock(1)));
                 break;
             case Hole:
                 scene.buildHole();
+                break;
+            case SmallHole:
+                scene.buildHole(1);
                 break;
             case MetEnemy:
                 enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
@@ -641,32 +737,22 @@ void init(){
             case VerticalEnemy:
                 enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
                 break;
-            case BlockFloating:
-                Object wall;
-                wall.x = 6;
-                wall.y = 0;
-                wall.z = -6;
-                wall.setSize(1);
-
-                FloatingBlocks floating;
-
-                floating.speed.y = 1;
-                floating.collision.setSize(wall.sizeH + 0.2f);
-                floating.wallObject = wall;
-//                cout << "AAAAAA" << floating.speed.y << endl;
-                floating.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
-                WallWithCollider teste;
-                teste.mapColliderWall = floating.mapColliderWall;
-                teste.wallObject = wall;
-//                walls.push_back(teste);
-                floatingBlocks.push_back(floating);
+            case JumpingEnemy:
+                enemies.push_back(new EnemyJumping(scene.spawnJumpingEnemy()));
                 break;
+            case BlockFloatingHor:
+                walls.push_back(new FloatingBlocksHor(scene.buildFloatBlockHor()));
+                break;
+
         }
     }
+
+    Sounds::playSound("menu", true);
 }
 
 /* Program entry point */
 int main(int argc, char *argv[])
+
 {
     glutInit(&argc, argv);
     glutInitWindowSize(WIDTH, HEIGHT);
@@ -692,7 +778,8 @@ int main(int argc, char *argv[])
     glEnable(GL_LIGHT0);
     glEnable(GL_NORMALIZE);
     glEnable(GL_COLOR_MATERIAL);
-//    glEnable(GL_LIGHTING);
+
+    glEnable(GL_LIGHTING);
 
 //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
 //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
@@ -706,9 +793,9 @@ int main(int argc, char *argv[])
 
     init();
 
-//    Sounds::playSound("background");
-
     glutMainLoop();
 
     return EXIT_SUCCESS;
 }
+
+#pragma clang diagnostic pop

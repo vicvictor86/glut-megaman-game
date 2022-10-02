@@ -5,7 +5,7 @@
 
 class EnemyMet : public Enemy {
     public: void move() override;
-    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) override;
+    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) override;
     public: EnemyMet() = default;
 };
 
@@ -23,22 +23,33 @@ void EnemyMet :: move() {
     if (this->speed.x != 0) {
         this->x += this->speed.x;
     }
+
+    if (this->speed.y != 0) {
+        this->y += this->speed.y;
+    }
+
+    if (!this->collision.isOnPlataform){
+        this->speed.y -= 0.001f;
+    }
 }
 
-void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, double sizeOfVision, bool drawnCollision) {
-    map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, sizeOfVision);
+void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
+    map<char, double> mapCollisionCanShoot = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX);
+    map<char, double> mapCollisionCantTakeDamage = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX / 2);
     if(drawnCollision){
-        Object::drawnObject(this->x, this->y, this->z, 2);
+        glPushMatrix();
+            Object::drawObject(this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
+        glPopMatrix();
     }
 
-    int quantityOverLapping = 0;
-    Collision::checkCollision(mapCollisionoViewOfPlayer, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &quantityOverLapping);
-    if(quantityOverLapping > 0){
-        this->canTakeDamage = false;
-        cout << "Nao toma dano" << endl;
-    } else {
-        this->canTakeDamage = true;
-    }
+    int triggerWithPlayer = 0;
+    Collision::checkCollision(mapCollisionCanShoot, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &triggerWithPlayer);
+
+    int triggerTooCloseWithPlayer = 0;
+    Collision::checkCollision(mapCollisionCantTakeDamage, this->x, this->y, mapCollisionPlayer, playerX, playerY, true, &triggerTooCloseWithPlayer);
+    this->canTakeDamage = triggerTooCloseWithPlayer > 0 ? false : true;
+    this->animationStatus = this->canTakeDamage ? "idle" : "hidden";
+    this->canShoot = triggerWithPlayer > 0 && this->canTakeDamage;
 }
 
 
