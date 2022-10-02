@@ -13,12 +13,15 @@ using namespace std;
 class Menu {
 private: vector<string> options;
 private: int option;
-public: Menu(){ option = 0;};
+private: int soundSetting;
+public: Menu(){ option = 0; soundSetting = 60;};
 public: void openMenu(float x, float y);
 public: vector<string> getOptions();
 public: void setOptions(vector<string> options);
 public: void setOption(int option);
 public: int getOption();
+public: int getSoundSetting();
+public: void updateSoundSetting(int op);
 public: void switchOption(int op);
 };
 
@@ -60,6 +63,21 @@ void Menu::openMenu(float x, float y) {
 
 int Menu::getOption(){
     return this->option;
+}
+
+int Menu::getSoundSetting(){
+    return this->soundSetting;
+}
+
+void Menu::updateSoundSetting(int op) {
+    if (this->soundSetting > 0 && this->soundSetting < 100)
+        this->soundSetting += 10 * op;
+    else {
+        if (this->soundSetting == 0 && op == 1)
+            this->soundSetting += 10;
+        else if (this->soundSetting == 100 && op == -1)
+            this->soundSetting -= 10;
+    }
 }
 
 void Menu::switchOption(int op) {

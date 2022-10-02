@@ -58,6 +58,7 @@ enum status
     mainMenu,
     onGame,
     gamePaused,
+    gameOptions,
     playerDeath
 };
 
@@ -80,7 +81,6 @@ void countFps(){
 
 void playerDead() {
     Sounds::stopSounds();
-    Sounds::setVolume(0.6);
     Sounds::playSound("death", false);
     player.life = player.maxLife;
     player.setY(0);
@@ -375,6 +375,10 @@ static void showMenu(){
             adjustmentX = -0.68;
             adjustmentY = 0.7;
             break;
+        case gameOptions:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
     }
     menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
     glutSwapBuffers();
@@ -473,6 +477,8 @@ static void display()
 static void key(unsigned char key, int x, int y) {
     keyBuffer[key] = true;
 
+    vector<string> options;
+
     if (gameStatus == mainMenu) {
         if (key == 13) {
             switch (menu.getOption()) {
@@ -485,13 +491,16 @@ static void key(unsigned char key, int x, int y) {
                     actualAnimation = "idle";
 
                     Sounds::stopSounds();
-                    Sounds::setVolume(0.6);
                     Sounds::playSound("background", true);
 
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    gameStatus = gameOptions;
                     break;
                 case 2:
                     exit(0);
@@ -514,10 +523,9 @@ static void key(unsigned char key, int x, int y) {
                     break;
                 case 1:
                     Sounds::stopSounds();
-                    Sounds::setVolume(0.6);
                     Sounds::playSound("menu", true);
                     gameStatus = mainMenu;
-                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
                     menu.setOptions(options);
                     menu.setOption(0);
                     break;
@@ -533,7 +541,6 @@ static void key(unsigned char key, int x, int y) {
             switch (menu.getOption()) {
                 case 0:
                     Sounds::stopSounds();
-                    Sounds::setVolume(0.6);
                     Sounds::playSound("background", true);
                     gameStatus = onGame;
                     cout << "Jogo Reiniciado\n";
@@ -542,7 +549,6 @@ static void key(unsigned char key, int x, int y) {
                     break;
                 case 1:
                     Sounds::stopSounds();
-                    Sounds::setVolume(0.6);
                     Sounds::playSound("menu", true);
                     gameStatus = mainMenu;
                     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
@@ -556,52 +562,83 @@ static void key(unsigned char key, int x, int y) {
         } else if (key == 's' || key == 'S') {
             menu.switchOption(1);
         }
-    } else if (gameStatus == onGame) {
-        if (keyBuffer[27]) {
-            frameAnimation = 0;
-            actualAnimation = "running";
-
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            vector<string> options = {"Continuar Jornada", "Menu Principal"};
-            menu.setOptions(options);
-
-            menu.setOption(0);
-            gameStatus = gamePaused;
-            cout << "Jogo Pausado\n";
-            glutDisplayFunc(showMenu);
-        } else {
-            if (keyBuffer['d'] || keyBuffer['D']) {
-                player.speed.x = 0.1;
-                player.directionX = RIGHT;
+    } else if (gameStatus == gameOptions) {
+        if (menu.getOption() == 0) {
+            if (key == 'a' || key == 'A') {
+                menu.updateSoundSetting(-1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Aplicar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
+            } else if (key == 'd' || key == 'D') {
+                menu.updateSoundSetting(1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Aplicar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
             }
+            cout << menu.getSoundSetting() / 100 << endl;
+        }
 
-            if (keyBuffer['a'] || keyBuffer['A']) {
-                player.speed.x = 0.1;
-                player.directionX = LEFT;
-            }
+            if (key == 'w' || key == 'W')
+                menu.switchOption(-1);
+            else if (key == 's' || key == 'S')
+                menu.switchOption(1);
 
-            if (keyBuffer[' '] && player.speed.y == 0) {
-                Sounds::playSound("jump");
-                player.speed.y = 0.05f;
-            }
-
-            if (!fireObjects.empty()) {
-                if (keyBuffer['g']) {
-                    fireObjects.pop_back();
+            if (key == 13) {
+                switch (menu.getOption()) {
+                    case 1:
+                        gameStatus = mainMenu;
+                        vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                        menu.setOptions(options);
+                        menu.setOption(0);
+                        break;
                 }
             }
+        } else if (gameStatus == onGame) {
+            if (keyBuffer[27]) {
+                frameAnimation = 0;
+                actualAnimation = "running";
 
-            if (keyBuffer['f']) {
-                if (initialTime == -1) {
-                    initialTime = time(nullptr);
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                vector<string> options = {"Continuar Jornada", "Menu Principal"};
+                menu.setOptions(options);
+
+                menu.setOption(0);
+                gameStatus = gamePaused;
+                cout << "Jogo Pausado\n";
+                glutDisplayFunc(showMenu);
+            } else {
+                if (keyBuffer['d'] || keyBuffer['D']) {
+                    player.speed.x = 0.1;
+                    player.directionX = RIGHT;
                 }
-            }
 
-            if (key == 'q' || key == 'Q') {
-                exit(0);
+                if (keyBuffer['a'] || keyBuffer['A']) {
+                    player.speed.x = 0.1;
+                    player.directionX = LEFT;
+                }
+
+                if (keyBuffer[' '] && player.speed.y == 0) {
+                    Sounds::playSound("jump");
+                    player.speed.y = 0.05f;
+                }
+
+                if (!fireObjects.empty()) {
+                    if (keyBuffer['g']) {
+                        fireObjects.pop_back();
+                    }
+                }
+
+                if (keyBuffer['f']) {
+                    if (initialTime == -1) {
+                        initialTime = time(nullptr);
+                    }
+                }
+
+                if (key == 'q' || key == 'Q') {
+                    exit(0);
+                }
             }
         }
-    }
 
     glutPostRedisplay();
 }
@@ -692,6 +729,15 @@ static void specialKey(int key, int x, int y)
                 break;
         }
         glutPostRedisplay();
+    } else if(gameStatus == gameOptions) {
+        switch (key) {
+            case GLUT_KEY_LEFT:
+                menu.updateSoundSetting(-1);
+                break;
+            case GLUT_KEY_RIGHT:
+                menu.updateSoundSetting(1);
+                break;
+        }
     }
 }
 
