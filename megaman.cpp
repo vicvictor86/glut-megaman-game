@@ -44,6 +44,7 @@ vector<Wall *> walls;
 vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
+Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
 Menu menu;
 Scene scene;
@@ -337,6 +338,11 @@ static void showMenu(){
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
+    playerMenu.drawObject("running", frameAnimation, -3, 0, -6, 1.2, 1.2, 1, 1, 1);
+    bool playerIsMoving = true;
+    executeAnimation(&playerIsMoving, "running", player, true);
+
     float adjustmentX, adjustmentY;
     switch (gameStatus) {
         case mainMenu:
@@ -388,7 +394,7 @@ static void display()
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        Object ::drawObject(wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
+        wall->drawObject("",1, wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
         wall->move();
     }
 
@@ -396,7 +402,7 @@ static void display()
         enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, true);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
+        enemy->noticedEnemy(enemy->animationStatus, 0, player.mapCollider, player.x, player.y, player.z, true);
         enemy->shoot(&fireObjects, player, actualFps);
         showRayCast(false, enemy);
     }
@@ -449,6 +455,8 @@ static void key(unsigned char key, int x, int y) {
                     player.x = 0;
                     player.y = 0;
                     cout << "Jogo Iniciado\n";
+                    frameAnimation = 0;
+                    actualAnimation = "idle";
 
                     Sounds::stopSounds();
 
@@ -494,6 +502,9 @@ static void key(unsigned char key, int x, int y) {
         }
     } else if (gameStatus == onGame) {
         if (keyBuffer[27]) {
+            frameAnimation = 0;
+            actualAnimation = "running";
+
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             vector<string> options = {"Continuar Jornada", "Menu Principal"};
             menu.setOptions(options);
@@ -653,6 +664,9 @@ void init(){
     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
 
     menu.setOptions(options);
+
+
+    playerMenu.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
 
 //    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
