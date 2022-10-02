@@ -39,11 +39,6 @@ int HEIGHT = 480;
 
 int actualFps = 60;
 
-struct WallWithCollider {
-    Object wallObject;
-    map<char, double> mapColliderWall;
-};
-
 bool keyBuffer[256];
 vector<Fire> fireObjects;
 vector<Wall *> walls;
@@ -158,7 +153,6 @@ int checkCollisionWithWalls(Object * object){
             initialWallJump = -1;
         }
     }
-
 
     return quantityOverLapping;
 }
@@ -456,6 +450,12 @@ static void key(unsigned char key, int x, int y) {
                     player.x = 0;
                     player.y = 0;
                     cout << "Jogo Iniciado\n";
+
+                    Sounds::stopSounds();
+
+                    Sounds::setVolume(0.6);
+                    Sounds::playSound("background", true);
+
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
@@ -748,6 +748,7 @@ void init(){
         }
     }
 
+    Sounds::playSound("menu", true);
 }
 
 /* Program entry point */
@@ -792,8 +793,6 @@ int main(int argc, char *argv[])
 //    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     init();
-
-//    Sounds::playSound("background");
 
     glutMainLoop();
 

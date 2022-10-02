@@ -1,11 +1,17 @@
 #ifndef GAME_PROJECT_SOUNDS_H
 #define GAME_PROJECT_SOUNDS_H
 
-char* backgroundMusic = "../Sounds/background.mp3";
-char* jumpSound = "../Sounds/jump.wav";
-char* shootSound = "../Sounds/shoot.wav";
-char* playerDamage = "../Sounds/playerDamage.wav";
-map<string, char*> sounds = {
+#include <irrKlang.h>
+
+char const *backgroundMusic = "../Sounds/background.wav";
+char const *menuMusic = "../Sounds/menu.wav";
+char const *jumpSound = "../Sounds/Jump.wav";
+char const *shootSound = "../Sounds/shoot.wav";
+char const *playerDamage = "../Sounds/playerDamage.wav";
+irrklang::ISoundEngine* engine = irrklang::createIrrKlangDevice();
+
+map<string, char const *> sounds = {
+        {"menu", menuMusic},
         {"background", backgroundMusic},
         {"jump", jumpSound},
         {"shoot", shootSound},
@@ -14,11 +20,23 @@ map<string, char*> sounds = {
 
 class Sounds {
     public: Sounds()= default;
-    public: static void playSound(const string& soundName);
+    public: static void playSound(const char* soundName, bool loop);
+
+    public: static void stopSounds();
+
+    public: static void setVolume(float volume);
 };
 
-void Sounds::playSound(const string& soundName) {
-    sndPlaySound(sounds[soundName], SND_FILENAME | SND_ASYNC);
+void Sounds::playSound(const char* soundName, bool loop = false) {
+    engine->play2D(sounds[soundName], loop);
+}
+
+void Sounds::stopSounds() {
+    engine->stopAllSounds();
+}
+
+void Sounds::setVolume(irrklang::ik_f32 volume) {
+    engine->setSoundVolume(volume);
 }
 
 #endif //GAME_PROJECT_SOUNDS_H
