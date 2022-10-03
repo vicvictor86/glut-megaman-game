@@ -67,11 +67,125 @@ enum status
     playerWon
 };
 
+enum sceneComponents {
+    Floor,
+    Wall1,
+    Wall2,
+    Hole,
+    SmallHole,
+    SmallWall,
+    MetEnemy,
+    HorizontalEnemy,
+    VerticalEnemy,
+    JumpingEnemy,
+    BlockFloatingHor
+};
+
 status gameStatus = mainMenu;
 
 int frameAnimation = 0;
 
 static void showMenu();
+
+void startGame(){
+    scene.resetScene();
+
+    walls.clear();
+    enemies.clear();
+
+    vector<sceneComponents> componentsScene = {};
+    for(int i = 0; i <= 60; i++) {
+        if(i == 24) {
+            componentsScene.push_back(Wall1);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Hole);
+        } else if(i == 20) {
+            componentsScene.push_back(HorizontalEnemy);
+            componentsScene.push_back(Floor);
+        }
+        else if (i == 14) {
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(BlockFloatingHor);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(BlockFloatingHor);
+            componentsScene.push_back(Hole);
+            componentsScene.push_back(VerticalEnemy);
+        } else if(i == 8) {
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 45) {
+            componentsScene.push_back(SmallWall);
+            componentsScene.push_back(MetEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(JumpingEnemy);
+        } else if(i == 30) {
+            componentsScene.push_back(JumpingEnemy);
+        } else if(i == 38) {
+            componentsScene.push_back(JumpingEnemy);
+        } else if(i == 52) {
+            componentsScene.push_back(VerticalEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 58){
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+        } else if (i == 59) {
+            componentsScene.push_back(Wall1);
+            componentsScene.push_back(Wall2);
+        } else
+            componentsScene.push_back(Floor);
+    }
+
+    for(auto & i : componentsScene) {
+        switch (i) {
+            case Floor:
+                walls.push_back(new Wall(scene.buildFloorBlock()));
+                break;
+            case Wall1:
+                walls.push_back(new Wall(scene.buildRaisedBlock(0)));
+                break;
+            case Wall2:
+                walls.push_back(new Wall(scene.buildRaisedBlock(1)));
+                break;
+            case Hole:
+                scene.buildHole();
+                break;
+            case SmallHole:
+                scene.buildHole(1);
+                break;
+            case SmallWall:
+                walls.push_back(new Wall(scene.buildRaisedBlock(-0.5, 1)));
+                break;
+            case MetEnemy:
+                enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
+                break;
+            case HorizontalEnemy:
+                enemies.push_back(new EnemyHorizontal(scene.spawnHorizontalEnemy()));
+                break;
+            case VerticalEnemy:
+                enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
+                break;
+            case JumpingEnemy:
+                enemies.push_back(new EnemyJumping(scene.spawnJumpingEnemy()));
+                break;
+            case BlockFloatingHor:
+                walls.push_back(new FloatingBlocksHor(scene.buildFloatBlockHor()));
+                break;
+
+        }
+    }
+}
 
 void countFps(){
     frameCount++;
@@ -86,7 +200,6 @@ void countFps(){
 
 void playerDead() {
     Sounds::stopSounds();
-    Sounds::playSound("death", false);
     player.life = player.maxLife;
     player.setY(0);
     player.setX(0);
@@ -97,6 +210,8 @@ void playerDead() {
     menu.setOption(0);
     gameStatus = playerDeath;
     glutDisplayFunc(showMenu);
+    Sounds::playSound("death", false);
+    startGame();
     printf("Game over\n");
 }
 
@@ -453,7 +568,6 @@ static void display()
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-//        wall->drawObject("",1, wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
         wall->drawWall("block", 0,  debug);
         wall->move();
     }
@@ -830,112 +944,7 @@ void init(){
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
-    enum sceneComponents {
-        Floor,
-        Wall1,
-        Wall2,
-        Hole,
-        SmallHole,
-        SmallWall,
-        MetEnemy,
-        HorizontalEnemy,
-        VerticalEnemy,
-        JumpingEnemy,
-        BlockFloatingHor
-    };
-
-    vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i <= 60; i++) {
-        if(i == 24) {
-            componentsScene.push_back(Wall1);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Hole);
-        } else if(i == 20) {
-            componentsScene.push_back(HorizontalEnemy);
-            componentsScene.push_back(Floor);
-        }
-        else if (i == 14) {
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(BlockFloatingHor);
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(BlockFloatingHor);
-            componentsScene.push_back(Hole);
-            componentsScene.push_back(VerticalEnemy);
-        } else if(i == 8) {
-            componentsScene.push_back(HorizontalEnemy);
-        } else if(i == 45) {
-            componentsScene.push_back(SmallWall);
-            componentsScene.push_back(MetEnemy);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(JumpingEnemy);
-        } else if(i == 30) {
-            componentsScene.push_back(JumpingEnemy);
-        } else if(i == 38) {
-            componentsScene.push_back(JumpingEnemy);
-        } else if(i == 52) {
-            componentsScene.push_back(VerticalEnemy);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(HorizontalEnemy);
-        } else if(i == 58){
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-            componentsScene.push_back(Floor);
-        } else if (i == 59) {
-            componentsScene.push_back(Wall1);
-            componentsScene.push_back(Wall2);
-        } else
-            componentsScene.push_back(Floor);
-    }
-
-    for(auto & i : componentsScene) {
-        switch (i) {
-            case Floor:
-                walls.push_back(new Wall(scene.buildFloorBlock()));
-                break;
-            case Wall1:
-                walls.push_back(new Wall(scene.buildRaisedBlock(0)));
-                break;
-            case Wall2:
-                walls.push_back(new Wall(scene.buildRaisedBlock(1)));
-                break;
-            case Hole:
-                scene.buildHole();
-                break;
-            case SmallHole:
-                scene.buildHole(1);
-                break;
-            case SmallWall:
-                walls.push_back(new Wall(scene.buildRaisedBlock(-0.5, 1)));
-                break;
-            case MetEnemy:
-                enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
-                break;
-            case HorizontalEnemy:
-                enemies.push_back(new EnemyHorizontal(scene.spawnHorizontalEnemy()));
-                break;
-            case VerticalEnemy:
-                enemies.push_back(new EnemyVertical(scene.spawnVerticalEnemy()));
-                break;
-            case JumpingEnemy:
-                enemies.push_back(new EnemyJumping(scene.spawnJumpingEnemy()));
-                break;
-            case BlockFloatingHor:
-                walls.push_back(new FloatingBlocksHor(scene.buildFloatBlockHor()));
-                break;
-
-        }
-    }
+    startGame();
 
     Sounds::playSound("menu", true);
 

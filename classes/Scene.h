@@ -16,6 +16,7 @@ public: EnemyHorizontal spawnHorizontalEnemy();
 public: EnemyVertical spawnVerticalEnemy();
 public: EnemyJumping spawnJumpingEnemy();
 public: Scene() {currentX = -2;changeDirection = true;};
+public: void resetScene();
 
 private: int currentX;
 };
@@ -35,6 +36,11 @@ Wall Scene::buildFloorBlock() {
     this->currentX += 2;
 
     return wall;
+}
+
+void Scene::resetScene(){
+    this->currentX = -2;
+    changeDirection = true;
 }
 
 void Scene::buildHole(float x = 2) {
