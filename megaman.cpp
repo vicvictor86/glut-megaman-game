@@ -388,12 +388,12 @@ static void display()
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        wall->drawWall("metalWall", 0, wall->scaleSizeModel, debug);
+        wall->drawWall("block", 0,  debug);
         wall->move();
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, debug);
+        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModelX, 0, 0, debug);
         checkCollisionWithWalls(enemy);
         enemy->move();
         enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, debug);

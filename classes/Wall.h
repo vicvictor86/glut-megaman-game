@@ -5,11 +5,12 @@
 
 class Wall : public Object{
     public: map<char, double> mapColliderWall;
+    public: double rotateX = 0, rotateY = 0, rotateZ = 0, angle = 0;
     public: virtual void move();
     public: Wall() = default;
     public: Wall(double x, double y, double z, map<char, double> mapColliderWall);
 
-    public: void drawWall(const string &animationName, int animationFrame, double scaleSizeH, bool drawnCollider, bool devMode);
+    public: void drawWall(const string &animationName, int animationFrame, bool drawnCollider, bool devMode);
 };
 
 void Wall::move() {}
@@ -21,7 +22,7 @@ Wall::Wall(double x, double y, double z, map<char, double> mapColliderWall) {
     this->mapColliderWall = mapColliderWall;
 }
 
-void Wall:: drawWall(const string& animationName="", int animationFrame=1, double scaleModel=1, bool drawnCollider=false, bool devMode=false){
+void Wall:: drawWall(const string& animationName="", int animationFrame=1, bool drawnCollider=false, bool devMode=false){
     if(drawnCollider){
         Object::drawObject(this->x, this->y, this->z, this->sizeH, this->sizeV);
     }
@@ -30,9 +31,9 @@ void Wall:: drawWall(const string& animationName="", int animationFrame=1, doubl
         glLoadIdentity();
         glColor3d(1, 1 , 1);
         glTranslated(this->modelX + this->x, this->modelY + this->y, this->z);
-        glRotated(90, 0, 1, 0);
+        glRotated(this->angle, this->rotateX, this->rotateY, this->rotateZ);
 
-        glScaled(scaleModel, scaleModel, scaleModel);
+        glScaled(this->scaleSizeModelX, this->scaleSizeModelY, this->scaleSizeModelZ);
         if(!this->animations[animationName].empty()){
             this->animations[animationName][animationFrame].draw();
         }

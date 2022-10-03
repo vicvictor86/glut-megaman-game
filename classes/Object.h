@@ -16,7 +16,7 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
-    public: double scaleSizeModel = 1;
+    public: double scaleSizeModelX = 1, scaleSizeModelY = 1, scaleSizeModelZ = 1;
     public: double modelX=0, modelY=0, modelZ=0;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
@@ -28,6 +28,7 @@ class Object {
     public: void setY(double updateY);
     public: void setZ(double updateZ);
     public: void setSize(float sizeH, float sizeV);
+    public: void setScaleSizeModel(double scaleSizeModelX, double scaleSizeModelY, double scaleSizeModelZ);
     public: void setAnimations(const string& animationName, const string& directoryPath, const string& fileName, int numberOfFrames, int fps);
     public: Object() = default;
     public: Object(double x, double y, double z, float r, float g, float b, Speed speed, float size, Collision collision);
@@ -121,6 +122,20 @@ void Object:: drawModel(double scaleSize){
         glScaled(scaleSize, scaleSize, scaleSize);
         this->model.draw();
     glPopMatrix();
+}
+
+void Object:: setScaleSizeModel(double scaleSizeModelX, double scaleSizeModelY=0, double scaleSizeModelZ=0){
+    if (scaleSizeModelY == 0) {
+        scaleSizeModelY = scaleSizeModelX;
+    }
+
+    if (scaleSizeModelZ == 0) {
+        scaleSizeModelZ = scaleSizeModelX;
+    }
+
+    this->scaleSizeModelX = scaleSizeModelX;
+    this->scaleSizeModelY = scaleSizeModelY;
+    this->scaleSizeModelZ = scaleSizeModelZ;
 }
 
 #endif
