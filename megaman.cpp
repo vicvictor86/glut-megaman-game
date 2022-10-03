@@ -45,7 +45,7 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
 Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
-Object endBoard(2, 1, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
+Object endBoard(2, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhores(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhoresVinho(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
@@ -493,14 +493,13 @@ static void showMenu(){
     glLoadIdentity();
 
     if(gameStatus == playerWon){
-        finoSenhores.drawObject("idle", 0, -5, -1, -6, finoSenhores.scaleSizeModelX, finoSenhores.scaleSizeModelY, 1, 1, 1);
-        finoSenhoresVinho.drawObject("idle", 0, -3, -1, -6, finoSenhoresVinho.scaleSizeModelX, finoSenhoresVinho.scaleSizeModelY, 1, 1, 1);
+        finoSenhores.drawObject("idle", 0, -5, -1, -6, finoSenhores.scaleSizeModelX, finoSenhores.scaleSizeModelY, 90, 1, 1, 1);
+        finoSenhoresVinho.drawObject("idle", 0, -3, -1, -6, finoSenhoresVinho.scaleSizeModelX, finoSenhoresVinho.scaleSizeModelY, 90, 1, 1, 1);
     }else {
-        playerMenu.drawObject("running", frameAnimation, -3, 0, -6, 1.2, 1.2, 1, 1, 1);
+        playerMenu.drawObject("running", frameAnimation, 7, -5.7, -6, 1.1, 1.1, 90, 1, 1, 1);
         bool playerIsMoving = true;
         executeAnimation(&playerIsMoving, "running", player, true);
     }
-
 
     float adjustmentX, adjustmentY;
     switch (gameStatus) {
@@ -582,7 +581,7 @@ static void display()
         showRayCast(enemy);
     }
 
-    endBoard.drawObject("idle", 0, 2, 1, -6, endBoard.scaleSizeModelX, endBoard.scaleSizeModelY, 1, 1, 1);
+    endBoard.drawObject("idle", 0, 140, -1, -6, endBoard.scaleSizeModelX, endBoard.scaleSizeModelY, 0,1, 1, 1);
 
     if (player.y <= -18) {
         playerDead();
@@ -784,10 +783,6 @@ static void key(unsigned char key, int x, int y) {
                         initialTime = time(nullptr);
                     }
                 }
-
-                if (key == 'q' || key == 'Q') {
-                    exit(0);
-                }
             }
         } else if(gameStatus == playerWon) {
         if (key == 13) {
@@ -872,11 +867,6 @@ static void keyboardUp(unsigned char key, int x, int y)
     if((!keyBuffer['c'] && key == 'c') || (keyBuffer['C'] && key == 'C')){
         debug = !debug;
     }
-
-    if (!keyBuffer['o'] && key == 'o'){
-        player.x = 0;
-        player.y = 0;
-    }
 }
 
 static void specialKey(int key, int x, int y)
@@ -941,13 +931,14 @@ void init(){
     menu.setOptions(options);
 
     playerMenu.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
 
-//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
-//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
-//    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
+    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
+    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
     finoSenhores.setAnimations("idle", "../Models/Environment/easterEgg/", "ancientFace", 0, 20);
     finoSenhores.setScaleSizeModel(80);
@@ -955,8 +946,8 @@ void init(){
     finoSenhoresVinho.setAnimations("idle", "../Models/Environment/easterEgg/", "glassOfWine", 0, 20);
     finoSenhoresVinho.setScaleSizeModel(2);
 
-    endBoard.setAnimations("idle", "../Models/Environment/", "ground", 0, 20);
-    endBoard.setScaleSizeModel(10);
+    endBoard.setAnimations("idle", "../Models/Environment/ground/", "endBoard", 0, 20);
+    endBoard.setScaleSizeModel(0.3);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 

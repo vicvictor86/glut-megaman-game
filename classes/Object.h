@@ -22,7 +22,7 @@ class Object {
     public: map<string, int> animationFPS;
     public: string animationStatus = "idle";
     public: void drawModel(double scaleSize);
-    public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV, double r, double g, double b, bool drawCollider);
+    public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV,  double angle, double r, double g, double b, bool drawCollider);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);
@@ -106,7 +106,7 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawObject(const string& animationName="", int animationFrame=1, double x = 0, double y = 0, double z = -6, double sizeH = 1, double sizeV = 1, double r=0, double g=0, double b=0, bool drawCollider = false){
+void Object:: drawObject(const string& animationName="", int animationFrame=1, double x = 0, double y = 0, double z = -6, double sizeH = 1, double sizeV = 1, double angle = 90, double r=0, double g=0, double b=0, bool drawCollider = false){
     if(drawCollider) {
         glPushMatrix();
             glColor3d(r, g, b);
@@ -120,7 +120,7 @@ void Object:: drawObject(const string& animationName="", int animationFrame=1, d
         glPushMatrix();
         glLoadIdentity();
         glTranslatef((float) x, (float) y, (float) z);
-        glRotatef(90, 0, 1, 0);
+        glRotatef(angle, 0, 1, 0);
         glScaled(sizeH, sizeV, sizeH);
 
         if (!this->animations[animationName].empty()) {
