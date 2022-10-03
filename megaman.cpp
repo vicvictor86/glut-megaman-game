@@ -52,6 +52,8 @@ string actualAnimation = "idle";
 string shootType = "shoot";
 int framesInIdle = 0;
 
+bool debug = false;
+
 enum status
 {
     mainMenu,
@@ -165,7 +167,7 @@ void checkCollisionsFires(int quantityOverLapping){
                 fireObjects.erase(fireObjects.begin() + i);
             }
 
-            fireObjects[i].drawFire(true);
+            fireObjects[i].drawFire(debug);
 
             collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, i + 1 >= fireObjects.size(), &quantityOverLapping);
             if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION && fireObjects[i].tagShoot == "Enemy"){
@@ -232,9 +234,9 @@ void drawLifeHud(){
                 double yQuadBottom = 0.85;
                 double yQuadTop = 0.95;
                 glTexCoord2d(0, 1); glVertex2d(xQuadLeft, yQuadBottom);
-                glTexCoord2d(1, 1) ;glVertex2d(xQuadRight, yQuadBottom);
-                glTexCoord2d(1, 0) ;glVertex2d(xQuadRight, yQuadTop);
-                glTexCoord2d(0, 0) ;glVertex2d(xQuadLeft, yQuadTop);
+                glTexCoord2d(1, 1); glVertex2d(xQuadRight, yQuadBottom);
+                glTexCoord2d(1, 0); glVertex2d(xQuadRight, yQuadTop);
+                glTexCoord2d(0, 0); glVertex2d(xQuadLeft, yQuadTop);
             glEnd();
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
@@ -333,8 +335,6 @@ void chargingShott(){
 }
 
 static void showMenu(){
-//    glEnable(GL_DEPTH_TEST);da
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
     float adjustmentX, adjustmentY;
@@ -353,8 +353,8 @@ static void showMenu(){
 
 }
 
-void showRayCast(bool show, Enemy *enemy){
-    if(show){
+void showRayCast(Enemy *enemy){
+    if(debug){
         glDisable(GL_LIGHTING);
         glDisable(GL_TEXTURE_2D);
             glPushMatrix();
@@ -382,23 +382,23 @@ static void display()
 
     drawLifeHud();
 
-    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
+    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, debug);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        Object ::drawObject(wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
+        wall->drawWall("block", 0,  debug);
         wall->move();
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, true);
+        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModelX, 0, 0, debug);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, true);
+        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, debug);
         enemy->shoot(&fireObjects, player, actualFps);
-        showRayCast(false, enemy);
+        showRayCast(enemy);
     }
 
     map<string, bool> animationsConditions;
@@ -604,6 +604,10 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.tagShoot = "Player";
 
         fireObjects.push_back(fire);
+    }
+
+    if((!keyBuffer['c'] && key == 'c') || (keyBuffer['C'] && key == 'C')){
+        debug = !debug;
     }
 
     if (!keyBuffer['o'] && key == 'o'){

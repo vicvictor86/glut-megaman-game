@@ -1,0 +1,12 @@
+# Blender 3.3.0 MTL File: 'movingBlock.blend'
+# www.blender.org
+
+newmtl mat1
+Ns 10.000005
+Ka 1.000000 1.000000 1.000000
+Ks 0.000000 0.000000 0.000000
+Ke 0.000000 0.000000 0.000000
+Ni 1.000000
+d 1.000000
+illum 1
+map_Kd mis_obj_s_vault01_dif_SD.png
