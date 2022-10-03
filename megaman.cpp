@@ -45,6 +45,7 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
 Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
+Object endBoard(2, 1, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhores(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhoresVinho(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
@@ -492,8 +493,8 @@ static void showMenu(){
     glLoadIdentity();
 
     if(gameStatus == playerWon){
-        finoSenhores.drawObject("idle", frameAnimation, -5, -1, -6, finoSenhores.scaleSizeModelX, finoSenhores.scaleSizeModelY, 1, 1, 1);
-        finoSenhoresVinho.drawObject("idle", frameAnimation, -3, -1, -6, finoSenhoresVinho.scaleSizeModelX, finoSenhoresVinho.scaleSizeModelY, 1, 1, 1);
+        finoSenhores.drawObject("idle", 0, -5, -1, -6, finoSenhores.scaleSizeModelX, finoSenhores.scaleSizeModelY, 1, 1, 1);
+        finoSenhoresVinho.drawObject("idle", 0, -3, -1, -6, finoSenhoresVinho.scaleSizeModelX, finoSenhoresVinho.scaleSizeModelY, 1, 1, 1);
     }else {
         playerMenu.drawObject("running", frameAnimation, -3, 0, -6, 1.2, 1.2, 1, 1, 1);
         bool playerIsMoving = true;
@@ -580,6 +581,8 @@ static void display()
         enemy->shoot(&fireObjects, player, actualFps);
         showRayCast(enemy);
     }
+
+    endBoard.drawObject("idle", 0, 2, 1, -6, endBoard.scaleSizeModelX, endBoard.scaleSizeModelY, 1, 1, 1);
 
     if (player.y <= -18) {
         playerDead();
@@ -878,7 +881,7 @@ static void keyboardUp(unsigned char key, int x, int y)
 
 static void specialKey(int key, int x, int y)
 {
-    if(gameStatus == mainMenu || gameStatus == gamePaused) {
+    if(gameStatus == mainMenu || gameStatus == gamePaused || gameStatus == gameOptions || gameStatus == playerDeath) {
         switch (key) {
             case GLUT_KEY_UP:
                 menu.switchOption(-1);
@@ -889,17 +892,27 @@ static void specialKey(int key, int x, int y)
             default:
                 break;
         }
-        glutPostRedisplay();
-    } else if(gameStatus == gameOptions) {
+    }
+
+    if(gameStatus == gameOptions) {
+        vector<string> options;
         switch (key) {
             case GLUT_KEY_LEFT:
                 menu.updateSoundSetting(-1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
                 break;
             case GLUT_KEY_RIGHT:
                 menu.updateSoundSetting(1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
                 break;
         }
     }
+
+    glutPostRedisplay();
 }
 
 static void idle(int)
@@ -941,6 +954,9 @@ void init(){
 
     finoSenhoresVinho.setAnimations("idle", "../Models/Environment/easterEgg/", "glassOfWine", 0, 20);
     finoSenhoresVinho.setScaleSizeModel(2);
+
+    endBoard.setAnimations("idle", "../Models/Environment/", "ground", 0, 20);
+    endBoard.setScaleSizeModel(10);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 
