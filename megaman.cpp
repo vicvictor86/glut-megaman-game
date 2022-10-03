@@ -44,6 +44,7 @@ vector<Wall *> walls;
 vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
+Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Camera camera(WIDTH, HEIGHT);
 Menu menu;
 Scene scene;
@@ -58,12 +59,17 @@ enum status
 {
     mainMenu,
     onGame,
-    gamePaused
+    gamePaused,
+    gameOptions,
+    playerDeath,
+    playerWon
 };
 
 status gameStatus = mainMenu;
 
 int frameAnimation = 0;
+
+static void showMenu();
 
 void countFps(){
     frameCount++;
@@ -74,6 +80,38 @@ void countFps(){
         frameCount = 0;
         countFpsInitialTime = countFpsFinalTime;
     }
+}
+
+void playerDead() {
+    Sounds::stopSounds();
+    Sounds::playSound("death", false);
+    player.life = player.maxLife;
+    player.setY(0);
+    player.setX(0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    vector<string> options = {"Reiniciar Jornada", "Sair para o Menu"};
+    menu.setOptions(options);
+
+    menu.setOption(0);
+    gameStatus = playerDeath;
+    glutDisplayFunc(showMenu);
+    printf("Game over\n");
+}
+
+void winGame() {
+    Sounds::stopSounds();
+    Sounds::playSound("death", false);
+    player.life = player.maxLife;
+    player.setY(0);
+    player.setX(0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    vector<string> options = {"(Aperte Enter para continuar)"};
+    menu.setOptions(options);
+
+    menu.setOption(0);
+    gameStatus = playerWon;
+    glutDisplayFunc(showMenu);
+    printf("Game win\n");
 }
 
 static void resize(int width, int height)
@@ -174,8 +212,7 @@ void checkCollisionsFires(int quantityOverLapping){
                 player.getDamage(fireObjects[i].damage);
                 fireObjects.erase(fireObjects.begin() + i);
                 if(player.life <= 0){
-                    printf("Game over\n");
-                    exit(0);
+                    playerDead();
                 }
             }
 
@@ -207,8 +244,7 @@ void checkCollisionWithEnemies(){
         if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION){
             player.getDamage(enemies[i]->damage);
             if(player.life <= 0){
-                printf("Game over\n");
-                exit(0);
+                playerDead();
             }
         }
     }
@@ -337,6 +373,11 @@ void chargingShott(){
 static void showMenu(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
+
+    playerMenu.drawObject("running", frameAnimation, -3, 0, -6, 1.2, 1.2, 1, 1, 1);
+    bool playerIsMoving = true;
+    executeAnimation(&playerIsMoving, "running", player, true);
+
     float adjustmentX, adjustmentY;
     switch (gameStatus) {
         case mainMenu:
@@ -346,6 +387,18 @@ static void showMenu(){
         case gamePaused:
             adjustmentX = -0.78;
             adjustmentY = 0.45;
+            break;
+        case playerDeath:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
+        case gameOptions:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
+        case playerWon:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
             break;
     }
     menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
@@ -382,12 +435,17 @@ static void display()
 
     drawLifeHud();
 
+    if(player.x >= 141 && enemies.empty()) {
+        winGame();
+    }
+
     frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, debug);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
+//        wall->drawObject("",1, wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
         wall->drawWall("block", 0,  debug);
         wall->move();
     }
@@ -396,9 +454,13 @@ static void display()
         enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModelX, 0, 0, debug);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->noticedEnemy(player.mapCollider, player.x, player.y, player.z, debug);
+        enemy->noticedEnemy(enemy->animationStatus, 0, player.mapCollider, player.x, player.y, player.z, debug);
         enemy->shoot(&fireObjects, player, actualFps);
         showRayCast(enemy);
+    }
+
+    if (player.y <= -18) {
+        playerDead();
     }
 
     map<string, bool> animationsConditions;
@@ -441,6 +503,8 @@ static void display()
 static void key(unsigned char key, int x, int y) {
     keyBuffer[key] = true;
 
+    vector<string> options;
+
     if (gameStatus == mainMenu) {
         if (key == 13) {
             switch (menu.getOption()) {
@@ -449,16 +513,20 @@ static void key(unsigned char key, int x, int y) {
                     player.x = 0;
                     player.y = 0;
                     cout << "Jogo Iniciado\n";
+                    frameAnimation = 0;
+                    actualAnimation = "idle";
 
                     Sounds::stopSounds();
-
-                    Sounds::setVolume(0.6);
                     Sounds::playSound("background", true);
 
                     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    gameStatus = gameOptions;
                     break;
                 case 2:
                     exit(0);
@@ -480,6 +548,34 @@ static void key(unsigned char key, int x, int y) {
                     glutDisplayFunc(display);
                     break;
                 case 1:
+                    Sounds::stopSounds();
+                    Sounds::playSound("menu", true);
+                    gameStatus = mainMenu;
+                    options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    break;
+            }
+
+        } else if (key == 'w' || key == 'W') {
+            menu.switchOption(-1);
+        } else if (key == 's' || key == 'S') {
+            menu.switchOption(1);
+        }
+    } else if (gameStatus == playerDeath) {
+        if (key == 13) {
+            switch (menu.getOption()) {
+                case 0:
+                    Sounds::stopSounds();
+                    Sounds::playSound("background", true);
+                    gameStatus = onGame;
+                    cout << "Jogo Reiniciado\n";
+                    glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+                    glutDisplayFunc(display);
+                    break;
+                case 1:
+                    Sounds::stopSounds();
+                    Sounds::playSound("menu", true);
                     gameStatus = mainMenu;
                     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
                     menu.setOptions(options);
@@ -492,52 +588,96 @@ static void key(unsigned char key, int x, int y) {
         } else if (key == 's' || key == 'S') {
             menu.switchOption(1);
         }
-    } else if (gameStatus == onGame) {
-        if (keyBuffer[27]) {
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            vector<string> options = {"Continuar Jornada", "Menu Principal"};
-            menu.setOptions(options);
-
-            menu.setOption(0);
-            gameStatus = gamePaused;
-            cout << "Jogo Pausado\n";
-            glutDisplayFunc(showMenu);
-        } else {
-            if (keyBuffer['d'] || keyBuffer['D']) {
-                player.speed.x = 0.1;
-                player.directionX = RIGHT;
+    } else if (gameStatus == gameOptions) {
+        if (menu.getOption() == 0) {
+            if (key == 'a' || key == 'A') {
+                menu.updateSoundSetting(-1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
+            } else if (key == 'd' || key == 'D') {
+                menu.updateSoundSetting(1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
             }
+            cout << menu.getSoundSetting() / 100 << endl;
+        }
 
-            if (keyBuffer['a'] || keyBuffer['A']) {
-                player.speed.x = 0.1;
-                player.directionX = LEFT;
-            }
+            if (key == 'w' || key == 'W')
+                menu.switchOption(-1);
+            else if (key == 's' || key == 'S')
+                menu.switchOption(1);
 
-            if (keyBuffer[' '] && player.speed.y == 0) {
-                Sounds::playSound("jump");
-                player.speed.y = 0.05f;
-            }
-
-            if (!fireObjects.empty()) {
-                if (keyBuffer['g']) {
-                    fireObjects.pop_back();
+            if (key == 13) {
+                switch (menu.getOption()) {
+                    case 1:
+                        gameStatus = mainMenu;
+                        vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                        menu.setOptions(options);
+                        menu.setOption(0);
+                        break;
                 }
             }
+        } else if (gameStatus == onGame) {
+            if (keyBuffer[27]) {
+                frameAnimation = 0;
+                actualAnimation = "running";
 
-            if (keyBuffer['f']) {
-                if (initialTime == -1) {
-                    initialTime = time(nullptr);
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                vector<string> options = {"Continuar Jornada", "Menu Principal"};
+                menu.setOptions(options);
+
+                menu.setOption(0);
+                gameStatus = gamePaused;
+                cout << "Jogo Pausado\n";
+                glutDisplayFunc(showMenu);
+            } else {
+                if (keyBuffer['d'] || keyBuffer['D']) {
+                    player.speed.x = 0.1;
+                    player.directionX = RIGHT;
+                }
+
+                if (keyBuffer['a'] || keyBuffer['A']) {
+                    player.speed.x = 0.1;
+                    player.directionX = LEFT;
+                }
+
+                if (keyBuffer[' '] && player.speed.y == 0) {
+                    Sounds::playSound("jump");
+                    player.speed.y = 0.05f;
+                }
+
+                if (!fireObjects.empty()) {
+                    if (keyBuffer['g']) {
+                        fireObjects.pop_back();
+                    }
+                }
+
+                if (keyBuffer['f']) {
+                    if (initialTime == -1) {
+                        initialTime = time(nullptr);
+                    }
+                }
+
+                if (key == 'q' || key == 'Q') {
+                    exit(0);
                 }
             }
-
-            if (key == 'q' || key == 'Q') {
-                exit(0);
+        } else if(gameStatus == playerWon) {
+        if (key == 13) {
+            switch (menu.getOption()) {
+                case 1:
+                    gameStatus = mainMenu;
+                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    break;
             }
         }
     }
 
     glutPostRedisplay();
-
 }
 
 static void keyboardUp(unsigned char key, int x, int y)
@@ -630,6 +770,15 @@ static void specialKey(int key, int x, int y)
                 break;
         }
         glutPostRedisplay();
+    } else if(gameStatus == gameOptions) {
+        switch (key) {
+            case GLUT_KEY_LEFT:
+                menu.updateSoundSetting(-1);
+                break;
+            case GLUT_KEY_RIGHT:
+                menu.updateSoundSetting(1);
+                break;
+        }
     }
 }
 
@@ -657,6 +806,9 @@ void init(){
     vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
 
     menu.setOptions(options);
+
+
+    playerMenu.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
 
 //    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
 //    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
@@ -776,6 +928,7 @@ void init(){
     }
 
     Sounds::playSound("menu", true);
+
 }
 
 /* Program entry point */

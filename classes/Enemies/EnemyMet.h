@@ -5,7 +5,7 @@
 
 class EnemyMet : public Enemy {
     public: void move() override;
-    public: void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) override;
+    public: void noticedEnemy(const string& animationName, int animationFrame, map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) override;
     public: EnemyMet() = default;
 };
 
@@ -33,12 +33,12 @@ void EnemyMet :: move() {
     }
 }
 
-void EnemyMet:: noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
+void EnemyMet:: noticedEnemy(const string& animationName, int animationFrame, map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
     map<char, double> mapCollisionCanShoot = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX);
     map<char, double> mapCollisionCantTakeDamage = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX / 2);
     if(drawnCollision){
         glPushMatrix();
-            Object::drawObject(this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
+            Object::drawObject("", animationFrame, this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
         glPopMatrix();
     }
 

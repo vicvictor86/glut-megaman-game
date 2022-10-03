@@ -45,7 +45,7 @@ Wall Scene::buildRaisedBlock(float yValue, float size = 2) {
     Wall wall;
     wall.x = this->currentX;
     if(yValue == 1)
-        wall.y = 2;
+        wall.y = 1;
     else
         wall.y = yValue;
 

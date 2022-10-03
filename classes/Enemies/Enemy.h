@@ -20,7 +20,7 @@ class Enemy : public Object {
     public: void getDamage(int takedDamage);
     public: void setSizeVision(double sizeVisionX, double sizeVisionY);
     public: void drawEnemy(const string &animationName, const Player& player, int animationFrame, double scaleSize, double rotationX, double rotationY, bool drawnCollider);
-    public: virtual void noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision);
+    public: virtual void noticedEnemy(const string& animationName, int animationFrame, map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision);
     public: Enemy() = default;
 };
 
@@ -84,11 +84,11 @@ void Enemy::getDamage(int takedDamage) {
     }
 }
 
-void Enemy::noticedEnemy(map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
+void Enemy::noticedEnemy(const string& animationName, int animationFrame, map<char, double> mapCollisionPlayer, double playerX, double playerY, double playerZ, bool drawnCollision) {
     map<char, double> mapCollisionoViewOfPlayer = Object::createRetangleCollider(this->collision.x, this->collision.y, playerZ, this->sizeVisionX);
     if(drawnCollision){
         glPushMatrix();
-            Object::drawObject(this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
+            Object::drawObject("", animationFrame,this->x, this->y, this->z, this->sizeVisionX, this->sizeVisionY, 1, 0, 0);
         glPopMatrix();
     }
 

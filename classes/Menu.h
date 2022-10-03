@@ -13,12 +13,15 @@ using namespace std;
 class Menu {
 private: vector<string> options;
 private: int option;
-public: Menu(){ option = 0;};
+private: int soundSetting;
+public: Menu(){ option = 0; soundSetting = 60;};
 public: void openMenu(float x, float y);
 public: vector<string> getOptions();
 public: void setOptions(vector<string> options);
 public: void setOption(int option);
 public: int getOption();
+public: int getSoundSetting();
+public: void updateSoundSetting(int op);
 public: void switchOption(int op);
 };
 
@@ -43,6 +46,8 @@ void Menu::setOption(int op) {
 }
 
 void Menu::openMenu(float x, float y) {
+    glDisable(GL_LIGHTING);
+    glDisable(GL_TEXTURE_2D);
     for(int i = 0; i < this->getOptions().size(); i++) {
         if(option == i)
             glColor3f(0.0f,0.0f,1.0f);
@@ -52,10 +57,27 @@ void Menu::openMenu(float x, float y) {
         writeOnScreen(x, y, options[i]);
         y -= 0.7;
     }
+    glEnable(GL_TEXTURE_2D);
+    glEnable(GL_LIGHTING);
 }
 
 int Menu::getOption(){
     return this->option;
+}
+
+int Menu::getSoundSetting(){
+    return this->soundSetting;
+}
+
+void Menu::updateSoundSetting(int op) {
+    if (this->soundSetting > 0 && this->soundSetting < 100)
+        this->soundSetting += 10 * op;
+    else {
+        if (this->soundSetting == 0 && op == 1)
+            this->soundSetting += 10;
+        else if (this->soundSetting == 100 && op == -1)
+            this->soundSetting -= 10;
+    }
 }
 
 void Menu::switchOption(int op) {

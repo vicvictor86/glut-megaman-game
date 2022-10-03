@@ -21,7 +21,7 @@ class Object {
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
     public: void drawModel(double scaleSize);
-    public: static void drawObject(double x, double y, double z, double sizeH, double sizeV, double r, double g, double b);
+    public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV, double r, double g, double b);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);
@@ -105,13 +105,32 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawObject(double x, double y, double z, double sizeH, double sizeV, double r=0, double g=0, double b=0){
+void Object:: drawObject(const string& animationName="", int animationFrame=1, double x = 0, double y = 0, double z = -6, double sizeH = 1, double sizeV = 1, double r=0, double g=0, double b=0){
     glPushMatrix();
         glColor3d(r, g, b);
         glTranslated(x, y, z);
         glScaled(sizeH, sizeV, sizeH);
         glutWireCube(1);
     glPopMatrix();
+
+    if(!(animationName.empty())) {
+        glPushMatrix();
+        glLoadIdentity();
+        glTranslatef((float) x, (float) y, (float) z);
+        glRotatef(90, 0, 1, 0);
+        glScaled(sizeH, sizeV, sizeH);
+
+        if (!this->animations[animationName].empty()) {
+            if (animationFrame > this->animations[animationName].size()) {
+                animationFrame = 0;
+            }
+            this->animations[animationName][animationFrame].draw();
+        } else {
+            //                cout << "A animacao " << animationName << " nao existe" << endl;
+        }
+        glPopMatrix();
+    }
+
 }
 
 void Object:: drawModel(double scaleSize){

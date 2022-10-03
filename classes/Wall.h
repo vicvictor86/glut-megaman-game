@@ -24,7 +24,7 @@ Wall::Wall(double x, double y, double z, map<char, double> mapColliderWall) {
 
 void Wall:: drawWall(const string& animationName="", int animationFrame=1, bool drawnCollider=false, bool devMode=false){
     if(drawnCollider){
-        Object::drawObject(this->x, this->y, this->z, this->sizeH, this->sizeV);
+        Object::drawObject(animationName, animationFrame, this->x, this->y, this->z, this->sizeH, this->sizeV);
     }
 
     glPushMatrix();
