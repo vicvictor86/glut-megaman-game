@@ -48,6 +48,8 @@ Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 
 Object endBoard(2, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhores(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 Object finoSenhoresVinho(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
+
+Object background;
 Camera camera(WIDTH, HEIGHT);
 Menu menu;
 Scene scene;
@@ -501,6 +503,7 @@ static void showMenu(){
         executeAnimation(&playerIsMoving, "running", player, true);
     }
 
+
     float adjustmentX, adjustmentY;
     switch (gameStatus) {
         case mainMenu:
@@ -558,7 +561,7 @@ static void display()
 
     drawLifeHud();
 
-    if(player.x >= 141){// && enemies.empty()) {
+    if(player.x >= 141 && enemies.empty()) {
         winGame();
     }
 
@@ -613,6 +616,20 @@ static void display()
     }
 
     player.move(keyBuffer);
+
+    if(player.speed.isMoving()){
+        if(player.directionX == RIGHT){
+            background.x -= background.speed.x;
+        } else if(player.directionX == LEFT){
+            background.x += background.speed.x;
+        }
+    }
+
+    if(!debug){
+        background.drawObject("idle", 0, background.x + 60, 0, -20, background.scaleSizeModelX, background.scaleSizeModelY, 0, 1, 1, 1);
+    }
+
+    drawLifeHud();
 
     checkCollisionsFires(quantityOverLapping);
 
@@ -950,6 +967,10 @@ void init(){
     endBoard.setScaleSizeModel(0.3);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
+
+    background.setAnimations("idle", "../Models/Environment/background/", "city", 0, 20);
+    background.setScaleSizeModel(15);
+    background.speed.x = 0.0001;
 
     startGame();
 

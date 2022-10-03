@@ -16,13 +16,14 @@ class Object {
     public: Collision collision;
     public: string tag;
     public: Model model;
-    public: double scaleSizeModelX = 1, scaleSizeModelY = 1, scaleSizeModelZ = 1;
+    public: double scaleSizeModelX = 1, scaleSizeModelY = 1, scaleSizeModelZ = 1, rotateModelX = 0, rotateModelY = 0, rotateModelZ = 0, angle = 0;
     public: double modelX=0, modelY=0, modelZ=0;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
     public: string animationStatus = "idle";
     public: void drawModel(double scaleSize);
     public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV,  double angle, double r, double g, double b, bool drawCollider);
+
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);

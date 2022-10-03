@@ -16,7 +16,7 @@ class Camera {
     public: double fov = 60;
     public: double aspect = width/height;
     public: double nearZ = 1.0;
-    public: double farZ = 20.0;
+    public: double farZ = 150.0;
     public: Camera(int width, int height);
 };
 
