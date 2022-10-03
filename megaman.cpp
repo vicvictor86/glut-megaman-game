@@ -53,13 +53,16 @@ string actualAnimation = "idle";
 string shootType = "shoot";
 int framesInIdle = 0;
 
+bool debug = false;
+
 enum status
 {
     mainMenu,
     onGame,
     gamePaused,
     gameOptions,
-    playerDeath
+    playerDeath,
+    playerWon
 };
 
 status gameStatus = mainMenu;
@@ -93,6 +96,22 @@ void playerDead() {
     gameStatus = playerDeath;
     glutDisplayFunc(showMenu);
     printf("Game over\n");
+}
+
+void winGame() {
+    Sounds::stopSounds();
+    Sounds::playSound("death", false);
+    player.life = player.maxLife;
+    player.setY(0);
+    player.setX(0);
+    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    vector<string> options = {"(Aperte Enter para continuar)"};
+    menu.setOptions(options);
+
+    menu.setOption(0);
+    gameStatus = playerWon;
+    glutDisplayFunc(showMenu);
+    printf("Game win\n");
 }
 
 static void resize(int width, int height)
@@ -186,7 +205,7 @@ void checkCollisionsFires(int quantityOverLapping){
                 fireObjects.erase(fireObjects.begin() + i);
             }
 
-            fireObjects[i].drawFire(true);
+            fireObjects[i].drawFire(debug);
 
             collisionDirections collideWithPlayer = Collision::checkCollision(player.mapCollider, player.x, player.y, fireObjects[i].mapCollider, fireObjects[i].x, fireObjects[i].y, i + 1 >= fireObjects.size(), &quantityOverLapping);
             if(collideWithPlayer != NOCOLLISION && collideWithPlayer != NULLCOLLISION && fireObjects[i].tagShoot == "Enemy"){
@@ -251,9 +270,9 @@ void drawLifeHud(){
                 double yQuadBottom = 0.85;
                 double yQuadTop = 0.95;
                 glTexCoord2d(0, 1); glVertex2d(xQuadLeft, yQuadBottom);
-                glTexCoord2d(1, 1) ;glVertex2d(xQuadRight, yQuadBottom);
-                glTexCoord2d(1, 0) ;glVertex2d(xQuadRight, yQuadTop);
-                glTexCoord2d(0, 0) ;glVertex2d(xQuadLeft, yQuadTop);
+                glTexCoord2d(1, 1); glVertex2d(xQuadRight, yQuadBottom);
+                glTexCoord2d(1, 0); glVertex2d(xQuadRight, yQuadTop);
+                glTexCoord2d(0, 0); glVertex2d(xQuadLeft, yQuadTop);
             glEnd();
             glMatrixMode(GL_PROJECTION);
         glPopMatrix();
@@ -352,8 +371,6 @@ void chargingShott(){
 }
 
 static void showMenu(){
-//    glEnable(GL_DEPTH_TEST);da
-
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
@@ -379,14 +396,18 @@ static void showMenu(){
             adjustmentX = -0.68;
             adjustmentY = 0.7;
             break;
+        case playerWon:
+            adjustmentX = -0.68;
+            adjustmentY = 0.7;
+            break;
     }
     menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
     glutSwapBuffers();
 
 }
 
-void showRayCast(bool show, Enemy *enemy){
-    if(show){
+void showRayCast(Enemy *enemy){
+    if(debug){
         glDisable(GL_LIGHTING);
         glDisable(GL_TEXTURE_2D);
             glPushMatrix();
@@ -414,23 +435,28 @@ static void display()
 
     drawLifeHud();
 
-    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, true);
+    if(player.x >= 141 && enemies.empty()) {
+        winGame();
+    }
+
+    frameAnimation = player.drawPlayer(actualAnimation, frameAnimation, 1.5, debug);
 
     int quantityOverLapping = checkCollisionWithWalls(&player);
     checkCollisionWithEnemies();
 
     for (auto & wall : walls){
-        wall->drawObject("",1, wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
+//        wall->drawObject("",1, wall->x, wall->y, wall->z, wall->sizeH, wall->sizeV);
+        wall->drawWall("block", 0,  debug);
         wall->move();
     }
 
     for (auto & enemy : enemies){
-        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModel, 0, 0, true);
+        enemy->drawEnemy(enemy->animationStatus, player, 0, enemy->scaleSizeModelX, 0, 0, debug);
         checkCollisionWithWalls(enemy);
         enemy->move();
-        enemy->noticedEnemy(enemy->animationStatus, 0, player.mapCollider, player.x, player.y, player.z, true);
+        enemy->noticedEnemy(enemy->animationStatus, 0, player.mapCollider, player.x, player.y, player.z, debug);
         enemy->shoot(&fireObjects, player, actualFps);
-        showRayCast(false, enemy);
+        showRayCast(enemy);
     }
 
     if (player.y <= -18) {
@@ -566,12 +592,12 @@ static void key(unsigned char key, int x, int y) {
         if (menu.getOption() == 0) {
             if (key == 'a' || key == 'A') {
                 menu.updateSoundSetting(-1);
-                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Aplicar"};
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
                 menu.setOptions(options);
                 Sounds::setVolume((float) menu.getSoundSetting() / 100);
             } else if (key == 'd' || key == 'D') {
                 menu.updateSoundSetting(1);
-                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Aplicar"};
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
                 menu.setOptions(options);
                 Sounds::setVolume((float) menu.getSoundSetting() / 100);
             }
@@ -638,7 +664,18 @@ static void key(unsigned char key, int x, int y) {
                     exit(0);
                 }
             }
+        } else if(gameStatus == playerWon) {
+        if (key == 13) {
+            switch (menu.getOption()) {
+                case 1:
+                    gameStatus = mainMenu;
+                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+                    menu.setOptions(options);
+                    menu.setOption(0);
+                    break;
+            }
         }
+    }
 
     glutPostRedisplay();
 }
@@ -707,6 +744,10 @@ static void keyboardUp(unsigned char key, int x, int y)
         fire.tagShoot = "Player";
 
         fireObjects.push_back(fire);
+    }
+
+    if((!keyBuffer['c'] && key == 'c') || (keyBuffer['C'] && key == 'C')){
+        debug = !debug;
     }
 
     if (!keyBuffer['o'] && key == 'o'){
@@ -785,6 +826,7 @@ void init(){
         Wall2,
         Hole,
         SmallHole,
+        SmallWall,
         MetEnemy,
         HorizontalEnemy,
         VerticalEnemy,
@@ -793,7 +835,7 @@ void init(){
     };
 
     vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i < 50; i++) {
+    for(int i = 0; i <= 60; i++) {
         if(i == 24) {
             componentsScene.push_back(Wall1);
             componentsScene.push_back(Floor);
@@ -801,7 +843,6 @@ void init(){
         } else if(i == 20) {
             componentsScene.push_back(HorizontalEnemy);
             componentsScene.push_back(Floor);
-            componentsScene.push_back(VerticalEnemy);
         }
         else if (i == 14) {
             componentsScene.push_back(Hole);
@@ -816,13 +857,34 @@ void init(){
         } else if(i == 8) {
             componentsScene.push_back(HorizontalEnemy);
         } else if(i == 45) {
+            componentsScene.push_back(SmallWall);
             componentsScene.push_back(MetEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(JumpingEnemy);
         } else if(i == 30) {
             componentsScene.push_back(JumpingEnemy);
         } else if(i == 38) {
             componentsScene.push_back(JumpingEnemy);
-        }
-        else
+        } else if(i == 52) {
+            componentsScene.push_back(VerticalEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 58){
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+        } else if (i == 59) {
+            componentsScene.push_back(Wall1);
+            componentsScene.push_back(Wall2);
+        } else
             componentsScene.push_back(Floor);
     }
 
@@ -842,6 +904,9 @@ void init(){
                 break;
             case SmallHole:
                 scene.buildHole(1);
+                break;
+            case SmallWall:
+                walls.push_back(new Wall(scene.buildRaisedBlock(-0.5, 1)));
                 break;
             case MetEnemy:
                 enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
