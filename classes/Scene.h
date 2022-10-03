@@ -49,10 +49,14 @@ Wall Scene::buildRaisedBlock(float yValue, float size = 2) {
     else
         wall.y = yValue;
 
-    wall.z = -6;
+    if(size == 1 && yValue == -0.5)
+        wall.z = -6.1;
+    else
+        wall.z = -6;
+
     wall.setSize(size);
     wall.setScaleSizeModel(5.5);
-    wall.modelY = -0.4;
+    wall.modelY = -0.4 + yValue;
 
     wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH, wall.sizeV);
     wall.setAnimations("block", "../Models/Environment/ground/", "metalBlock", 0, 20);
