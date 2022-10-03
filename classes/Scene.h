@@ -8,7 +8,7 @@
 class Scene {
 public: bool changeDirection;
 public: Wall buildFloorBlock();
-public: Wall buildRaisedBlock(int yValue);
+public: Wall buildRaisedBlock(float yValue, float size);
 public: FloatingBlocksHor buildFloatBlockHor(float y);
 public: void buildHole(float x);
 public: EnemyMet spawnEnemyMet();
@@ -37,22 +37,16 @@ void Scene::buildHole(float x = 2) {
     this->currentX += x;
 }
 
-Wall Scene::buildRaisedBlock(int yValue) {
+Wall Scene::buildRaisedBlock(float yValue, float size = 2) {
     Wall wall;
     wall.x = this->currentX;
-    switch(yValue) {
-        case 0:
-            wall.y = yValue;
-            break;
-        case 1:
-            wall.y = 2;
-            break;
-        default:
-            break;
-    }
+    if(yValue == 1)
+        wall.y = 2;
+    else
+        wall.y = yValue;
 
     wall.z = -6;
-    wall.setSize(2);
+    wall.setSize(size);
     wall.mapColliderWall = Object ::createRetangleCollider(wall.x, wall.y, wall.z, wall.sizeH);
 
     return wall;

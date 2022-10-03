@@ -670,6 +670,7 @@ void init(){
         Wall2,
         Hole,
         SmallHole,
+        SmallWall,
         MetEnemy,
         HorizontalEnemy,
         VerticalEnemy,
@@ -678,7 +679,7 @@ void init(){
     };
 
     vector<sceneComponents> componentsScene = {};
-    for(int i = 0; i < 50; i++) {
+    for(int i = 0; i <= 60; i++) {
         if(i == 24) {
             componentsScene.push_back(Wall1);
             componentsScene.push_back(Floor);
@@ -686,7 +687,6 @@ void init(){
         } else if(i == 20) {
             componentsScene.push_back(HorizontalEnemy);
             componentsScene.push_back(Floor);
-            componentsScene.push_back(VerticalEnemy);
         }
         else if (i == 14) {
             componentsScene.push_back(Hole);
@@ -701,13 +701,34 @@ void init(){
         } else if(i == 8) {
             componentsScene.push_back(HorizontalEnemy);
         } else if(i == 45) {
+            componentsScene.push_back(SmallWall);
             componentsScene.push_back(MetEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(JumpingEnemy);
         } else if(i == 30) {
             componentsScene.push_back(JumpingEnemy);
         } else if(i == 38) {
             componentsScene.push_back(JumpingEnemy);
-        }
-        else
+        } else if(i == 52) {
+            componentsScene.push_back(VerticalEnemy);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(HorizontalEnemy);
+        } else if(i == 58){
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+            componentsScene.push_back(Floor);
+        } else if (i == 59) {
+            componentsScene.push_back(Wall1);
+            componentsScene.push_back(Wall2);
+        } else
             componentsScene.push_back(Floor);
     }
 
@@ -727,6 +748,9 @@ void init(){
                 break;
             case SmallHole:
                 scene.buildHole(1);
+                break;
+            case SmallWall:
+                walls.push_back(new Wall(scene.buildRaisedBlock(-0.5, 1)));
                 break;
             case MetEnemy:
                 enemies.push_back(new EnemyMet(scene.spawnEnemyMet()));
