@@ -53,10 +53,10 @@ void Menu::openMenu(float x, float y) {
             glColor3f(0.0f,0.0f,1.0f);
         else
             glColor3f(1.0f,1.0f,1.0f);
-
         writeOnScreen(x, y, options[i]);
         y -= 0.7;
     }
+    glColor3f(1.0f,1.0f,1.0f);
     glEnable(GL_TEXTURE_2D);
     glEnable(GL_LIGHTING);
 }

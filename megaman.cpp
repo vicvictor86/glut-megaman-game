@@ -45,8 +45,11 @@ vector<Enemy*> enemies;
 
 Player player(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, 10, 1, 3, Collision(0, 1.1, -6, 0.5, 2.2));
 Object playerMenu(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
-Object background;
+Object endBoard(2, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
+Object finoSenhores(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
+Object finoSenhoresVinho(0, 0, -6, 1, 1, 1, Speed(0, 0, 0), 0.5, Collision(0, 1.1, -6, 0.5, 2.2));
 
+Object background;
 Camera camera(WIDTH, HEIGHT);
 Menu menu;
 Scene scene;
@@ -217,12 +220,12 @@ void playerDead() {
 
 void winGame() {
     Sounds::stopSounds();
-    Sounds::playSound("death", false);
+    Sounds::playSound("victory", false);
     player.life = player.maxLife;
     player.setY(0);
     player.setX(0);
     glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-    vector<string> options = {"(Aperte Enter para continuar)"};
+    vector<string> options = {"Fino, senhores!" , "(Aperte Enter para continuar)"};
     menu.setOptions(options);
 
     menu.setOption(0);
@@ -491,9 +494,15 @@ static void showMenu(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
-    playerMenu.drawObject("running", frameAnimation, -3, 0, -6, 1.2, 1.2, 90, 1, 1, 1);
-    bool playerIsMoving = true;
-    executeAnimation(&playerIsMoving, "running", player, true);
+    if(gameStatus == playerWon){
+        finoSenhores.drawObject("idle", 0, -5, -1, -6, finoSenhores.scaleSizeModelX, finoSenhores.scaleSizeModelY, 90, 1, 1, 1);
+        finoSenhoresVinho.drawObject("idle", 0, -3, -1, -6, finoSenhoresVinho.scaleSizeModelX, finoSenhoresVinho.scaleSizeModelY, 90, 1, 1, 1);
+    }else {
+        playerMenu.drawObject("running", frameAnimation, 7, -5.7, -6, 1.1, 1.1, 90, 1, 1, 1);
+        bool playerIsMoving = true;
+        executeAnimation(&playerIsMoving, "running", player, true);
+    }
+
 
     float adjustmentX, adjustmentY;
     switch (gameStatus) {
@@ -515,7 +524,7 @@ static void showMenu(){
             break;
         case playerWon:
             adjustmentX = -0.68;
-            adjustmentY = 0.7;
+            adjustmentY = 0.45;
             break;
     }
     menu.openMenu(player.x + adjustmentX,  player.y + adjustmentY);
@@ -550,6 +559,8 @@ static void display()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glLoadIdentity();
 
+    drawLifeHud();
+
     if(player.x >= 141 && enemies.empty()) {
         winGame();
     }
@@ -572,6 +583,8 @@ static void display()
         enemy->shoot(&fireObjects, player, actualFps);
         showRayCast(enemy);
     }
+
+    endBoard.drawObject("idle", 0, 140, -1, -6, endBoard.scaleSizeModelX, endBoard.scaleSizeModelY, 0,1, 1, 1);
 
     if (player.y <= -18) {
         playerDead();
@@ -787,21 +800,15 @@ static void key(unsigned char key, int x, int y) {
                         initialTime = time(nullptr);
                     }
                 }
-
-                if (key == 'q' || key == 'Q') {
-                    exit(0);
-                }
             }
         } else if(gameStatus == playerWon) {
         if (key == 13) {
-            switch (menu.getOption()) {
-                case 1:
-                    gameStatus = mainMenu;
-                    vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
-                    menu.setOptions(options);
-                    menu.setOption(0);
-                    break;
-            }
+            Sounds::stopSounds();
+            Sounds::playSound("menu", true);
+            gameStatus = mainMenu;
+            vector<string> options = {"Iniciar Jornada", "Ajustes", "Sair do Jogo"};
+            menu.setOptions(options);
+            menu.setOption(0);
         }
     }
 
@@ -877,16 +884,11 @@ static void keyboardUp(unsigned char key, int x, int y)
     if((!keyBuffer['c'] && key == 'c') || (keyBuffer['C'] && key == 'C')){
         debug = !debug;
     }
-
-    if (!keyBuffer['o'] && key == 'o'){
-        player.x = 0;
-        player.y = 0;
-    }
 }
 
 static void specialKey(int key, int x, int y)
 {
-    if(gameStatus == mainMenu || gameStatus == gamePaused) {
+    if(gameStatus == mainMenu || gameStatus == gamePaused || gameStatus == gameOptions || gameStatus == playerDeath) {
         switch (key) {
             case GLUT_KEY_UP:
                 menu.switchOption(-1);
@@ -897,17 +899,27 @@ static void specialKey(int key, int x, int y)
             default:
                 break;
         }
-        glutPostRedisplay();
-    } else if(gameStatus == gameOptions) {
+    }
+
+    if(gameStatus == gameOptions) {
+        vector<string> options;
         switch (key) {
             case GLUT_KEY_LEFT:
                 menu.updateSoundSetting(-1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
                 break;
             case GLUT_KEY_RIGHT:
                 menu.updateSoundSetting(1);
+                options = {"Volume  <  " + to_string(menu.getSoundSetting()) + "%  >", "Retornar"};
+                menu.setOptions(options);
+                Sounds::setVolume((float) menu.getSoundSetting() / 100);
                 break;
         }
     }
+
+    glutPostRedisplay();
 }
 
 static void idle(int)
@@ -935,16 +947,24 @@ void init(){
 
     menu.setOptions(options);
 
-
     playerMenu.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
 
-//    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
-//    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
-//    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
-//    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
-//    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
-//    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
+    player.setAnimations("idle", "../Models/PlayerModel/animations/idleAnimation/", "idle", 60, 20);
+    player.setAnimations("shoot", "../Models/PlayerModel/animations/shootAnimation/", "shooting", 21, 10);
+    player.setAnimations("chargShoot", "../Models/PlayerModel/animations/chargShootAnimation/", "chargedShoot", 24, 20);
+    player.setAnimations("running", "../Models/PlayerModel/animations/runningAnimation/", "running", 20, 20);
+    player.setAnimations("jumping", "../Models/PlayerModel/animations/jumpingAnimation/", "jumping", 26, 20);
+    player.setAnimations("sadIdle", "../Models/PlayerModel/animations/sadIdleAnimation/", "sadIdle", 78, 20);
 
+    finoSenhores.setAnimations("idle", "../Models/Environment/easterEgg/", "ancientFace", 0, 20);
+    finoSenhores.setScaleSizeModel(80);
+
+    finoSenhoresVinho.setAnimations("idle", "../Models/Environment/easterEgg/", "glassOfWine", 0, 20);
+    finoSenhoresVinho.setScaleSizeModel(2);
+
+    endBoard.setAnimations("idle", "../Models/Environment/ground/", "endBoard", 0, 20);
+    endBoard.setScaleSizeModel(0.3);
 
     player.mapCollider = Object:: createRetangleCollider(player.collision.x, player.collision.y, player.collision.z, player.collision.sizeH, player.collision.sizeV);
 

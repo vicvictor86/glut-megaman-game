@@ -9,6 +9,8 @@ char const *deathMusic = "../Sounds/death.wav";
 char const *jumpSound = "../Sounds/Jump.wav";
 char const *shootSound = "../Sounds/shoot.wav";
 char const *playerDamage = "../Sounds/playerDamage.wav";
+char const *victoryMusic = "../Sounds/finoSenhores.wav";
+
 irrklang::ISoundEngine* engine = irrklang::createIrrKlangDevice();
 
 map<string, char const *> sounds = {
@@ -17,7 +19,8 @@ map<string, char const *> sounds = {
         {"background", backgroundMusic},
         {"jump", jumpSound},
         {"shoot", shootSound},
-        {"playerDamage", playerDamage}
+        {"playerDamage", playerDamage},
+        {"victory", victoryMusic}
 };
 
 class Sounds {
