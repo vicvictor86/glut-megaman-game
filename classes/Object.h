@@ -20,8 +20,9 @@ class Object {
     public: double modelX=0, modelY=0, modelZ=0;
     public: map<string, vector<Model>> animations;
     public: map<string, int> animationFPS;
+    public: string animationStatus = "idle";
     public: void drawModel(double scaleSize);
-    public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV, double r, double g, double b);
+    public: void drawObject(const string& animationName, int animationFrame, double x, double y, double z, double sizeH, double sizeV, double r, double g, double b, bool drawCollider);
     public: static map<char, double> createRetangleCollider(double x, double y, double z, double sizeH, double sizeV);
     public: virtual void setModel(const string& path);
     public: void setX(double updateX);
@@ -105,13 +106,15 @@ map<char, double> Object:: createRetangleCollider(double x, double y, double z, 
     return mapColliders;
 }
 
-void Object:: drawObject(const string& animationName="", int animationFrame=1, double x = 0, double y = 0, double z = -6, double sizeH = 1, double sizeV = 1, double r=0, double g=0, double b=0){
-    glPushMatrix();
-        glColor3d(r, g, b);
-        glTranslated(x, y, z);
-        glScaled(sizeH, sizeV, sizeH);
-        glutWireCube(1);
-    glPopMatrix();
+void Object:: drawObject(const string& animationName="", int animationFrame=1, double x = 0, double y = 0, double z = -6, double sizeH = 1, double sizeV = 1, double r=0, double g=0, double b=0, bool drawCollider = false){
+    if(drawCollider) {
+        glPushMatrix();
+            glColor3d(r, g, b);
+            glTranslated(x, y, z);
+            glScaled(sizeH, sizeV, sizeH);
+            glutWireCube(1);
+        glPopMatrix();
+    }
 
     if(!(animationName.empty())) {
         glPushMatrix();
